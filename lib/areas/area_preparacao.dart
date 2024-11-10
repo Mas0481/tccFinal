@@ -1,64 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:tcc/forms/form_centrifugacao';
 import 'package:tcc/forms/form_lavagem.dart';
+import 'package:tcc/forms/form_secagem.dart';
 import 'dart:async';
 import 'package:tcc/util/custom_appbar.dart';
 
 class AreaPreparacao extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    // Mapa de exemplo com 4 pedidos
     List<Pedido> pedidos = [
       Pedido(
         cliente: 'Cliente A',
         pedido: 'Pedido 001',
         dataEntrega: '10/10/2024',
         pesoTotal: 150.0,
+        recebimento: 0,
+        classificacao: 0,
+        lavagem: 0,
         lotes: [
-          Lote(nome: 'Lote 1', status: 1.0), // 100%
-          Lote(nome: 'Lote 2', status: 1.0), // 100%
-          Lote(nome: 'Lote 3', status: 0.66), // 66%
-          Lote(nome: 'Lote 1', status: 1.0), // 100%
-          Lote(nome: 'Lote 2', status: 1.0), // 100%
-          Lote(nome: 'Lote 3', status: 0.66), // 66%
-          Lote(nome: 'Lote 1', status: 1.0), // 100%
-          Lote(nome: 'Lote 2', status: 1.0), // 100%
-          Lote(nome: 'Lote 3', status: 0.66), // 66%
-          Lote(nome: 'Lote 1', status: 1.0), // 100%
-          Lote(nome: 'Lote 2', status: 1.0), // 100%
-          Lote(nome: 'Lote 3', status: 0.66), // 66%
+          Lote(nome: 'Lote 1', status: 1.0),
+          Lote(nome: 'Lote 2', status: 1.0),
+          Lote(nome: 'Lote 3', status: 0.0),
+          Lote(nome: 'Lote 4', status: 1.0),
+          Lote(nome: 'Lote 5', status: 1.0),
+          Lote(nome: 'Lote 6', status: 0.0),
         ],
       ),
-      Pedido(
-        cliente: 'Cliente B',
-        pedido: 'Pedido 002',
-        dataEntrega: '12/10/2024',
-        pesoTotal: 200.0,
-        lotes: [
-          Lote(nome: 'Lote 1', status: 0.8), // 80%
-          Lote(nome: 'Lote 2', status: 0.6), // 60%
-        ],
-      ),
-      Pedido(
-        cliente: 'Cliente C',
-        pedido: 'Pedido 003',
-        dataEntrega: '15/10/2024',
-        pesoTotal: 100.0,
-        lotes: [
-          Lote(nome: 'Lote 1', status: 0.4), // 40%
-        ],
-      ),
-      Pedido(
-        cliente: 'Cliente D',
-        pedido: 'Pedido 004',
-        dataEntrega: '20/10/2024',
-        pesoTotal: 250.0,
-        lotes: [
-          Lote(nome: 'Lote 1', status: 1.0), // 100%
-          Lote(nome: 'Lote 2', status: 0.7), // 70%
-          Lote(nome: 'Lote 3', status: 0.9), // 90%
-        ],
-      ),
+      // Outros pedidos...
     ];
 
     return MaterialApp(
@@ -73,6 +41,9 @@ class Pedido {
   final String dataEntrega;
   final double pesoTotal;
   final List<Lote> lotes;
+  double recebimento;
+  double classificacao;
+  double lavagem;
 
   Pedido({
     required this.cliente,
@@ -80,14 +51,20 @@ class Pedido {
     required this.dataEntrega,
     required this.pesoTotal,
     required this.lotes,
+    this.recebimento = 0,
+    this.classificacao = 0,
+    this.lavagem = 0,
   });
 }
 
 class Lote {
   final String nome;
-  final double status;
+  double status;
 
-  Lote({required this.nome, required this.status});
+  Lote({
+    required this.nome,
+    required this.status,
+  });
 }
 
 class AreaPreparacaoPage extends StatefulWidget {
@@ -157,6 +134,7 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
   }
 
   Widget buildPedidoCard(Pedido pedido) {
+    double progressoLavagem = calcularProgressoLavagem(pedido.lotes);
     return Container(
       width: MediaQuery.of(context).size.width *
           0.25, // Cada elemento ocupa 25% da largura
@@ -197,7 +175,7 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
               // Barras de Progresso
               Column(
                 children: [
-                  buildProgressBar('Centrifugação', 0.5),
+                  buildProgressBar1('Centrifugação', progressoLavagem, pedido),
                   SizedBox(height: 10),
                 ],
               ),
@@ -218,12 +196,13 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
                   // NeverScrollableScrollPhysics(), // Desativa a rolagem do GridView
                   itemCount: pedido.lotes.length,
                   itemBuilder: (context, index) {
-                    return buildLoteButton(pedido.lotes[index]);
+                    return buildLoteButton(
+                        pedido.lotes[index], pedido, "Centrifugação");
                   },
                 ),
               ),
               SizedBox(height: 10),
-              buildProgressBar1('Secagem', 0.5),
+              buildProgressBar1('Secagem', progressoLavagem, pedido),
               SizedBox(height: 10),
 
               // Lotes - dois por linha usando GridView
@@ -242,7 +221,8 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
                   // NeverScrollableScrollPhysics(), // Desativa a rolagem do GridView
                   itemCount: pedido.lotes.length,
                   itemBuilder: (context, index) {
-                    return buildLoteButton(pedido.lotes[index]);
+                    return buildLoteButton(
+                        pedido.lotes[index], pedido, "Secagem");
                   },
                 ),
               ),
@@ -295,85 +275,233 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
         ));
   }
 
-  Widget buildProgressBar1(String label, double progress) {
+  Widget buildProgressBar1(String label, double progress, Pedido pedido) {
+    // Verifica se todos os lotes estão concluídos e ajusta o label
+    String displayLabel =
+        todosLotesConcluidos(pedido) ? "$label Concluído" : label;
+
     return InkWell(
-        onTap: () {
-          print('Barra de progresso $label pressionada');
+      onTap: () {
+        if (pedido.recebimento != 1.0 || pedido.classificacao != 1.0) {
           showDialog(
             context: context,
             builder: (BuildContext context) {
               return AlertDialog(
                 title: Text('Atenção'),
                 content: Text(
-                    'Para inserir os dados das Secagens use os botões de Lote.'),
+                    'Para iniciar o processo de lavagem, verifique se o recebimento e a classificação estão completos.'),
                 actions: [
                   TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: Text('OK'))
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Text('OK'),
+                  ),
                 ],
               );
             },
           );
-          print('$label clicado!'); // Exemplo de ação: imprimir no console
-        },
-        borderRadius:
-            BorderRadius.circular(8), // Adiciona um raio de borda ao botão
-        child: Stack(
-          children: [
-            // ProgressBar
-            LinearProgressIndicator(
-              value: progress,
-              backgroundColor: Colors.grey[200],
-              borderRadius: BorderRadius.circular(8),
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
-              minHeight: 67, // Aumenta a altura da barra para acomodar o rótulo
-            ),
-            // Texto sobreposto
-            Positioned.fill(
-              child: Center(
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    color: Colors.black, // Cor do texto
+        } else if (todosLotesConcluidos(pedido)) {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text('Atenção'),
+                content: Text('Todos os lotes de lavagem foram concluídos!'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Text('OK'),
                   ),
+                ],
+              );
+            },
+          );
+        } else {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text('Atenção'),
+                content: Text(
+                    'Para iniciar o processo de lavagem, use o botão do Lote desejado.'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Text('OK'),
+                  ),
+                ],
+              );
+            },
+          );
+        }
+      },
+      borderRadius: BorderRadius.circular(8),
+      child: Stack(
+        children: [
+          // Barra de progresso
+          LinearProgressIndicator(
+            value: progress,
+            backgroundColor: Colors.grey[200],
+            borderRadius: BorderRadius.circular(8),
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+            minHeight: 67,
+          ),
+          // Texto sobreposto
+          Positioned.fill(
+            child: Center(
+              child: Text(
+                displayLabel,
+                style: TextStyle(
+                  color: Colors.black,
                 ),
               ),
             ),
-          ],
-        ));
+          ),
+        ],
+      ),
+    );
   }
 
-  Widget buildLoteButton(Lote lote) {
-    Color loteColor = lote.status == 1.0
-        ? Colors.blue
-        : Colors.grey[300]!; // Cor igual à progress bar quando 100%
+  Widget buildLoteButton(Lote lote, Pedido pedido, String processo) {
+    // Define o status necessário e o texto padrão com base no processo
+    double statusNecessario;
+    String textoProcessoConcluido;
+    String textoIniciarProcesso;
+
+    if (processo == "Lavagem") {
+      statusNecessario = 1.0;
+      textoProcessoConcluido = "Lavagem Concluída";
+      textoIniciarProcesso = "Iniciar Lavagem";
+    } else if (processo == "Centrifugação") {
+      statusNecessario = 2.0;
+      textoProcessoConcluido = "Centrifugação Concluída";
+      textoIniciarProcesso = "Iniciar Centr";
+    } else if (processo == "Secagem") {
+      statusNecessario = 3.0;
+      textoProcessoConcluido = "Secagem Concluída";
+      textoIniciarProcesso = "Iniciar Secagem";
+    } else {
+      return Container(); // Retorna um widget vazio se o processo não for reconhecido
+    }
+
+    Color buttonColor =
+        lote.status == statusNecessario ? Colors.blue : Colors.grey[300]!;
+    String buttonText = lote.status == statusNecessario
+        ? textoProcessoConcluido
+        : textoIniciarProcesso;
 
     return GestureDetector(
       onTap: () {
-        // Adicione a lógica que você deseja quando o botão do lote for clicado
-        print('Lote: ${lote.nome} foi clicado');
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return Lavagem(
-              onSave: () {},
+        if (lote.status == statusNecessario) {
+          // Exibe um diálogo informando que o processo já foi concluído
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text('Atenção'),
+                content:
+                    Text('O processo de $processo do lote já foi concluído.'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Text('OK'),
+                  ),
+                ],
+              );
+            },
+          );
+        } else {
+          // Verifica os status dos processos anteriores
+          if (pedido.recebimento == 1.0 && pedido.classificacao == 1.0) {
+            // Define o que ocorre ao iniciar cada processo específico
+            if (processo == "Lavagem") {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return Lavagem(onSave: () {
+                    setState(() {
+                      lote.status =
+                          1.0; // Atualiza o status para indicar conclusão de Lavagem
+                    });
+                  });
+                },
+              );
+            } else if (processo == "Centrifugação") {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return Centrifugacao(onSave: () {
+                    setState(() {
+                      lote.status =
+                          2.0; // Atualiza o status para indicar conclusão de Centrifugação
+                    });
+                  });
+                },
+              );
+            } else if (processo == "Secagem") {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return Secagem(onSave: () {
+                    setState(() {
+                      lote.status =
+                          3.0; // Atualiza o status para indicar conclusão de Secagem
+                    });
+                  });
+                },
+              );
+            }
+          } else {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: Text('Atenção'),
+                  content: Text(
+                      'Para iniciar o processo de $processo, verifique os status dos processos anteriores. É necessário que Recebimento e Classificação estejam concluídos.'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Text('OK'),
+                    ),
+                  ],
+                );
+              },
             );
-          },
-        );
+          }
+        }
       },
       child: Container(
         decoration: BoxDecoration(
-          color: loteColor,
+          color: buttonColor,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: Colors.grey[300]!, width: 1),
         ),
+        padding: EdgeInsets.symmetric(vertical: 20),
         child: Center(
-          child: Text(
-            lote.nome,
-            style: TextStyle(color: Colors.black),
-          ),
+          child: Text(buttonText, style: TextStyle(color: Colors.black)),
         ),
       ),
     );
+  }
+
+  double calcularProgressoLavagem(List<Lote> lotes) {
+    int totalLotes = lotes.length;
+    int lotesConcluidos = lotes.where((lote) => lote.status == 1.0).length;
+
+    return totalLotes == 0 ? 0.0 : lotesConcluidos / totalLotes;
+  }
+
+  // Verifica se todos os lotes estão concluídos
+  bool todosLotesConcluidos(Pedido pedido) {
+    for (var lote in pedido.lotes) {
+      if (lote.status != 1.0) {
+        // 1.0 indica que o lote ainda não está concluído
+        return false;
+      }
+    }
+
+    // Se todos os lotes estão concluídos, atualize pedido.lavagem
+    pedido.lavagem = 1.0;
+    return true;
   }
 }

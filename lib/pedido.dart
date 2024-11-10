@@ -1,36 +1,74 @@
+import 'package:tcc/lote.dart';
+
 class Pedido {
-  final String cliente;
-  final String pedido;
+  // informação dos estatus dos processos
+  //0 aguardando, 1 representa processando, 2 representa concluído
+  late int recebimentoStatus;
+  late int classificacaoStatus;
+  late int lavagemStatus;
+  late int centrifugacaoStatus;
+  late int secagemStatus;
+  late int passadoriaStatus;
+  late int finalizacaoStatus;
+  late int retornoStatus;
+
+  //dados recebimento
+  final int codCliente;
+  late String numPedido;
+  final String dataColeta;
+  final String dataRecebimento;
+  final String horaRecebimento;
+  final String dataLimite;
   final String dataEntrega;
   final double pesoTotal;
+  late String recebimentoObs;
 
-  // 0 representa não iniciado, 1 representa iniciado, 2 representa concluído
+  //dados classificação
+  late int totalLotes;
+  late String classificacaoObs;
+  late String classificacaoDataInicio;
+  late String classificacaoHoraInicio;
+  late String classificacaoDataFinal;
+  late String classificacaoHoraFinal;
 
-  int recebimento;
-  int classificacao;
-  int passadoria;
-  int finalizacao;
-  int retorno;
+  //dados da passadoria
+  late String passadoriaEquipamento;
+  late String passadoriaTemperatura;
+  late String passadoriaDataInicio;
+  late String passadoriaHoraInicio;
+  late String passadoriaDataFinal;
+  late String passadoriaHoraFinal;
+  late String passadoriaObs;
 
-  final List<Lote> lotes;
+  //dados da finalizacao
+  late String finalizacaoReparo;
+  late String finalizacaoEtiquetamento;
+  late String finalizacaoTipoEmbalagem;
+  late String finalizacaoVolumes;
+  late String finalizacaoControleQualidade;
+  late String finalizacaoDataInicio;
+  late String finalizacaoHoraInicio;
+  late String finalizacaoDataFinal;
+  late String finalizacaoHoraFinal;
+  late String finalizacaoObs;
 
-  Pedido({
-    required this.cliente,
-    required this.pedido,
-    required this.dataEntrega,
-    required this.pesoTotal,
-    required this.passadoria,
-    required this.finalizacao,
-    required this.retorno,
-    required this.lotes,
-    this.recebimento = 0,
-    this.classificacao = 0,
-  });
-}
+  //dados da retorno
+  late String retornoData;
+  late String retornoHoraCarregamento;
+  late String retornoVolumes;
+  late String retornoNomeMotorista;
+  late String retornoVeiculo;
+  late String retornoPlaca;
+  late String retornoObs;
 
-class Lote {
-  final String nome;
-  int status; // 0 representa iniciado, 1 representa concluído
+  late List<Lote> lotes;
 
-  Lote({required this.nome, required this.status});
+  Pedido(
+      {required this.codCliente,
+      required this.dataColeta,
+      required this.dataRecebimento,
+      required this.horaRecebimento,
+      required this.dataLimite,
+      required this.dataEntrega,
+      required this.pesoTotal});
 }
