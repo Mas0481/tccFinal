@@ -14,9 +14,9 @@ class AreaPreparacao extends StatelessWidget {
         pedido: 'Pedido 001',
         dataEntrega: '10/10/2024',
         pesoTotal: 150.0,
-        recebimento: 0,
-        classificacao: 0,
-        lavagem: 0,
+        recebimento: 1,
+        classificacao: 1,
+        lavagem: 1,
         lotes: [
           Lote(nome: 'Lote 1', status: 1.0),
           Lote(nome: 'Lote 2', status: 1.0),
@@ -26,7 +26,6 @@ class AreaPreparacao extends StatelessWidget {
           Lote(nome: 'Lote 6', status: 0.0),
         ],
       ),
-      // Outros pedidos...
     ];
 
     return MaterialApp(
