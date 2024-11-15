@@ -307,6 +307,8 @@ class _SecagemState extends State<Secagem> {
                       onPressed: () {
                         // Lógica do botão OK
                         Navigator.pop(context);
+                        widget
+                            .onSave(); // Chama o callback para atualizar o status do lote
                       },
                       style: ElevatedButton.styleFrom(
                         padding: EdgeInsets.symmetric(vertical: 40),

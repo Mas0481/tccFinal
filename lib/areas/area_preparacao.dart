@@ -5,25 +5,39 @@ import 'package:tcc/forms/form_secagem.dart';
 import 'dart:async';
 import 'package:tcc/util/custom_appbar.dart';
 
+import '../lote.dart';
+import '../pedido.dart';
+
 class AreaPreparacao extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     List<Pedido> pedidos = [
       Pedido(
-        cliente: 'Cliente A',
-        pedido: 'Pedido 001',
-        dataEntrega: '10/10/2024',
+        codCliente: 001,
+        nomeCliente: 'Cliente A',
+        numPedido: 'Pedido 001',
+        dataColeta: '05/10/2024',
+        dataRecebimento: '05/10/2024',
+        horaRecebimento: '08:00',
+        dataLimite: '09/10/2024',
+        dataEntrega: '10/10/2025',
         pesoTotal: 150.0,
-        recebimento: 1,
-        classificacao: 1,
-        lavagem: 1,
+        recebimentoStatus: 1,
+        classificacaoStatus: 1,
+        lavagemStatus: 1,
         lotes: [
-          Lote(nome: 'Lote 1', status: 1.0),
-          Lote(nome: 'Lote 2', status: 1.0),
-          Lote(nome: 'Lote 3', status: 0.0),
-          Lote(nome: 'Lote 4', status: 1.0),
-          Lote(nome: 'Lote 5', status: 1.0),
-          Lote(nome: 'Lote 6', status: 0.0),
+          Lote(
+            pedidoNum: 001,
+            loteNum: 001,
+            loteCentrifugacaoStatus: 0,
+            loteSecagemStatus: 0,
+          ),
+          Lote(
+            pedidoNum: 001,
+            loteNum: 002,
+            loteSecagemStatus: 0,
+            loteCentrifugacaoStatus: 0,
+          )
         ],
       ),
     ];
@@ -32,38 +46,6 @@ class AreaPreparacao extends StatelessWidget {
       home: AreaPreparacaoPage(pedidos: pedidos),
     );
   }
-}
-
-class Pedido {
-  final String cliente;
-  final String pedido;
-  final String dataEntrega;
-  final double pesoTotal;
-  final List<Lote> lotes;
-  double recebimento;
-  double classificacao;
-  double lavagem;
-
-  Pedido({
-    required this.cliente,
-    required this.pedido,
-    required this.dataEntrega,
-    required this.pesoTotal,
-    required this.lotes,
-    this.recebimento = 0,
-    this.classificacao = 0,
-    this.lavagem = 0,
-  });
-}
-
-class Lote {
-  final String nome;
-  double status;
-
-  Lote({
-    required this.nome,
-    required this.status,
-  });
 }
 
 class AreaPreparacaoPage extends StatefulWidget {
@@ -133,7 +115,11 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
   }
 
   Widget buildPedidoCard(Pedido pedido) {
-    double progressoLavagem = calcularProgressoLavagem(pedido.lotes);
+    double progressoLavagem = calcularProgresso(pedido.lotes, "Lavagem");
+    double progressoCentrifugacao =
+        calcularProgresso(pedido.lotes, "Centrifugação");
+    double progressoSecagem = calcularProgresso(pedido.lotes, "Secagem");
+    print("Progresso lavagem: $progressoLavagem");
     return Container(
       width: MediaQuery.of(context).size.width *
           0.25, // Cada elemento ocupa 25% da largura
@@ -154,10 +140,10 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Cliente: ${pedido.cliente}',
+                  Text('Cliente: ${pedido.nomeCliente}',
                       style:
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                  Text('Pedido: ${pedido.pedido}',
+                  Text('Pedido: ${pedido.numPedido}',
                       style:
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
                   SizedBox(height: 5),
@@ -174,7 +160,8 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
               // Barras de Progresso
               Column(
                 children: [
-                  buildProgressBar1('Centrifugação', progressoLavagem, pedido),
+                  buildProgressBar1(
+                      'Centrifugação', progressoCentrifugacao, pedido),
                   SizedBox(height: 10),
                 ],
               ),
@@ -201,7 +188,7 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
                 ),
               ),
               SizedBox(height: 10),
-              buildProgressBar1('Secagem', progressoLavagem, pedido),
+              buildProgressBar1('Secagem', progressoSecagem, pedido),
               SizedBox(height: 10),
 
               // Lotes - dois por linha usando GridView
@@ -233,47 +220,6 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
   }
 
   // Barra de progresso animada que atua como um botão
-  Widget buildProgressBar(String label, double progress) {
-    return InkWell(
-        onTap: () {
-          print('Barra de progresso $label pressionada');
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return Centrifugacao(
-                onSave: () {},
-              );
-            },
-          );
-          print('$label clicado!'); // Exemplo de ação: imprimir no console
-        },
-        borderRadius:
-            BorderRadius.circular(8), // Adiciona um raio de borda ao botão
-        child: Stack(
-          children: [
-            // ProgressBar
-            LinearProgressIndicator(
-              value: progress,
-              backgroundColor: Colors.grey[200],
-              borderRadius: BorderRadius.circular(8),
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
-              minHeight: 67, // Aumenta a altura da barra para acomodar o rótulo
-            ),
-            // Texto sobreposto
-            Positioned.fill(
-              child: Center(
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    color: Colors.black, // Cor do texto
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ));
-  }
-
   Widget buildProgressBar1(String label, double progress, Pedido pedido) {
     // Verifica se todos os lotes estão concluídos e ajusta o label
     String displayLabel =
@@ -281,14 +227,16 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
 
     return InkWell(
       onTap: () {
-        if (pedido.recebimento != 1.0 || pedido.classificacao != 1.0) {
+        if (pedido.recebimentoStatus != 1 ||
+            pedido.classificacaoStatus != 1 ||
+            pedido.lavagemStatus == 0) {
           showDialog(
             context: context,
             builder: (BuildContext context) {
               return AlertDialog(
                 title: Text('Atenção'),
                 content: Text(
-                    'Para iniciar o processo de lavagem, verifique se o recebimento e a classificação estão completos.'),
+                    'Para iniciar o processo de Centrifugação deste lote, verifique se o recebimento e a classificação estão completos e lavagem no minimo iniciado.'),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
@@ -304,7 +252,8 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
             builder: (BuildContext context) {
               return AlertDialog(
                 title: Text('Atenção'),
-                content: Text('Todos os lotes de lavagem foram concluídos!'),
+                content:
+                    Text('Todos os lotes de Centrifugação foram concluídos!'),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
@@ -321,7 +270,7 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
               return AlertDialog(
                 title: Text('Atenção'),
                 content: Text(
-                    'Para iniciar o processo de lavagem, use o botão do Lote desejado.'),
+                    'Para iniciar o processo, use o botão do Lote desejado.'),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
@@ -362,35 +311,43 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
 
   Widget buildLoteButton(Lote lote, Pedido pedido, String processo) {
     // Define o status necessário e o texto padrão com base no processo
-    double statusNecessario;
-    String textoProcessoConcluido;
-    String textoIniciarProcesso;
+    late Color buttonColor = Colors.grey[300]!;
+    late String buttonText = 'Iniciar Lote';
+    print('status secagem: ${lote.loteSecagemStatus}');
 
-    if (processo == "Lavagem") {
-      statusNecessario = 1.0;
-      textoProcessoConcluido = "Lavagem Concluída";
-      textoIniciarProcesso = "Iniciar Lavagem";
-    } else if (processo == "Centrifugação") {
-      statusNecessario = 2.0;
-      textoProcessoConcluido = "Centrifugação Concluída";
-      textoIniciarProcesso = "Iniciar Centr";
-    } else if (processo == "Secagem") {
-      statusNecessario = 3.0;
-      textoProcessoConcluido = "Secagem Concluída";
-      textoIniciarProcesso = "Iniciar Secagem";
-    } else {
-      return Container(); // Retorna um widget vazio se o processo não for reconhecido
+    if (processo == "Centrifugação" && lote.loteCentrifugacaoStatus == 1) {
+      buttonColor = Colors.blue;
+      buttonText = "Lote Concluído";
+      print("entrou no if da cor centrifugacao");
     }
 
-    Color buttonColor =
-        lote.status == statusNecessario ? Colors.blue : Colors.grey[300]!;
-    String buttonText = lote.status == statusNecessario
-        ? textoProcessoConcluido
-        : textoIniciarProcesso;
+    if (processo == "Secagem" && lote.loteSecagemStatus == 1) {
+      buttonColor = Colors.blue;
+      buttonText = "Lote Concluído";
+      print("entrou no if da cor secagem");
+    }
 
     return GestureDetector(
       onTap: () {
-        if (lote.status == statusNecessario) {
+        if (processo == "Centrifugação" && lote.loteCentrifugacaoStatus == 1) {
+          // Exibe um diálogo informando que o processo já foi concluído
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text('Atenção'),
+                content:
+                    Text('O processo de $processo do lote já foi concluído.'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Text('OK'),
+                  ),
+                ],
+              );
+            },
+          );
+        } else if (processo == "Secagem" && lote.loteSecagemStatus == 1) {
           // Exibe um diálogo informando que o processo já foi concluído
           showDialog(
             context: context,
@@ -410,7 +367,9 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
           );
         } else {
           // Verifica os status dos processos anteriores
-          if (pedido.recebimento == 1.0 && pedido.classificacao == 1.0) {
+          if (pedido.recebimentoStatus == 1.0 &&
+              pedido.classificacaoStatus == 1.0 &&
+              pedido.lavagemStatus != 0.0) {
             // Define o que ocorre ao iniciar cada processo específico
             if (processo == "Lavagem") {
               showDialog(
@@ -418,8 +377,9 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
                 builder: (BuildContext context) {
                   return Lavagem(onSave: () {
                     setState(() {
-                      lote.status =
-                          1.0; // Atualiza o status para indicar conclusão de Lavagem
+                      print("entrou no setstate da lavagem");
+                      pedido.lavagemStatus =
+                          1; // Atualiza o status para indicar conclusão de Lavagem
                     });
                   });
                 },
@@ -430,8 +390,9 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
                 builder: (BuildContext context) {
                   return Centrifugacao(onSave: () {
                     setState(() {
-                      lote.status =
-                          2.0; // Atualiza o status para indicar conclusão de Centrifugação
+                      lote.loteCentrifugacaoStatus =
+                          1; // Atualiza o status para indicar conclusão de Centrifugação                    1; // Atualiza o status para indicar conclusão de Centrifugação
+                      print('entrou no setstate da centrifugacao');
                     });
                   });
                 },
@@ -442,8 +403,10 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
                 builder: (BuildContext context) {
                   return Secagem(onSave: () {
                     setState(() {
-                      lote.status =
-                          3.0; // Atualiza o status para indicar conclusão de Secagem
+                      print("entrou no setstate do secagem");
+                      lote.loteSecagemStatus =
+                          1; // Atualiza o status para indicar conclusão de Secagem
+                      print('entrou no setstate do secagem');
                     });
                   });
                 },
@@ -456,7 +419,7 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
                 return AlertDialog(
                   title: Text('Atenção'),
                   content: Text(
-                      'Para iniciar o processo de $processo, verifique os status dos processos anteriores. É necessário que Recebimento e Classificação estejam concluídos.'),
+                      'Para iniciar o processo de $processo, verifique os status dos processos anteriores. É necessário que Recebimento e Classificação estejam concluídos e Lavagem tenha sido iniciado.'),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(),
@@ -483,24 +446,33 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
     );
   }
 
-  double calcularProgressoLavagem(List<Lote> lotes) {
+  double calcularProgresso(List<Lote> lotes, String processo) {
     int totalLotes = lotes.length;
-    int lotesConcluidos = lotes.where((lote) => lote.status == 1.0).length;
-
-    return totalLotes == 0 ? 0.0 : lotesConcluidos / totalLotes;
+    print("Total de lotes: $totalLotes");
+    if (processo == "Centrifugação") {
+      int lotesCentrifugacaoConcluidos =
+          lotes.where((lote) => lote.loteCentrifugacaoStatus == 1).length;
+      print(totalLotes == 0 ? 0.0 : lotesCentrifugacaoConcluidos / totalLotes);
+      return totalLotes == 0 ? 0.0 : lotesCentrifugacaoConcluidos / totalLotes;
+    } else {
+      int lotesSecagemConcluidos =
+          lotes.where((lote) => lote.loteSecagemStatus == 1).length;
+      print(totalLotes == 0 ? 0.0 : lotesSecagemConcluidos / totalLotes);
+      return totalLotes == 0 ? 0.0 : lotesSecagemConcluidos / totalLotes;
+    }
   }
 
   // Verifica se todos os lotes estão concluídos
   bool todosLotesConcluidos(Pedido pedido) {
     for (var lote in pedido.lotes) {
-      if (lote.status != 1.0) {
+      if (lote.loteStatus != 1) {
         // 1.0 indica que o lote ainda não está concluído
         return false;
       }
     }
 
     // Se todos os lotes estão concluídos, atualize pedido.lavagem
-    pedido.lavagem = 1.0;
+    pedido.lavagemStatus = 1;
     return true;
   }
 }
