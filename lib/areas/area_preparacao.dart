@@ -22,8 +22,8 @@ class AreaPreparacao extends StatelessWidget {
         dataLimite: '09/10/2024',
         dataEntrega: '10/10/2025',
         pesoTotal: 150.0,
-        recebimentoStatus: 1,
-        classificacaoStatus: 1,
+        recebimentoStatus: 2,
+        classificacaoStatus: 2,
         lavagemStatus: 1,
         lotes: [
           Lote(
@@ -115,11 +115,10 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
   }
 
   Widget buildPedidoCard(Pedido pedido) {
-    double progressoLavagem = calcularProgresso(pedido.lotes, "Lavagem");
-    double progressoCentrifugacao =
-        calcularProgresso(pedido.lotes, "Centrifugação");
-    double progressoSecagem = calcularProgresso(pedido.lotes, "Secagem");
-    print("Progresso lavagem: $progressoLavagem");
+    //double progressoLavagem = calcularProgresso(pedido, "Lavagem");
+    double progressoCentrifugacao = calcularProgresso(pedido, "Centrifugação");
+    double progressoSecagem = calcularProgresso(pedido, "Secagem");
+    //print("Progresso lavagem: $progressoLavagem");
     return Container(
       width: MediaQuery.of(context).size.width *
           0.25, // Cada elemento ocupa 25% da largura
@@ -221,32 +220,17 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
 
   // Barra de progresso animada que atua como um botão
   Widget buildProgressBar1(String label, double progress, Pedido pedido) {
+    String displayLabel = label;
     // Verifica se todos os lotes estão concluídos e ajusta o label
-    String displayLabel =
-        todosLotesConcluidos(pedido) ? "$label Concluído" : label;
-
+    if (label == 'Centrifugação') {
+      displayLabel =
+          pedido.centrifugacaoStatus == 2 ? "$label Concluído" : label;
+    } else {
+      displayLabel = pedido.secagemStatus == 2 ? "$label Concluído" : label;
+    }
     return InkWell(
       onTap: () {
-        if (pedido.recebimentoStatus != 1 ||
-            pedido.classificacaoStatus != 1 ||
-            pedido.lavagemStatus == 0) {
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: Text('Atenção'),
-                content: Text(
-                    'Para iniciar o processo de Centrifugação deste lote, verifique se o recebimento e a classificação estão completos e lavagem no minimo iniciado.'),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: Text('OK'),
-                  ),
-                ],
-              );
-            },
-          );
-        } else if (todosLotesConcluidos(pedido)) {
+        if (pedido.centrifugacaoStatus == 2) {
           showDialog(
             context: context,
             builder: (BuildContext context) {
@@ -263,6 +247,22 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
               );
             },
           );
+        } else if (pedido.secagemStatus == 2) {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text('Atenção'),
+                content: Text('Todos os lotes de Secagem foram concluídos!'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Text('OK'),
+                  ),
+                ],
+              );
+            },
+          );
         } else {
           showDialog(
             context: context,
@@ -270,7 +270,7 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
               return AlertDialog(
                 title: Text('Atenção'),
                 content: Text(
-                    'Para iniciar o processo, use o botão do Lote desejado.'),
+                    'Para iniciar o processo de $label, use o botão do Lote desejado.'),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
@@ -313,23 +313,24 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
     // Define o status necessário e o texto padrão com base no processo
     late Color buttonColor = Colors.grey[300]!;
     late String buttonText = 'Iniciar Lote';
-    print('status secagem: ${lote.loteSecagemStatus}');
+    print('status do lote secagem: ${lote.loteSecagemStatus}');
+    print('status do lote centrifugação: ${lote.loteCentrifugacaoStatus}');
+    print('status do processo secagem: ${pedido.secagemStatus}');
+    print('status do processo centrifugação: ${pedido.centrifugacaoStatus}');
 
-    if (processo == "Centrifugação" && lote.loteCentrifugacaoStatus == 1) {
+    if (processo == "Centrifugação" && lote.loteCentrifugacaoStatus == 2) {
       buttonColor = Colors.blue;
       buttonText = "Lote Concluído";
-      print("entrou no if da cor centrifugacao");
     }
 
-    if (processo == "Secagem" && lote.loteSecagemStatus == 1) {
+    if (processo == "Secagem" && lote.loteSecagemStatus == 2) {
       buttonColor = Colors.blue;
       buttonText = "Lote Concluído";
-      print("entrou no if da cor secagem");
     }
 
     return GestureDetector(
       onTap: () {
-        if (processo == "Centrifugação" && lote.loteCentrifugacaoStatus == 1) {
+        if (processo == "Centrifugação" && lote.loteCentrifugacaoStatus == 2) {
           // Exibe um diálogo informando que o processo já foi concluído
           showDialog(
             context: context,
@@ -347,7 +348,7 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
               );
             },
           );
-        } else if (processo == "Secagem" && lote.loteSecagemStatus == 1) {
+        } else if (processo == "Secagem" && lote.loteSecagemStatus == 2) {
           // Exibe um diálogo informando que o processo já foi concluído
           showDialog(
             context: context,
@@ -363,73 +364,75 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
                   ),
                 ],
               );
+            },
+          );
+        } else if (processo == "Lavagem" && lote.loteSecagemStatus == 0) {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return Lavagem(onSave: () {
+                setState(() {
+                  print("entrou no setstate da lavagem");
+                  pedido.lavagemStatus =
+                      1; // Atualiza o status para indicar conclusão de Lavagem
+                });
+              });
+            },
+          );
+        } else if (processo == "Centrifugação" &&
+            lote.loteCentrifugacaoStatus == 0.0 &&
+            pedido.recebimentoStatus != 0.0 &&
+            pedido.classificacaoStatus != 0.0 &&
+            pedido.lavagemStatus != 0.0) {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return Centrifugacao(onSave: () {
+                setState(() {
+                  lote.loteCentrifugacaoStatus =
+                      2; // Atualiza o status para indicar conclusão do lote de Centrifugação
+                  pedido.centrifugacaoStatus =
+                      1; // Atualiza o status para indicar processode Secagem iniciado
+                });
+              });
+            },
+          );
+        } else if (processo == "Secagem" &&
+            lote.loteSecagemStatus == 0 &&
+            pedido.recebimentoStatus != 0 &&
+            pedido.classificacaoStatus != 0 &&
+            pedido.lavagemStatus != 00 &&
+            pedido.centrifugacaoStatus != 00) {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return Secagem(onSave: () {
+                setState(() {
+                  lote.loteSecagemStatus =
+                      2; // Atualiza o status para indicar conclusão do lote de Secagem
+                  pedido.secagemStatus =
+                      1; // Atualiza o status para indicar processode Secagem iniciado
+                });
+              });
             },
           );
         } else {
-          // Verifica os status dos processos anteriores
-          if (pedido.recebimentoStatus == 1.0 &&
-              pedido.classificacaoStatus == 1.0 &&
-              pedido.lavagemStatus != 0.0) {
-            // Define o que ocorre ao iniciar cada processo específico
-            if (processo == "Lavagem") {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return Lavagem(onSave: () {
-                    setState(() {
-                      print("entrou no setstate da lavagem");
-                      pedido.lavagemStatus =
-                          1; // Atualiza o status para indicar conclusão de Lavagem
-                    });
-                  });
-                },
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text('Atenção'),
+                content: Text(
+                    'Para iniciar o processo de $processo, verifique os status dos processos anteriores. É necessário que tenham pelo menos sido iniciado.'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Text('OK'),
+                  ),
+                ],
               );
-            } else if (processo == "Centrifugação") {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return Centrifugacao(onSave: () {
-                    setState(() {
-                      lote.loteCentrifugacaoStatus =
-                          1; // Atualiza o status para indicar conclusão de Centrifugação                    1; // Atualiza o status para indicar conclusão de Centrifugação
-                      print('entrou no setstate da centrifugacao');
-                    });
-                  });
-                },
-              );
-            } else if (processo == "Secagem") {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return Secagem(onSave: () {
-                    setState(() {
-                      print("entrou no setstate do secagem");
-                      lote.loteSecagemStatus =
-                          1; // Atualiza o status para indicar conclusão de Secagem
-                      print('entrou no setstate do secagem');
-                    });
-                  });
-                },
-              );
-            }
-          } else {
-            showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                  title: Text('Atenção'),
-                  content: Text(
-                      'Para iniciar o processo de $processo, verifique os status dos processos anteriores. É necessário que Recebimento e Classificação estejam concluídos e Lavagem tenha sido iniciado.'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: Text('OK'),
-                    ),
-                  ],
-                );
-              },
-            );
-          }
+            },
+          );
         }
       },
       child: Container(
@@ -446,33 +449,70 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
     );
   }
 
-  double calcularProgresso(List<Lote> lotes, String processo) {
-    int totalLotes = lotes.length;
-    print("Total de lotes: $totalLotes");
+  double calcularProgresso(Pedido pedido, String processo) {
+    int totalLotes = pedido.lotes.length;
+    print("Total de lotes no pedido: $totalLotes");
+
+    if (totalLotes == 0) {
+      return 0.0; // Evita divisão por zero
+    }
+
     if (processo == "Centrifugação") {
-      int lotesCentrifugacaoConcluidos =
-          lotes.where((lote) => lote.loteCentrifugacaoStatus == 1).length;
-      print(totalLotes == 0 ? 0.0 : lotesCentrifugacaoConcluidos / totalLotes);
-      return totalLotes == 0 ? 0.0 : lotesCentrifugacaoConcluidos / totalLotes;
-    } else {
+      int lotesCentrifugacaoConcluidos = pedido.lotes
+          .where((lote) => lote.loteCentrifugacaoStatus == 2)
+          .length;
+
+      double progresso = lotesCentrifugacaoConcluidos / totalLotes;
+
+      if (progresso == 1.0) {
+        pedido.centrifugacaoStatus =
+            2; // Atualiza o status do pedido para concluído
+      }
+
+      return progresso;
+    } else if (processo == "Secagem") {
       int lotesSecagemConcluidos =
-          lotes.where((lote) => lote.loteSecagemStatus == 1).length;
-      print(totalLotes == 0 ? 0.0 : lotesSecagemConcluidos / totalLotes);
-      return totalLotes == 0 ? 0.0 : lotesSecagemConcluidos / totalLotes;
+          pedido.lotes.where((lote) => lote.loteSecagemStatus == 2).length;
+
+      double progresso = lotesSecagemConcluidos / totalLotes;
+
+      if (progresso == 1.0) {
+        pedido.secagemStatus = 2; // Atualiza o status do pedido para concluído
+      }
+
+      return progresso;
+    } else {
+      throw ArgumentError("Processo inválido: $processo");
     }
   }
 
-  // Verifica se todos os lotes estão concluídos
-  bool todosLotesConcluidos(Pedido pedido) {
+  // Verifica se todos os lotes estão concluído
+
+  /*  bool todosLotesConcluidos(Pedido pedido, String processo) {
+    bool centrifugacao = false;
+    bool secagem = false;
+    bool retorno = false;
+
     for (var lote in pedido.lotes) {
-      if (lote.loteStatus != 1) {
-        // 1.0 indica que o lote ainda não está concluído
-        return false;
+      if (processo == 'Centrifugacao') {
+        if (lote.loteCentrifugacaoStatus != 1) {
+          centrifugacao = false;
+          break;
+        } else {
+          pedido.centrifugacaoStatus = 2;
+        }
+      } else if (processo == 'Secagem') {
+        if (lote.loteSecagemStatus != 1) {
+          secagem = false;
+          break;
+        } else {
+          pedido.secagemStatus = 2;
+        }
       }
     }
-
-    // Se todos os lotes estão concluídos, atualize pedido.lavagem
-    pedido.lavagemStatus = 1;
-    return true;
-  }
+    if (centrifugacao && secagem) {
+      retorno = true;
+    }
+    return retorno;
+  } */
 }

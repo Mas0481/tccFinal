@@ -2,7 +2,7 @@ class Lote {
   final int pedidoNum;
   final int loteNum;
 
-  // 0 representa aguardando, 1 representa iniciado, 2 representa processando, 3 representa concluído
+  // 0 representa aguardando, 1 representa iniciado, 2 representa concluído
   int loteStatus;
 
   // Dados da lavagem
