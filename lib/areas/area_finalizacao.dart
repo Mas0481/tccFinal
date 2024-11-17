@@ -4,6 +4,8 @@ import 'package:tcc/forms/form_passadoria.dart';
 import 'package:tcc/forms/form_retorno.dart'; // Novo import
 import 'dart:async';
 import 'package:tcc/util/custom_appbar.dart';
+import '../lote.dart';
+import '../pedido.dart';
 
 class AreaFinalizacao extends StatelessWidget {
   // final PageController _pageController =
@@ -13,88 +15,39 @@ class AreaFinalizacao extends StatelessWidget {
   Widget build(BuildContext context) {
     List<Pedido> pedidos = [
       Pedido(
-        cliente: 'Cliente A',
-        pedido: 'Pedido 001',
-        dataEntrega: '10/10/2024',
+        codCliente: 001,
+        nomeCliente: 'Cliente A',
+        numPedido: 'Pedido 001',
+        dataColeta: '05/10/2024',
+        dataRecebimento: '05/10/2024',
+        horaRecebimento: '08:00',
+        dataLimite: '09/10/2024',
+        dataEntrega: '10/10/2025',
         pesoTotal: 150.0,
-        passadoria: 0,
-        finalizacao: 0,
-        retorno: 0,
+        recebimentoStatus: 2,
+        classificacaoStatus: 2,
+        lavagemStatus: 1,
         lotes: [
-          Lote(nome: 'Lote 1', status: 1), // concluido
-          Lote(nome: 'Lote 2', status: 1), // concluido
-          Lote(nome: 'Lote 3', status: 0), // não iniciado
+          Lote(
+            pedidoNum: 001,
+            loteNum: 001,
+            loteCentrifugacaoStatus: 0,
+            loteSecagemStatus: 0,
+          ),
+          Lote(
+            pedidoNum: 001,
+            loteNum: 002,
+            loteSecagemStatus: 0,
+            loteCentrifugacaoStatus: 0,
+          )
         ],
       ),
-      Pedido(
-        cliente: 'Cliente A',
-        pedido: 'Pedido 001',
-        dataEntrega: '10/10/2024',
-        pesoTotal: 150.0,
-        passadoria: 0,
-        finalizacao: 0,
-        retorno: 0,
-        lotes: [
-          Lote(nome: 'Lote 1', status: 0), // 100%
-          Lote(nome: 'Lote 2', status: 0), // 100%
-          Lote(nome: 'Lote 3', status: 00), // 66%
-        ],
-      ),
-
-      Pedido(
-        cliente: 'Cliente A',
-        pedido: 'Pedido 001',
-        dataEntrega: '10/10/2024',
-        pesoTotal: 150.0,
-        passadoria: 0,
-        finalizacao: 0,
-        retorno: 0,
-        lotes: [
-          Lote(nome: 'Lote 1', status: 0), // 100%
-          Lote(nome: 'Lote 2', status: 0), // 100%
-          Lote(nome: 'Lote 3', status: 1), // 66%
-        ],
-      ),
-
-      // Adicione mais pedidos conforme necessário
     ];
 
     return MaterialApp(
       home: AreaFinalizacaoPage(pedidos: pedidos),
     );
   }
-}
-
-class Pedido {
-  final String cliente;
-  final String pedido;
-  final String dataEntrega;
-  final double pesoTotal;
-
-  // 0 representa não iniciado, 1 representa iniciado, 2 representa concluído
-  int passadoria;
-  int finalizacao;
-  int retorno;
-
-  final List<Lote> lotes;
-
-  Pedido({
-    required this.cliente,
-    required this.pedido,
-    required this.dataEntrega,
-    required this.pesoTotal,
-    required this.passadoria,
-    required this.finalizacao,
-    required this.retorno,
-    required this.lotes,
-  });
-}
-
-class Lote {
-  final String nome;
-  int status; // 0 representa iniciado, 1 representa concluído
-
-  Lote({required this.nome, required this.status});
 }
 
 class AreaFinalizacaoPage extends StatefulWidget {
@@ -174,9 +127,9 @@ class _AreaFinalizacaoPageState extends State<AreaFinalizacaoPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Cliente: ${pedido.cliente}',
+              Text('Cliente: ${pedido.nomeCliente}',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-              Text('Pedido: ${pedido.pedido}',
+              Text('Pedido: ${pedido.numPedido}',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
               SizedBox(height: 5),
               Text('Data Entrega: ${pedido.dataEntrega}',
@@ -184,15 +137,18 @@ class _AreaFinalizacaoPageState extends State<AreaFinalizacaoPage> {
               Text('Peso Total: ${pedido.pesoTotal}kg',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
               SizedBox(height: 6),
-              buildProgressBar('Passadoria', pedido.passadoria.toDouble()),
+              buildProgressBar(
+                  'Passadoria', pedido.passadoriaStatus.toDouble(), pedido),
               SizedBox(height: 10),
               buildLoteRow(pedido, 'Passadoria'),
               SizedBox(height: 10),
-              buildProgressBar('Finalização', pedido.finalizacao.toDouble()),
+              buildProgressBar(
+                  'Finalização', pedido.finalizacaoStatus.toDouble(), pedido),
               SizedBox(height: 10),
               buildLoteRow(pedido, 'Finalização'),
               SizedBox(height: 10),
-              buildProgressBar('Retorno', pedido.retorno.toDouble()),
+              buildProgressBar(
+                  'Retorno', pedido.retornoStatus.toDouble(), pedido),
               SizedBox(height: 10),
               buildLoteRow(pedido, 'Retorno'),
             ],
@@ -202,9 +158,84 @@ class _AreaFinalizacaoPageState extends State<AreaFinalizacaoPage> {
     );
   }
 
-  Widget buildProgressBar(String label, double progress) {
+  Widget buildProgressBar(String label, double progress, Pedido pedido) {
+    String displayLabel = label;
+    // Verifica se todos os lotes estão concluídos e ajusta o label
+    if (label == 'Passadoria') {
+      displayLabel = pedido.passadoriaStatus == 2 ? "$label Concluído" : label;
+    } else if (label == 'Finalização') {
+      displayLabel = pedido.finalizacaoStatus == 2 ? "$label Concluído" : label;
+    } else if (label == 'Retorno') {
+      displayLabel = pedido.retornoStatus == 2 ? "$label Concluído" : label;
+    }
     return InkWell(
       onTap: () {
+        if (label == 'Passadoria' && pedido.passadoriaStatus == 2) {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text('Atenção'),
+                content: Text('Processo Concluido!'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Text('OK'),
+                  ),
+                ],
+              );
+            },
+          );
+        } else if (label == 'Finalização' && pedido.finalizacaoStatus == 2) {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text('Atenção'),
+                content: Text('Processo Concluido!'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Text('OK'),
+                  ),
+                ],
+              );
+            },
+          );
+        } else if (label == 'Retorno' && pedido.retornoStatus == 2) {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text('Atenção'),
+                content: Text('Processo Concluido!'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Text('OK'),
+                  ),
+                ],
+              );
+            },
+          );
+        } else {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text('Atenção'),
+                content: Text(
+                    'Para Iniciar o Processo Clique no Botão Registrar Inicio!'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Text('OK'),
+                  ),
+                ],
+              );
+            },
+          );
+        }
         print('Barra de progresso $label pressionada');
       },
       borderRadius: BorderRadius.circular(8),
@@ -220,7 +251,7 @@ class _AreaFinalizacaoPageState extends State<AreaFinalizacaoPage> {
           Positioned.fill(
             child: Center(
               child: Text(
-                label,
+                displayLabel,
                 style: TextStyle(color: Colors.black),
               ),
             ),
@@ -249,82 +280,111 @@ class _AreaFinalizacaoPageState extends State<AreaFinalizacaoPage> {
 
     return StatefulBuilder(
       builder: (context, setState) {
-        if ((processo == 'Passadoria' && pedido.passadoria == 1) ||
-            (processo == 'Finalização' && pedido.finalizacao == 1) ||
-            (processo == 'Retorno' && pedido.retorno == 1)) {
+        if ((processo == 'Passadoria' && pedido.passadoriaStatus == 1) ||
+            (processo == 'Finalização' && pedido.finalizacaoStatus == 1) ||
+            (processo == 'Retorno' && pedido.retornoStatus == 1)) {
           loteColor = Colors.red;
           buttonText = 'Processando';
-        } else if ((processo == 'Passadoria' && pedido.passadoria == 2) ||
-            (processo == 'Finalização' && pedido.finalizacao == 2) ||
-            (processo == 'Retorno' && pedido.retorno == 2)) {
+        } else if ((processo == 'Passadoria' && pedido.passadoriaStatus == 2) ||
+            (processo == 'Finalização' && pedido.finalizacaoStatus == 2) ||
+            (processo == 'Retorno' && pedido.retornoStatus == 2)) {
           loteColor = Colors.blue;
           buttonText = 'Processado';
         }
 
         return GestureDetector(
           onTap: () {
-            if (processo == 'Passadoria' && pedido.passadoria == 0) {
+            if (processo == 'Passadoria' &&
+                pedido.passadoriaStatus == 0 &&
+                pedido.recebimentoStatus != 0 &&
+                pedido.classificacaoStatus != 0 &&
+                pedido.lavagemStatus != 00 &&
+                pedido.centrifugacaoStatus != 00 &&
+                pedido.secagemStatus != 00) {
               showDialog(
                   context: context,
                   builder: (BuildContext context) => Passadoria(
                         onSave: () {
                           setState(() {
                             loteColor = Colors.red;
-                            pedido.passadoria = 1;
+                            pedido.passadoriaStatus = 1;
                             buttonText = 'Processando';
                           });
                         },
                       ));
-            } else if (processo == 'Finalização' && pedido.finalizacao == 0) {
-              // Verifica se a Passadoria foi iniciada
-              if (pedido.passadoria == 0) {
-                showProcessoNaoIniciado(context, 'Passadoria');
-              } else {
-                showDialog(
-                    context: context,
-                    builder: (BuildContext context) => Finalizacao(
-                          onSave: () {
-                            setState(() {
-                              loteColor = Colors.red;
-                              pedido.finalizacao = 1;
-                              buttonText = 'Processando';
-                            });
-                          },
-                        ));
-              }
-            } else if (processo == 'Retorno' && pedido.retorno == 0) {
-              // Verifica se a Finalização foi iniciada
-              if (pedido.finalizacao == 0) {
-                showProcessoNaoIniciado(context, 'Finalização');
-              } else {
-                showDialog(
-                    context: context,
-                    builder: (BuildContext context) => Retorno(
-                          onSave: () {
-                            setState(() {
-                              loteColor = Colors.red;
-                              pedido.retorno = 1;
-                              buttonText = 'Processando';
-                            });
-                          },
-                        ));
-              }
-            } else {
+            } else if (processo == 'Finalização' &&
+                pedido.finalizacaoStatus == 0 &&
+                pedido.recebimentoStatus != 0 &&
+                pedido.classificacaoStatus != 0 &&
+                pedido.lavagemStatus != 00 &&
+                pedido.centrifugacaoStatus != 00 &&
+                pedido.secagemStatus != 00 &&
+                pedido.passadoriaStatus != 0) {
               showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: Text('Atenção'),
-                    content:
-                        Text('Para concluir o processo use o botão Finalizar.'),
-                    actions: [
-                      TextButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          child: Text('OK'))
-                    ],
-                  );
-                },
-              );
+                  context: context,
+                  builder: (BuildContext context) => Finalizacao(
+                        onSave: () {
+                          setState(() {
+                            loteColor = Colors.red;
+                            pedido.finalizacaoStatus = 1;
+                            buttonText = 'Processando';
+                          });
+                        },
+                      ));
+            } else if (processo == 'Retorno' &&
+                pedido.retornoStatus == 0 &&
+                pedido.recebimentoStatus == 2 &&
+                pedido.classificacaoStatus == 2 &&
+                pedido.lavagemStatus == 2 &&
+                pedido.centrifugacaoStatus == 2 &&
+                pedido.secagemStatus == 2 &&
+                pedido.passadoriaStatus == 2 &&
+                pedido.finalizacaoStatus == 2) {
+              showDialog(
+                  context: context,
+                  builder: (BuildContext context) => Retorno(
+                        onSave: () {
+                          setState(() {
+                            loteColor = Colors.red;
+                            pedido.retornoStatus = 1;
+                            buttonText = 'Processando';
+                          });
+                        },
+                      ));
+            } else {
+              if (processo == "Retorno") {
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: Text('Atenção'),
+                      content: Text(
+                          'Para dar início ao Processo de Retorno, todos os Processos anteriores devem estar Finalizados!'),
+                      actions: [
+                        TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: Text('OK'))
+                      ],
+                    );
+                  },
+                );
+              } else {
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: Text('Atenção'),
+                      content: Text(
+                          'Para dar início ao Processo de $processo, todos os Processos anteriores devem estar no mínimo iniciados!'),
+                      actions: [
+                        TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: Text('OK'))
+                      ],
+                    );
+                  },
+                );
+              }
             }
           },
           child: Container(
@@ -348,9 +408,9 @@ class _AreaFinalizacaoPageState extends State<AreaFinalizacaoPage> {
 
     return StatefulBuilder(
       builder: (context, setState) {
-        if ((processo == 'Passadoria' && pedido.passadoria == 2) ||
-            (processo == 'Finalização' && pedido.finalizacao == 2) ||
-            (processo == 'Retorno' && pedido.retorno == 2)) {
+        if ((processo == 'Passadoria' && pedido.passadoriaStatus == 2) ||
+            (processo == 'Finalização' && pedido.finalizacaoStatus == 2) ||
+            (processo == 'Retorno' && pedido.retornoStatus == 2)) {
           loteColor = Colors.blue;
           buttonText = 'Concluído';
         }
@@ -358,27 +418,27 @@ class _AreaFinalizacaoPageState extends State<AreaFinalizacaoPage> {
         return GestureDetector(
           onTap: () {
             // Verificação de processos anteriores para finalização
-            if (processo == 'Finalização' && pedido.passadoria == 0) {
+            if (processo == 'Finalização' && pedido.passadoriaStatus == 0) {
               showAlertDialog(context, 'Passadoria ainda não foi iniciado.');
               return;
-            } else if (processo == 'Retorno' && pedido.finalizacao == 0) {
+            } else if (processo == 'Retorno' && pedido.finalizacaoStatus == 0) {
               showAlertDialog(context, 'Finalização ainda não foi iniciado.');
               return;
             }
 
-            if ((processo == 'Passadoria' && pedido.passadoria == 1) ||
-                (processo == 'Finalização' && pedido.finalizacao == 1) ||
-                (processo == 'Retorno' && pedido.retorno == 1)) {
+            if ((processo == 'Passadoria' && pedido.passadoriaStatus == 1) ||
+                (processo == 'Finalização' && pedido.finalizacaoStatus == 1) ||
+                (processo == 'Retorno' && pedido.retornoStatus == 1)) {
               // Exibir popup de confirmação
               showConfirmationDialog(context, () {
                 setState(() {
                   loteColor = Colors.blue;
                   if (processo == 'Passadoria') {
-                    pedido.passadoria = 2;
+                    pedido.passadoriaStatus = 2;
                   } else if (processo == 'Finalização') {
-                    pedido.finalizacao = 2;
+                    pedido.finalizacaoStatus = 2;
                   } else if (processo == 'Retorno') {
-                    pedido.retorno = 2;
+                    pedido.retornoStatus = 2;
                   }
                   buttonText = 'Concluído';
                 });
