@@ -4,6 +4,7 @@ import 'package:tcc/areas/area_finalizacao.dart';
 import 'package:tcc/areas/area_preparacao.dart';
 import 'package:tcc/areas/area_suja.dart';
 import 'package:tcc/forms/form_lavagem.dart';
+import 'package:tcc/forms/form_novoPedido.dart';
 
 import 'package:tcc/forms/form_recebimento.dart';
 import 'package:tcc/forms/form_classificacao.dart';
@@ -19,6 +20,7 @@ class AppRoutes {
   static const String lavagem = '/lavagem';
   static const String classificacao = '/classificacao';
   static const String finalizacao = '/finalizacao';
+  static const String novoPedido = '/novoPedido';
 
   static Map<String, WidgetBuilder> getRoutes() {
     return {
@@ -57,6 +59,18 @@ class AppRoutes {
           showDialog(
             context: context,
             builder: (context) => Classificacao(
+              onSave: () {},
+            ),
+          );
+        });
+        return Container(); // Retorne um container vazio pois estamos exibindo um dialog
+      },
+      novoPedido: (context) {
+        // Exibir o popup quando a rota 'recebimento' é chamada
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          showDialog(
+            context: context,
+            builder: (context) => NovoPedido(
               onSave: () {},
             ),
           );
