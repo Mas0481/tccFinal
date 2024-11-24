@@ -1,6 +1,6 @@
 import 'package:tcc/servicos/connection.dart';
 
-import '../pedido.dart';
+import '../models/pedido.dart';
 
 class PedidoService {
   final MySqlConnectionService connectionService = MySqlConnectionService();

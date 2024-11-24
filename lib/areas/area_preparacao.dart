@@ -5,8 +5,8 @@ import 'package:tcc/forms/form_secagem.dart';
 import 'dart:async';
 import 'package:tcc/util/custom_appbar.dart';
 
-import '../lote.dart';
-import '../pedido.dart';
+import '../models/lote.dart';
+import '../models/pedido.dart';
 
 class AreaPreparacao extends StatelessWidget {
   @override

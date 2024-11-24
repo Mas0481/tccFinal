@@ -1,4 +1,4 @@
-import 'package:tcc/lote.dart';
+import 'package:tcc/models/lote.dart';
 
 class Pedido {
   // Informação dos status dos processos

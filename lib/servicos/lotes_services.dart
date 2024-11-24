@@ -1,6 +1,6 @@
 import 'package:tcc/servicos/connection.dart';
 
-import '../lote.dart';
+import '../models/lote.dart';
 
 class LoteService {
   final MySqlConnectionService connectionService = MySqlConnectionService();
