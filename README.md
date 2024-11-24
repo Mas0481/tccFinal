@@ -1,16 +1,4 @@
-# tcc
+Projeto em DART usando framewoek FLUTTER
+Projeto de controle de etapas de processo, pode ser adaptado a vários processos.
+Trabalho de Conclusão de curso de Análise e Desenvolvimento de Sistemas Instituto Federal de Ciência e Tecnologia do Estado do Rio Grande do Sul.
 
-A new Flutter project.
-
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
