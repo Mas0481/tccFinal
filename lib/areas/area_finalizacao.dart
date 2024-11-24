@@ -26,7 +26,12 @@ class AreaFinalizacao extends StatelessWidget {
         pesoTotal: 150.0,
         recebimentoStatus: 2,
         classificacaoStatus: 2,
-        lavagemStatus: 1,
+        lavagemStatus: 2,
+        centrifugacaoStatus: 2,
+        secagemStatus: 2,
+        passadoriaStatus: 2,
+        finalizacaoStatus: 2,
+        retornoStatus: 0,
         lotes: [
           Lote(
             pedidoNum: 001,
@@ -225,7 +230,7 @@ class _AreaFinalizacaoPageState extends State<AreaFinalizacaoPage> {
               return AlertDialog(
                 title: Text('Atenção'),
                 content: Text(
-                    'Para Iniciar o Processo Clique no Botão Registrar Inicio!'),
+                    'Para Iniciar o Processo de $label Clique no Botão Registrar Inicio!'),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),

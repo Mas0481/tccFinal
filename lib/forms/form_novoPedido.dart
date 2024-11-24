@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:tcc/control_pages/routes.dart';
 
 class NovoPedido extends StatefulWidget {
   final VoidCallback onSave;
@@ -48,7 +47,7 @@ class _NovoPedidoState extends State<NovoPedido> {
   Widget build(BuildContext context) {
     return Dialog(
       backgroundColor:
-          Colors.white.withOpacity(0.9), // Leve transparência no fundo
+          Colors.white.withOpacity(1), // Leve transparência no fundo
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),
