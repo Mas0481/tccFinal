@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tcc/control_pages/routes.dart';
-import 'package:tcc/util/user_provider.dart'; // Certifique-se de que o caminho esteja correto
+import 'package:tcc/providers/user_provider.dart'; // Certifique-se de que o caminho esteja correto
 
 class LoginPage extends StatefulWidget {
   @override

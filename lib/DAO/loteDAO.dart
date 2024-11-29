@@ -1,11 +1,11 @@
 import 'package:tcc/models/lote.dart';
-import 'package:tcc/util/mySQLConnection.dart';
+import 'package:tcc/servicos/connection.dart';
 import 'genericDAO.dart';
 
 class LoteDAO implements GenericDAO<Lote> {
   @override
   Future<int> insert(Lote lote) async {
-    final conn = await MySQLConnection.getConnection();
+    final conn = await MySqlConnectionService().getConnection();
     try {
       final result = await conn.query(
         '''
@@ -27,7 +27,7 @@ class LoteDAO implements GenericDAO<Lote> {
 
   @override
   Future<int> update(Lote lote) async {
-    final conn = await MySQLConnection.getConnection();
+    final conn = await MySqlConnectionService().getConnection();
     try {
       final result = await conn.query(
         '''
@@ -49,7 +49,7 @@ class LoteDAO implements GenericDAO<Lote> {
 
   @override
   Future<int> delete(int id) async {
-    final conn = await MySQLConnection.getConnection();
+    final conn = await MySqlConnectionService().getConnection();
     try {
       final result = await conn.query(
         'DELETE FROM lotes WHERE loteNum = ?',
@@ -63,7 +63,7 @@ class LoteDAO implements GenericDAO<Lote> {
 
   @override
   Future<Lote?> getById(int id) async {
-    final conn = await MySQLConnection.getConnection();
+    final conn = await MySqlConnectionService().getConnection();
     try {
       final result = await conn.query(
         'SELECT * FROM lotes WHERE loteNum = ?',
@@ -84,9 +84,9 @@ class LoteDAO implements GenericDAO<Lote> {
 
   @override
   Future<List<Lote>> getAll() async {
-    final conn = await MySQLConnection.getConnection();
+    final conn = await MySqlConnectionService().getConnection();
     try {
-      final result = await conn.query('SELECT * FROM lotes');
+      final result = await conn.query('SELECT * FROM pedidos');
       return result.map((row) {
         return Lote(
           pedidoNum: row['pedidoNum'],

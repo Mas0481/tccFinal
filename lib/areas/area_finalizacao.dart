@@ -16,8 +16,8 @@ class AreaFinalizacao extends StatelessWidget {
     List<Pedido> pedidos = [
       Pedido(
         codCliente: 001,
-        nomeCliente: 'Cliente A',
-        numPedido: 'Pedido 001',
+        //nomeCliente: 'Cliente A',
+        numPedido: 001,
         dataColeta: '05/10/2024',
         dataRecebimento: '05/10/2024',
         horaRecebimento: '08:00',
@@ -46,6 +46,8 @@ class AreaFinalizacao extends StatelessWidget {
             loteCentrifugacaoStatus: 0,
           )
         ],
+        nomCliente: '', qtdProduto: 1, valorProdutos: 1, pagamento: 1,
+        totalLotes: 1,
       ),
     ];
 
@@ -132,8 +134,8 @@ class _AreaFinalizacaoPageState extends State<AreaFinalizacaoPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Cliente: ${pedido.nomeCliente}',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+              // Text('Cliente: ${pedido.nomeCliente}',
+              // style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
               Text('Pedido: ${pedido.numPedido}',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
               SizedBox(height: 5),

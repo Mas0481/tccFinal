@@ -1,70 +1,47 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:tcc/DAO/pedidoDAO.dart';
 import 'package:tcc/forms/form_classificacao.dart';
 import 'package:tcc/forms/form_lavagem.dart';
 import 'package:tcc/forms/form_recebimento.dart';
+import 'package:tcc/models/lote.dart';
+import 'package:tcc/models/pedido.dart';
+import 'package:tcc/providers/pedido_provider.dart';
 import 'package:tcc/util/custom_appbar.dart';
 import 'dart:async';
 
 class AreaSuja extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    List<Pedido> pedidos = [
-      Pedido(
-        cliente: 'Cliente A',
-        pedido: 'Pedido 001',
-        dataEntrega: '10/10/2024',
-        pesoTotal: 150.0,
-        recebimento: 0,
-        classificacao: 0,
-        lavagem: 0,
-        lotes: [
-          Lote(nome: 'Lote 1', status: 1.0),
-          Lote(nome: 'Lote 2', status: 1.0),
-          Lote(nome: 'Lote 3', status: 0.0),
-          Lote(nome: 'Lote 4', status: 1.0),
-          Lote(nome: 'Lote 5', status: 1.0),
-          Lote(nome: 'Lote 6', status: 0.0),
-        ],
-      ),
-      // Outros pedidos...
-    ];
+    PedidoDAO pedidoDAO = PedidoDAO();
 
     return MaterialApp(
-      home: AreaSujaPage(pedidos: pedidos),
+      home: Scaffold(
+        body: FutureBuilder<List<Pedido>>(
+          future:
+              pedidoDAO.getAll(), // Chamada assíncrona para buscar os pedidos
+          builder: (context, snapshot) {
+            // Verifica o estado do Future
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(
+                  child: CircularProgressIndicator()); // Exibe carregamento
+            } else if (snapshot.hasError) {
+              return Center(
+                child: Text("Erro ao carregar pedidos: ${snapshot.error}"),
+              );
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return Center(child: Text("Nenhum pedido disponível."));
+            } else {
+              // Dados carregados com sucesso
+              List<Pedido> pedidos = snapshot.data!;
+              return AreaSujaPage(
+                  pedidos: pedidos); // Passa os pedidos para o widget
+            }
+          },
+        ),
+      ),
     );
   }
-}
-
-class Pedido {
-  final String cliente;
-  final String pedido;
-  final String dataEntrega;
-  final double pesoTotal;
-  final List<Lote> lotes;
-  double recebimento;
-  double classificacao;
-  double lavagem;
-
-  Pedido({
-    required this.cliente,
-    required this.pedido,
-    required this.dataEntrega,
-    required this.pesoTotal,
-    required this.lotes,
-    this.recebimento = 0,
-    this.classificacao = 0,
-    this.lavagem = 0,
-  });
-}
-
-class Lote {
-  final String nome;
-  double status;
-
-  Lote({
-    required this.nome,
-    required this.status,
-  });
 }
 
 class AreaSujaPage extends StatefulWidget {
@@ -134,7 +111,6 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
 
   Widget buildPedidoCard(Pedido pedido) {
     double progressoLavagem = calcularProgressoLavagem(pedido.lotes);
-
     return Container(
       width: MediaQuery.of(context).size.width * 0.25,
       margin: EdgeInsets.all(10),
@@ -150,9 +126,9 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Dados do pedido
-              Text('Cliente: ${pedido.cliente}',
+              Text('Cliente: Tem que mostrar o nome do cliente',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-              Text('Pedido: ${pedido.pedido}',
+              Text('Pedido: ${pedido.numPedido}',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
               SizedBox(height: 5),
               Text('Data Entrega: ${pedido.dataEntrega}',
@@ -202,23 +178,24 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
     String buttonText = label;
 
     if (label == 'Recebimento') {
-      progress = pedido.recebimento;
+      progress = pedido.recebimentoStatus as double;
       barColor = (progress == 1.0) ? Colors.blue : Colors.grey[300]!;
       buttonText = (progress == 1.0) ? "$label Concluído" : label;
     } else if (label == 'Classificação') {
-      progress = pedido.classificacao;
+      progress = pedido.classificacaoStatus as double;
       barColor =
-          (pedido.classificacao == 1.0) ? Colors.blue : Colors.grey[300]!;
-      buttonText = (pedido.classificacao == 1.0) ? "$label Concluído" : label;
+          (pedido.classificacaoStatus == 1.0) ? Colors.blue : Colors.grey[300]!;
+      buttonText =
+          (pedido.classificacaoStatus == 1.0) ? "$label Concluído" : label;
     } else if (label == 'Lavagem') {
-      progress = pedido.lavagem;
+      progress = pedido.lavagemStatus as double;
       //barColor = (progress == 1.0) ? Colors.blue : Colors.red[300]!;
       buttonText = (progress == 1.0) ? "$label Concluído" : label;
     }
 
     return GestureDetector(
       onTap: () {
-        if (pedido.recebimento == 1.0 && label == 'Recebimento') {
+        if (pedido.recebimentoStatus == 1.0 && label == 'Recebimento') {
           showDialog(
             context: context,
             builder: (BuildContext context) {
@@ -250,33 +227,33 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
               );
             },
           );
-        } else if (label == 'Recebimento' && pedido.recebimento == 0.0) {
+        } else if (label == 'Recebimento' && pedido.recebimentoStatus == 0.0) {
           showDialog(
             context: context,
             builder: (BuildContext context) {
               return Recebimento(onSave: () {
                 setState(() {
-                  pedido.recebimento = 1.0;
+                  pedido.recebimentoStatus = 1;
                 });
               });
             },
           );
         } else if (label == 'Classificação' &&
-            pedido.recebimento == 1.0 &&
-            pedido.classificacao == 0.0) {
+            pedido.recebimentoStatus == 1.0 &&
+            pedido.classificacaoStatus == 0.0) {
           showDialog(
             context: context,
             builder: (BuildContext context) {
               return Classificacao(onSave: () {
                 setState(() {
-                  pedido.classificacao = 1.0;
+                  pedido.classificacaoStatus = 1;
                 });
               });
             },
           );
         } else if (label == 'Lavagem' &&
-            pedido.recebimento == 1.0 &&
-            pedido.classificacao == 1.0) {
+            pedido.recebimentoStatus == 1.0 &&
+            pedido.classificacaoStatus == 1.0) {
           if (todosLotesConcluidos(pedido)) {
             showDialog(
               context: context,
@@ -352,7 +329,8 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
 
     return InkWell(
       onTap: () {
-        if (pedido.recebimento != 1.0 || pedido.classificacao != 1.0) {
+        if (pedido.recebimentoStatus != 1.0 ||
+            pedido.classificacaoStatus != 1.0) {
           showDialog(
             context: context,
             builder: (BuildContext context) {
@@ -432,13 +410,13 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
   }
 
   Widget buildLoteButton(Lote lote, Pedido pedido) {
-    Color loteColor = lote.status == 1.0 ? Colors.blue : Colors.grey[300]!;
+    Color loteColor = lote.loteStatus == 1.0 ? Colors.blue : Colors.grey[300]!;
     String buttonText =
-        lote.status == 1.0 ? "Lote Concluído" : "Iniciar Lavagem";
+        lote.loteStatus == 1.0 ? "Lote Concluído" : "Iniciar Lavagem";
 
     return GestureDetector(
       onTap: () {
-        if (lote.status == 1.0) {
+        if (lote.loteStatus == 1.0) {
           showDialog(
             context: context,
             builder: (BuildContext context) {
@@ -456,7 +434,8 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
             },
           );
         } else {
-          if (pedido.recebimento == 1.0 && pedido.classificacao == 1.0) {
+          if (pedido.recebimentoStatus == 1.0 &&
+              pedido.classificacaoStatus == 1.0) {
             // Aqui, você pode adicionar a lógica de iniciar a lavagem do lote
             // Para fins de exemplo, estamos apenas exibindo um AlertDialog
             showDialog(
@@ -464,7 +443,7 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
               builder: (BuildContext context) {
                 return Lavagem(onSave: () {
                   setState(() {
-                    lote.status = 1.0; // Atualiza o status do lote
+                    lote.loteStatus = 1; // Atualiza o status do lote
                   });
                 });
               },
@@ -505,7 +484,7 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
 
   double calcularProgressoLavagem(List<Lote> lotes) {
     int totalLotes = lotes.length;
-    int lotesConcluidos = lotes.where((lote) => lote.status == 1.0).length;
+    int lotesConcluidos = lotes.where((lote) => lote.loteStatus == 1).length;
 
     return totalLotes == 0 ? 0.0 : lotesConcluidos / totalLotes;
   }
@@ -513,14 +492,14 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
   // Verifica se todos os lotes estão concluídos
   bool todosLotesConcluidos(Pedido pedido) {
     for (var lote in pedido.lotes) {
-      if (lote.status != 1.0) {
+      if (lote.loteStatus != 1) {
         // 1.0 indica que o lote ainda não está concluído
         return false;
       }
     }
 
     // Se todos os lotes estão concluídos, atualize pedido.lavagem
-    pedido.lavagem = 1.0;
+    pedido.lavagemStatus = 1.0;
     return true;
   }
 }

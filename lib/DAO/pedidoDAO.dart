@@ -1,11 +1,13 @@
+import 'package:intl/intl.dart';
 import 'package:tcc/DAO/genericDAO.dart';
-import 'package:tcc/util/mySQLConnection.dart';
+import 'package:tcc/servicos/connection.dart';
+
 import '../models/pedido.dart';
 
 class PedidoDAO implements GenericDAO<Pedido> {
   @override
   Future<int> insert(Pedido pedido) async {
-    final conn = await MySQLConnection.getConnection();
+    final conn = await MySqlConnectionService().getConnection();
     try {
       final result = await conn.query(
         '''
@@ -16,7 +18,7 @@ class PedidoDAO implements GenericDAO<Pedido> {
         ''',
         [
           pedido.codCliente,
-          pedido.nomeCliente,
+          //pedido.nomeCliente,
           pedido.numPedido,
           pedido.dataColeta,
           pedido.dataRecebimento,
@@ -34,7 +36,7 @@ class PedidoDAO implements GenericDAO<Pedido> {
 
   @override
   Future<int> update(Pedido pedido) async {
-    final conn = await MySQLConnection.getConnection();
+    final conn = await MySqlConnectionService().getConnection();
     try {
       final result = await conn.query(
         '''
@@ -45,7 +47,7 @@ class PedidoDAO implements GenericDAO<Pedido> {
         ''',
         [
           pedido.codCliente,
-          pedido.nomeCliente,
+          // pedido.nomeCliente,
           pedido.numPedido,
           pedido.dataColeta,
           pedido.dataRecebimento,
@@ -64,7 +66,7 @@ class PedidoDAO implements GenericDAO<Pedido> {
 
   @override
   Future<int> delete(int id) async {
-    final conn = await MySQLConnection.getConnection();
+    final conn = await MySqlConnectionService().getConnection();
     try {
       final result = await conn.query(
         'DELETE FROM pedidos WHERE numPedido = ?',
@@ -78,25 +80,34 @@ class PedidoDAO implements GenericDAO<Pedido> {
 
   @override
   Future<Pedido?> getById(int id) async {
-    final conn = await MySQLConnection.getConnection();
+    final conn = await MySqlConnectionService().getConnection();
     try {
       final result = await conn.query(
-        'SELECT * FROM pedidos WHERE numPedido = ?',
+        'SELECT * FROM pedidos WHERE codPedido = ?',
         [id],
       );
       if (result.isEmpty) return null;
 
       final pedido = Pedido(
-        codCliente: result.first['codCliente'],
-        nomeCliente: result.first['nomeCliente'],
-        numPedido: result.first['numPedido'],
+        numPedido: result.first['codPedido'],
+        codCliente: result.first['fk_codCliente'],
+        qtdProduto: result.first['qtd_produto'],
+        valorProdutos: result.first['valor_produtos'],
+        pagamento: result.first['pagamento'],
+        recebimentoStatus: result.first['recebimentoStatus'],
+        classificacaoStatus: result.first['classificacaoStatus'],
+        lavagemStatus: result.first['lavagemStatus'],
+        centrifugacaoStatus: result.first['centrifugacaoStatus'],
+        secagemStatus: result.first['secagemStatus'],
+        passadoriaStatus: result.first['passadoriaStatus'],
+        finalizacaoStatus: result.first['finalizacaoStatus'],
+        retornoStatus: result.first['retornoStatus'],
         dataColeta: result.first['dataColeta'],
-        dataRecebimento: result.first['dataRecebimento'],
-        horaRecebimento: result.first['horaRecebimento'],
         dataLimite: result.first['dataLimite'],
         dataEntrega: result.first['dataEntrega'],
         pesoTotal: result.first['pesoTotal'],
-        lotes: [],
+        totalLotes: result.first['totalLotes'],
+        lotes: [], // Lista vazia como padrão
       );
       return pedido;
     } finally {
@@ -106,25 +117,47 @@ class PedidoDAO implements GenericDAO<Pedido> {
 
   @override
   Future<List<Pedido>> getAll() async {
-    final conn = await MySQLConnection.getConnection();
+    final conn = await MySqlConnectionService().getConnection();
     try {
       final result = await conn.query('SELECT * FROM pedidos');
       return result.map((row) {
         return Pedido(
-          codCliente: row['codCliente'],
-          nomeCliente: row['nomeCliente'],
-          numPedido: row['numPedido'],
+          numPedido: row['codPedido'],
+          codCliente: row['fk_codCliente'],
+          qtdProduto: row['qtd_produto'],
+          valorProdutos: row['valor_produtos'],
+          pagamento: row['pagamento'],
+          recebimentoStatus: row['recebimentoStatus'],
+          classificacaoStatus: row['classificacaoStatus'],
+          lavagemStatus: row['lavagemStatus'],
+          centrifugacaoStatus: row['centrifugacaoStatus'],
+          secagemStatus: row['secagemStatus'],
+          passadoriaStatus: row['passadoriaStatus'],
+          finalizacaoStatus: row['finalizacaoStatus'],
+          retornoStatus: row['retornoStatus'],
           dataColeta: row['dataColeta'],
-          dataRecebimento: row['dataRecebimento'],
-          horaRecebimento: row['horaRecebimento'],
           dataLimite: row['dataLimite'],
           dataEntrega: row['dataEntrega'],
           pesoTotal: row['pesoTotal'],
-          lotes: [],
+          totalLotes: row['totalLotes'],
+          lotes: [], // Lista vazia como padrão
         );
       }).toList();
     } finally {
       await conn.close();
+    }
+  }
+
+  /// Função auxiliar para formatar campos TIME para String no formato 'HH:mm:ss'
+  String? formatHora(dynamic value) {
+    if (value == null) return null;
+    if (value is DateTime) {
+      return DateFormat('HH:mm:ss').format(value);
+    }
+    try {
+      return DateFormat('HH:mm:ss').format(DateTime.parse(value.toString()));
+    } catch (e) {
+      throw FormatException("Erro ao formatar hora: $e");
     }
   }
 }
