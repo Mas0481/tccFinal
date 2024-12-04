@@ -30,7 +30,7 @@ class AreaSuja extends StatelessWidget {
                 child: Text("Erro ao carregar pedidos: ${snapshot.error}"),
               );
             } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return Center(child: Text("Nenhum pedido disponível."));
+              return Center(child: Text("Nenhum pedido aguardando."));
             } else {
               // Dados carregados com sucesso
               List<Pedido> pedidos = snapshot.data!;
@@ -111,6 +111,7 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
 
   Widget buildPedidoCard(Pedido pedido) {
     double progressoLavagem = calcularProgressoLavagem(pedido.lotes);
+    print(pedido);
     return Container(
       width: MediaQuery.of(context).size.width * 0.25,
       margin: EdgeInsets.all(10),
@@ -126,7 +127,7 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Dados do pedido
-              Text('Cliente: Tem que mostrar o nome do cliente',
+              Text('Cliente: ${pedido.nomCliente}',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
               Text('Pedido: ${pedido.numPedido}',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),

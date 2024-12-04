@@ -119,7 +119,23 @@ class PedidoDAO implements GenericDAO<Pedido> {
   Future<List<Pedido>> getAll() async {
     final conn = await MySqlConnectionService().getConnection();
     try {
-      final result = await conn.query('SELECT * FROM pedidos');
+      // Modificando a consulta SQL para incluir o nome do cliente através dos joins
+      final result = await conn.query('''
+      SELECT 
+        p.*,                          
+        l.*,                          
+        pe.nome AS nome_cliente       
+      FROM 
+        pedidos p
+      LEFT JOIN 
+        lotes l ON l.pedidoNum = p.codPedido
+      LEFT JOIN 
+        clientes c ON c.codCliente = p.fk_codCliente
+      LEFT JOIN 
+        pessoas pe ON pe.cpf = c.fk_cpf;
+    ''');
+
+      // Mapeando o resultado para a classe Pedido
       return result.map((row) {
         return Pedido(
           numPedido: row['codPedido'],
@@ -140,7 +156,8 @@ class PedidoDAO implements GenericDAO<Pedido> {
           dataEntrega: row['dataEntrega'],
           pesoTotal: row['pesoTotal'],
           totalLotes: row['totalLotes'],
-          lotes: [], // Lista vazia como padrão
+          nomCliente: row['nome_cliente'], // Adicionando o nome do cliente
+          lotes: [], // Lista vazia, você pode adicionar a lógica para mapear os lotes aqui
         );
       }).toList();
     } finally {
