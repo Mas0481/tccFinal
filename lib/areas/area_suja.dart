@@ -174,6 +174,7 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
   }
 
   Widget buildProgressBar(String label, Pedido pedido) {
+    PedidoDAO pedidoDAO = PedidoDAO();
     double progress = 0.0;
     Color barColor = Colors.red[300]!;
     String buttonText = label;
@@ -232,10 +233,15 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
           showDialog(
             context: context,
             builder: (BuildContext context) {
-              return Recebimento(onSave: () {
+              return Recebimento(onSave: () async {
                 setState(() {
                   pedido.recebimentoStatus = 1;
                 });
+
+                // Verifique se o pedidoDAO está acessível aqui
+
+                int retorno = await pedidoDAO.update(pedido);
+                print("Atualizado com sucesso! Retorno: $retorno");
               });
             },
           );
@@ -245,10 +251,12 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
           showDialog(
             context: context,
             builder: (BuildContext context) {
-              return Classificacao(onSave: () {
+              return Classificacao(onSave: () async {
                 setState(() {
                   pedido.classificacaoStatus = 1;
                 });
+                int retorno = await pedidoDAO.update(pedido);
+                print("Atualizado com sucesso! Retorno: $retorno");
               });
             },
           );
@@ -411,6 +419,7 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
   }
 
   Widget buildLoteButton(Lote lote, Pedido pedido) {
+    PedidoDAO pedidoDAO = PedidoDAO();
     Color loteColor = lote.loteStatus == 1.0 ? Colors.blue : Colors.grey[300]!;
     String buttonText =
         lote.loteStatus == 1.0 ? "Lote Concluído" : "Iniciar Lavagem";
@@ -442,10 +451,12 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
             showDialog(
               context: context,
               builder: (BuildContext context) {
-                return Lavagem(onSave: () {
+                return Lavagem(onSave: () async {
                   setState(() {
                     lote.loteStatus = 1; // Atualiza o status do lote
                   });
+                  int retorno = await pedidoDAO.update(pedido);
+                  print("Atualizado com sucesso! Retorno: $retorno");
                 });
               },
             );

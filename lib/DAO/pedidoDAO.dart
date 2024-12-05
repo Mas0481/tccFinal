@@ -1,5 +1,6 @@
 import 'package:intl/intl.dart';
 import 'package:tcc/DAO/genericDAO.dart';
+import 'package:tcc/models/lote.dart';
 import 'package:tcc/servicos/connection.dart';
 
 import '../models/pedido.dart';
@@ -35,81 +36,315 @@ class PedidoDAO implements GenericDAO<Pedido> {
   }
 
   @override
+  @override
+  @override
   Future<int> update(Pedido pedido) async {
     final conn = await MySqlConnectionService().getConnection();
+    int totalAffectedRows = 0;
+
     try {
-      final result = await conn.query(
-        '''
-        UPDATE pedidos SET
-          codCliente = ?, nomeCliente = ?, numPedido = ?, dataColeta = ?,
-          dataRecebimento = ?, horaRecebimento = ?, dataLimite = ?, dataEntrega = ?, pesoTotal = ?
-        WHERE numPedido = ?
-        ''',
-        [
-          pedido.codCliente,
-          // pedido.nomeCliente,
-          pedido.numPedido,
-          pedido.dataColeta,
-          pedido.dataRecebimento,
-          pedido.horaRecebimento,
-          pedido.dataLimite,
-          pedido.dataEntrega,
-          pedido.pesoTotal,
-          pedido.numPedido,
-        ],
-      );
-      return result.affectedRows!;
+      // Atualizar dados do pedido
+      final pedidoResult = await conn.query('''
+      UPDATE pedidos SET
+        fk_codCliente = ?, 
+        qtd_produto = ?, 
+        valor_produtos = ?, 
+        pagamento = ?, 
+        data_Pagamento = ?, 
+        recebimentoStatus = ?, 
+        classificacaoStatus = ?, 
+        lavagemStatus = ?, 
+        centrifugacaoStatus = ?, 
+        secagemStatus = ?, 
+        passadoriaStatus = ?, 
+        finalizacaoStatus = ?, 
+        retornoStatus = ?, 
+        dataColeta = ?, 
+        dataRecebimento = ?, 
+        horaRecebimento = ?, 
+        dataLimite = ?, 
+        dataEntrega = ?, 
+        pesoTotal = ?, 
+        recebimentoObs = ?, 
+        totalLotes = ?, 
+        classificacaoObs = ?, 
+        classificacaoDataInicio = ?, 
+        classificacaoHoraInicio = ?, 
+        classificacaoDataFinal = ?, 
+        classificacaoHoraFinal = ?, 
+        passadoriaEquipamento = ?, 
+        passadoriaTemperatura = ?, 
+        passadoriaDataInicio = ?, 
+        passadoriaHoraInicio = ?, 
+        passadoriaDataFinal = ?, 
+        passadoriaHoraFinal = ?, 
+        passadoriaObs = ?, 
+        finalizacaoReparo = ?, 
+        finalizacaoEtiquetamento = ?, 
+        finalizacaoTipoEmbalagem = ?, 
+        finalizacaoVolumes = ?, 
+        finalizacaoControleQualidade = ?, 
+        finalizacaoDataInicio = ?, 
+        finalizacaoHoraInicio = ?, 
+        finalizacaoDataFinal = ?, 
+        finalizacaoHoraFinal = ?, 
+        finalizacaoObs = ?, 
+        retornoData = ?, 
+        retornoHoraCarregamento = ?, 
+        retornoVolumes = ?, 
+        retornoNomeMotorista = ?, 
+        retornoVeiculo = ?, 
+        retornoPlaca = ?, 
+        retornoObs = ?
+      WHERE codPedido = ?
+    ''', [
+        pedido.codCliente,
+        pedido.qtdProduto,
+        pedido.valorProdutos,
+        pedido.pagamento,
+        pedido.dataPagamento,
+        pedido.recebimentoStatus,
+        pedido.classificacaoStatus,
+        pedido.lavagemStatus,
+        pedido.centrifugacaoStatus,
+        pedido.secagemStatus,
+        pedido.passadoriaStatus,
+        pedido.finalizacaoStatus,
+        pedido.retornoStatus,
+        pedido.dataColeta,
+        pedido.dataRecebimento,
+        pedido.horaRecebimento,
+        pedido.dataLimite,
+        pedido.dataEntrega,
+        pedido.pesoTotal,
+        pedido.recebimentoObs,
+        pedido.totalLotes,
+        pedido.classificacaoObs,
+        pedido.classificacaoDataInicio,
+        pedido.classificacaoHoraInicio,
+        pedido.classificacaoDataFinal,
+        pedido.classificacaoHoraFinal,
+        pedido.passadoriaEquipamento,
+        pedido.passadoriaTemperatura,
+        pedido.passadoriaDataInicio,
+        pedido.passadoriaHoraInicio,
+        pedido.passadoriaDataFinal,
+        pedido.passadoriaHoraFinal,
+        pedido.passadoriaObs,
+        pedido.finalizacaoReparo,
+        pedido.finalizacaoEtiquetamento,
+        pedido.finalizacaoTipoEmbalagem,
+        pedido.finalizacaoVolumes,
+        pedido.finalizacaoControleQualidade,
+        pedido.finalizacaoDataInicio,
+        pedido.finalizacaoHoraInicio,
+        pedido.finalizacaoDataFinal,
+        pedido.finalizacaoHoraFinal,
+        pedido.finalizacaoObs,
+        pedido.retornoData,
+        pedido.retornoHoraCarregamento,
+        pedido.retornoVolumes,
+        pedido.retornoNomeMotorista,
+        pedido.retornoVeiculo,
+        pedido.retornoPlaca,
+        pedido.retornoObs,
+        pedido.numPedido,
+      ]);
+      totalAffectedRows += pedidoResult.affectedRows!;
+
+      // Atualizar os lotes relacionados ao pedido
+      for (final lote in pedido.lotes) {
+        final loteResult = await conn.query('''
+        UPDATE lotes SET
+          loteStatus = ?, 
+          loteLavagemStatus = ?, 
+          lavagemEquipamento = ?, 
+          lavagemProcesso = ?, 
+          lavagemDataInicio = ?, 
+          lavagemHoraInicio = ?, 
+          lavagemDataFinal = ?, 
+          lavagemHoraFinal = ?, 
+          lavagemObs = ?, 
+          loteCentrifugacaoStatus = ?, 
+          centrifugacaoEquipamento = ?, 
+          centrifugacaoTempoProcesso = ?, 
+          centrifugacaoDataInicio = ?, 
+          centrifugacaoHoraInicio = ?, 
+          centrifugacaoDataFinal = ?, 
+          centrifugacaoHoraFinal = ?, 
+          centrifugacaoObs = ?, 
+          loteSecagemStatus = ?, 
+          secagemEquipamento = ?, 
+          secagemTempoProcesso = ?, 
+          secagemTemperatura = ?, 
+          secagemDataInicio = ?, 
+          secagemHoraInicio = ?, 
+          secagemDataFinal = ?, 
+          secagemHoraFinal = ?, 
+          secagemObs = ?
+        WHERE pedidoNum = ? AND loteNum = ?
+      ''', [
+          lote.loteStatus,
+          lote.loteLavagemStatus,
+          lote.lavagemEquipamento,
+          lote.lavagemProcesso,
+          lote.lavagemDataInicio,
+          lote.lavagemHoraInicio,
+          lote.lavagemDataFinal,
+          lote.lavagemHoraFinal,
+          lote.lavagemObs,
+          lote.loteCentrifugacaoStatus,
+          lote.centrifugacaoEquipamento,
+          lote.centrifugacaoTempoProcesso,
+          lote.centrifugacaoDataInicio,
+          lote.centrifugacaoHoraInicio,
+          lote.centrifugacaoDataFinal,
+          lote.centrifugacaoHoraFinal,
+          lote.centrifugacaoObs,
+          lote.loteSecagemStatus,
+          lote.secagemEquipamento,
+          lote.secagemTempoProcesso,
+          lote.secagemTemperatura,
+          lote.secagemDataInicio,
+          lote.secagemHoraInicio,
+          lote.secagemDataFinal,
+          lote.secagemHoraFinal,
+          lote.secagemObs,
+          lote.pedidoNum,
+          lote.loteNum,
+        ]);
+        totalAffectedRows += loteResult.affectedRows!;
+      }
     } finally {
       await conn.close();
     }
+
+    return totalAffectedRows;
   }
 
   @override
-  Future<int> delete(int id) async {
-    final conn = await MySqlConnectionService().getConnection();
-    try {
-      final result = await conn.query(
-        'DELETE FROM pedidos WHERE numPedido = ?',
-        [id],
-      );
-      return result.affectedRows!;
-    } finally {
-      await conn.close();
-    }
-  }
-
   @override
-  Future<Pedido?> getById(int id) async {
+  Future<Pedido?> getById(int pedidoId) async {
     final conn = await MySqlConnectionService().getConnection();
-    try {
-      final result = await conn.query(
-        'SELECT * FROM pedidos WHERE codPedido = ?',
-        [id],
-      );
-      if (result.isEmpty) return null;
 
-      final pedido = Pedido(
-        numPedido: result.first['codPedido'],
-        codCliente: result.first['fk_codCliente'],
-        qtdProduto: result.first['qtd_produto'],
-        valorProdutos: result.first['valor_produtos'],
-        pagamento: result.first['pagamento'],
-        recebimentoStatus: result.first['recebimentoStatus'],
-        classificacaoStatus: result.first['classificacaoStatus'],
-        lavagemStatus: result.first['lavagemStatus'],
-        centrifugacaoStatus: result.first['centrifugacaoStatus'],
-        secagemStatus: result.first['secagemStatus'],
-        passadoriaStatus: result.first['passadoriaStatus'],
-        finalizacaoStatus: result.first['finalizacaoStatus'],
-        retornoStatus: result.first['retornoStatus'],
-        dataColeta: result.first['dataColeta'],
-        dataLimite: result.first['dataLimite'],
-        dataEntrega: result.first['dataEntrega'],
-        pesoTotal: result.first['pesoTotal'],
-        totalLotes: result.first['totalLotes'],
-        lotes: [], // Lista vazia como padrão
+    try {
+      // Buscar o pedido pelo ID
+      final pedidoQuery = await conn.query('''
+      SELECT 
+        p.*, 
+        pe.nome AS nome_cliente
+      FROM 
+        pedidos p
+      LEFT JOIN 
+        clientes c ON c.codCliente = p.fk_codCliente
+      LEFT JOIN 
+        pessoas pe ON pe.cpf = c.fk_cpf
+      WHERE 
+        p.codPedido = ?
+    ''', [pedidoId]);
+
+      if (pedidoQuery.isEmpty) {
+        return null; // Retorna null se o pedido não for encontrado
+      }
+
+      final row = pedidoQuery.first;
+
+      // Buscar os lotes relacionados ao pedido
+      final lotesQuery = await conn.query('''
+      SELECT * FROM lotes WHERE pedidoNum = ?
+    ''', [pedidoId]);
+
+      // Criar a lista de lotes para o pedido
+      List<Lote> lotes = lotesQuery.map((loteRow) {
+        return Lote(
+          pedidoNum: loteRow['pedidoNum'],
+          loteNum: loteRow['loteNum'],
+          loteStatus: loteRow['loteStatus'] ?? 0,
+          loteLavagemStatus: loteRow['loteLavagemStatus'] ?? 0,
+          lavagemEquipamento: loteRow['lavagemEquipamento'] ?? '',
+          lavagemProcesso: loteRow['lavagemProcesso'] ?? '',
+          lavagemDataInicio: loteRow['lavagemDataInicio'] ?? '',
+          lavagemHoraInicio: loteRow['lavagemHoraInicio'] ?? '',
+          lavagemDataFinal: loteRow['lavagemDataFinal'] ?? '',
+          lavagemHoraFinal: loteRow['lavagemHoraFinal'] ?? '',
+          lavagemObs: loteRow['lavagemObs'] ?? '',
+          loteCentrifugacaoStatus: loteRow['loteCentrifugacaoStatus'] ?? 0,
+          centrifugacaoEquipamento: loteRow['centrifugacaoEquipamento'] ?? '',
+          centrifugacaoTempoProcesso:
+              loteRow['centrifugacaoTempoProcesso'] ?? '',
+          centrifugacaoDataInicio: loteRow['centrifugacaoDataInicio'] ?? '',
+          centrifugacaoHoraInicio: loteRow['centrifugacaoHoraInicio'] ?? '',
+          centrifugacaoDataFinal: loteRow['centrifugacaoDataFinal'] ?? '',
+          centrifugacaoHoraFinal: loteRow['centrifugacaoHoraFinal'] ?? '',
+          centrifugacaoObs: loteRow['centrifugacaoObs'] ?? '',
+          loteSecagemStatus: loteRow['loteSecagemStatus'] ?? 0,
+          secagemEquipamento: loteRow['secagemEquipamento'] ?? '',
+          secagemTempoProcesso: loteRow['secagemTempoProcesso'] ?? '',
+          secagemTemperatura: loteRow['secagemTemperatura'] ?? '',
+          secagemDataInicio: loteRow['secagemDataInicio'] ?? '',
+          secagemHoraInicio: loteRow['secagemHoraInicio'] ?? '',
+          secagemDataFinal: loteRow['secagemDataFinal'] ?? '',
+          secagemHoraFinal: loteRow['secagemHoraFinal'] ?? '',
+          secagemObs: loteRow['secagemObs'] ?? '',
+        );
+      }).toList();
+
+      // Construir o objeto Pedido
+      return Pedido(
+        numPedido: row['codPedido'],
+        codCliente: row['fk_codCliente'],
+        qtdProduto: row['qtd_produto'],
+        valorProdutos: row['valor_produtos'],
+        pagamento: row['pagamento'],
+        dataPagamento: row['dataPagamento'],
+        recebimentoStatus: row['recebimentoStatus'],
+        classificacaoStatus: row['classificacaoStatus'],
+        lavagemStatus: row['lavagemStatus'],
+        centrifugacaoStatus: row['centrifugacaoStatus'],
+        secagemStatus: row['secagemStatus'],
+        passadoriaStatus: row['passadoriaStatus'],
+        finalizacaoStatus: row['finalizacaoStatus'],
+        retornoStatus: row['retornoStatus'],
+        dataColeta: row['dataColeta'],
+        dataRecebimento: row['dataRecebimento'],
+        horaRecebimento: row['horaRecebimento'],
+        dataLimite: row['dataLimite'],
+        dataEntrega: row['dataEntrega'],
+        pesoTotal: row['pesoTotal'],
+        recebimentoObs: row['recebimentoObs'],
+        totalLotes: row['totalLotes'],
+        classificacaoObs: row['classificacaoObs'],
+        classificacaoDataInicio: row['classificacaoDataInicio'],
+        classificacaoHoraInicio: row['classificacaoHoraInicio'],
+        classificacaoDataFinal: row['classificacaoDataFinal'],
+        classificacaoHoraFinal: row['classificacaoHoraFinal'],
+        passadoriaEquipamento: row['passadoriaEquipamento'],
+        passadoriaTemperatura: row['passadoriaTemperatura'],
+        passadoriaDataInicio: row['passadoriaDataInicio'],
+        passadoriaHoraInicio: row['passadoriaHoraInicio'],
+        passadoriaDataFinal: row['passadoriaDataFinal'],
+        passadoriaHoraFinal: row['passadoriaHoraFinal'],
+        passadoriaObs: row['passadoriaObs'],
+        finalizacaoReparo: row['finalizacaoReparo'],
+        finalizacaoEtiquetamento: row['finalizacaoEtiquetamento'],
+        finalizacaoTipoEmbalagem: row['finalizacaoTipoEmbalagem'],
+        finalizacaoVolumes: row['finalizacaoVolumes'],
+        finalizacaoControleQualidade: row['finalizacaoControleQualidade'],
+        finalizacaoDataInicio: row['finalizacaoDataInicio'],
+        finalizacaoHoraInicio: row['finalizacaoHoraInicio'],
+        finalizacaoDataFinal: row['finalizacaoDataFinal'],
+        finalizacaoHoraFinal: row['finalizacaoHoraFinal'],
+        finalizacaoObs: row['finalizacaoObs'],
+        retornoData: row['retornoData'],
+        retornoHoraCarregamento: row['retornoHoraCarregamento'],
+        retornoVolumes: row['retornoVolumes'],
+        retornoNomeMotorista: row['retornoNomeMotorista'],
+        retornoVeiculo: row['retornoVeiculo'],
+        retornoPlaca: row['retornoPlaca'],
+        retornoObs: row['retornoObs'],
+        nomCliente: row['nome_cliente'],
+        lotes: lotes,
       );
-      return pedido;
     } finally {
       await conn.close();
     }
@@ -118,51 +353,147 @@ class PedidoDAO implements GenericDAO<Pedido> {
   @override
   Future<List<Pedido>> getAll() async {
     final conn = await MySqlConnectionService().getConnection();
-    try {
-      // Modificando a consulta SQL para incluir o nome do cliente através dos joins
-      final result = await conn.query('''
-      SELECT 
-        p.*,                          
-        l.*,                          
-        pe.nome AS nome_cliente       
-      FROM 
-        pedidos p
-      LEFT JOIN 
-        lotes l ON l.pedidoNum = p.codPedido
-      LEFT JOIN 
-        clientes c ON c.codCliente = p.fk_codCliente
-      LEFT JOIN 
-        pessoas pe ON pe.cpf = c.fk_cpf;
-    ''');
 
-      // Mapeando o resultado para a classe Pedido
-      return result.map((row) {
-        return Pedido(
-          numPedido: row['codPedido'],
-          codCliente: row['fk_codCliente'],
-          qtdProduto: row['qtd_produto'],
-          valorProdutos: row['valor_produtos'],
-          pagamento: row['pagamento'],
-          recebimentoStatus: row['recebimentoStatus'],
-          classificacaoStatus: row['classificacaoStatus'],
-          lavagemStatus: row['lavagemStatus'],
-          centrifugacaoStatus: row['centrifugacaoStatus'],
-          secagemStatus: row['secagemStatus'],
-          passadoriaStatus: row['passadoriaStatus'],
-          finalizacaoStatus: row['finalizacaoStatus'],
-          retornoStatus: row['retornoStatus'],
-          dataColeta: row['dataColeta'],
-          dataLimite: row['dataLimite'],
-          dataEntrega: row['dataEntrega'],
-          pesoTotal: row['pesoTotal'],
-          totalLotes: row['totalLotes'],
-          nomCliente: row['nome_cliente'], // Adicionando o nome do cliente
-          lotes: [], // Lista vazia, você pode adicionar a lógica para mapear os lotes aqui
+    // 1. Obter todos os pedidos
+    final pedidosQuery = await conn.query('''
+    SELECT 
+      p.*,                          
+      pe.nome AS nome_cliente       
+    FROM 
+      pedidos p
+    LEFT JOIN 
+      clientes c ON c.codCliente = p.fk_codCliente
+    LEFT JOIN 
+      pessoas pe ON pe.cpf = c.fk_cpf;
+  ''');
+
+    // Lista de pedidos que será retornada
+    List<Pedido> pedidos = [];
+
+    for (final row in pedidosQuery) {
+      // 2. Para cada pedido, buscar seus lotes relacionados
+      final lotesQuery = await conn.query('''
+      SELECT * FROM lotes WHERE pedidoNum = ?
+    ''', [row['codPedido']]);
+
+      // Criar a lista de lotes para o pedido atual
+      List<Lote> lotes = lotesQuery.map((loteRow) {
+        return Lote(
+          pedidoNum: loteRow['pedidoNum'],
+          loteNum: loteRow['loteNum'],
+          loteStatus: loteRow['loteStatus'] ?? 0,
+          loteLavagemStatus: loteRow['loteLavagemStatus'] ?? 0,
+          lavagemEquipamento: loteRow['lavagemEquipamento'] ?? '',
+          lavagemProcesso: loteRow['lavagemProcesso'] ?? '',
+          lavagemDataInicio: loteRow['lavagemDataInicio'] ?? '',
+          lavagemHoraInicio: loteRow['lavagemHoraInicio'] ?? '',
+          lavagemDataFinal: loteRow['lavagemDataFinal'] ?? '',
+          lavagemHoraFinal: loteRow['lavagemHoraFinal'] ?? '',
+          lavagemObs: loteRow['lavagemObs'] ?? '',
+          loteCentrifugacaoStatus: loteRow['loteCentrifugacaoStatus'] ?? 0,
+          centrifugacaoEquipamento: loteRow['centrifugacaoEquipamento'] ?? '',
+          centrifugacaoTempoProcesso:
+              loteRow['centrifugacaoTempoProcesso'] ?? '',
+          centrifugacaoDataInicio: loteRow['centrifugacaoDataInicio'] ?? '',
+          centrifugacaoHoraInicio: loteRow['centrifugacaoHoraInicio'] ?? '',
+          centrifugacaoDataFinal: loteRow['centrifugacaoDataFinal'] ?? '',
+          centrifugacaoHoraFinal: loteRow['centrifugacaoHoraFinal'] ?? '',
+          centrifugacaoObs: loteRow['centrifugacaoObs'] ?? '',
+          loteSecagemStatus: loteRow['loteSecagemStatus'] ?? 0,
+          secagemEquipamento: loteRow['secagemEquipamento'] ?? '',
+          secagemTempoProcesso: loteRow['secagemTempoProcesso'] ?? '',
+          secagemTemperatura: loteRow['secagemTemperatura'] ?? '',
+          secagemDataInicio: loteRow['secagemDataInicio'] ?? '',
+          secagemHoraInicio: loteRow['secagemHoraInicio'] ?? '',
+          secagemDataFinal: loteRow['secagemDataFinal'] ?? '',
+          secagemHoraFinal: loteRow['secagemHoraFinal'] ?? '',
+          secagemObs: loteRow['secagemObs'] ?? '',
         );
       }).toList();
+
+      // 3. Construir o objeto Pedido com todos os campos
+      pedidos.add(Pedido(
+        numPedido: row['codPedido'],
+        codCliente: row['fk_codCliente'],
+        qtdProduto: row['qtd_produto'],
+        valorProdutos: row['valor_produtos'],
+        pagamento: row['pagamento'],
+        dataPagamento: row['dataPagamento'],
+        recebimentoStatus: row['recebimentoStatus'],
+        classificacaoStatus: row['classificacaoStatus'],
+        lavagemStatus: row['lavagemStatus'],
+        centrifugacaoStatus: row['centrifugacaoStatus'],
+        secagemStatus: row['secagemStatus'],
+        passadoriaStatus: row['passadoriaStatus'],
+        finalizacaoStatus: row['finalizacaoStatus'],
+        retornoStatus: row['retornoStatus'],
+        dataColeta: row['dataColeta'],
+        dataRecebimento: row['dataRecebimento'],
+        horaRecebimento: row['horaRecebimento'],
+        dataLimite: row['dataLimite'],
+        dataEntrega: row['dataEntrega'],
+        pesoTotal: row['pesoTotal'],
+        recebimentoObs: row['recebimentoObs'],
+        totalLotes: row['totalLotes'],
+        classificacaoObs: row['classificacaoObs'],
+        classificacaoDataInicio: row['classificacaoDataInicio'],
+        classificacaoHoraInicio: row['classificacaoHoraInicio'],
+        classificacaoDataFinal: row['classificacaoDataFinal'],
+        classificacaoHoraFinal: row['classificacaoHoraFinal'],
+        passadoriaEquipamento: row['passadoriaEquipamento'],
+        passadoriaTemperatura: row['passadoriaTemperatura'],
+        passadoriaDataInicio: row['passadoriaDataInicio'],
+        passadoriaHoraInicio: row['passadoriaHoraInicio'],
+        passadoriaDataFinal: row['passadoriaDataFinal'],
+        passadoriaHoraFinal: row['passadoriaHoraFinal'],
+        passadoriaObs: row['passadoriaObs'],
+        finalizacaoReparo: row['finalizacaoReparo'],
+        finalizacaoEtiquetamento: row['finalizacaoEtiquetamento'],
+        finalizacaoTipoEmbalagem: row['finalizacaoTipoEmbalagem'],
+        finalizacaoVolumes: row['finalizacaoVolumes'],
+        finalizacaoControleQualidade: row['finalizacaoControleQualidade'],
+        finalizacaoDataInicio: row['finalizacaoDataInicio'],
+        finalizacaoHoraInicio: row['finalizacaoHoraInicio'],
+        finalizacaoDataFinal: row['finalizacaoDataFinal'],
+        finalizacaoHoraFinal: row['finalizacaoHoraFinal'],
+        finalizacaoObs: row['finalizacaoObs'],
+        retornoData: row['retornoData'],
+        retornoHoraCarregamento: row['retornoHoraCarregamento'],
+        retornoVolumes: row['retornoVolumes'],
+        retornoNomeMotorista: row['retornoNomeMotorista'],
+        retornoVeiculo: row['retornoVeiculo'],
+        retornoPlaca: row['retornoPlaca'],
+        retornoObs: row['retornoObs'],
+        nomCliente: row['nome_cliente'],
+        lotes: lotes,
+      ));
+    }
+
+    return pedidos;
+  }
+
+  @override
+  Future<int> delete(int pedidoId) async {
+    final conn = await MySqlConnectionService().getConnection();
+    int totalAffectedRows = 0;
+
+    try {
+      // Deletar os lotes relacionados ao pedido
+      final lotesResult = await conn.query('''
+      DELETE FROM lotes WHERE pedidoNum = ?
+    ''', [pedidoId]);
+      totalAffectedRows += lotesResult.affectedRows!;
+
+      // Deletar o pedido
+      final pedidoResult = await conn.query('''
+      DELETE FROM pedidos WHERE codPedido = ?
+    ''', [pedidoId]);
+      totalAffectedRows += pedidoResult.affectedRows!;
     } finally {
       await conn.close();
     }
+
+    return totalAffectedRows;
   }
 
   /// Função auxiliar para formatar campos TIME para String no formato 'HH:mm:ss'
