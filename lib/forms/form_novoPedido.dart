@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:tcc/DAO/pedidoDAO.dart';
+import 'package:tcc/models/pedido.dart';
+import 'package:tcc/repository/clientes_repository.dart';
+import 'package:tcc/servicos/connection.dart';
 
 class NovoPedido extends StatefulWidget {
   final VoidCallback onSave;
@@ -21,11 +25,41 @@ class _NovoPedidoState extends State<NovoPedido> {
       TextEditingController();
   final TextEditingController observacoesController = TextEditingController();
 
+  List<String> clientes = [];
+  String? clienteSelecionado;
+
   @override
   void initState() {
     super.initState();
     dataColetaController.text =
         DateFormat('dd/MM/yyyy').format(DateTime.now()); // Data do dia
+    _loadClientes();
+  }
+
+  void _loadClientes() async {
+    try {
+      // Criando a instância do MySqlConnectionService
+      final connectionService = MySqlConnectionService();
+
+      // Criando a instância do ClienteRepository e passando a connectionService
+      final clienteRepository = ClienteRepository(connectionService);
+
+      // Chamando o método getClientes
+      final resultado = await clienteRepository.getClientes();
+
+      setState(() {
+        // Extraindo os nomes dos clientes da lista de mapas e armazenando na lista 'clientes'
+        clientes = resultado.map((cliente) => cliente['nome'] ?? '').toList();
+      });
+    } catch (e) {
+      // Exibindo erro caso algo aconteça durante a execução
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro ao carregar clientes: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   Future<void> _selectDate(
@@ -89,8 +123,8 @@ class _NovoPedidoState extends State<NovoPedido> {
                 children: [
                   Expanded(
                     child: DropdownButtonFormField<String>(
-                      items: ['Cliente 1', 'Cliente 2', 'Cliente 3']
-                          .map((String cliente) {
+                      value: clienteSelecionado,
+                      items: clientes.map((String cliente) {
                         return DropdownMenuItem<String>(
                           value: cliente,
                           child: Text(cliente),
@@ -98,11 +132,12 @@ class _NovoPedidoState extends State<NovoPedido> {
                       }).toList(),
                       onChanged: (value) {
                         setState(() {
+                          clienteSelecionado = value;
                           clienteController.text = value!;
                         });
                       },
                       decoration: InputDecoration(
-                        labelText: 'Cliente',
+                        labelText: 'Selecione um Cliente',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -213,7 +248,7 @@ class _NovoPedidoState extends State<NovoPedido> {
               ),
               SizedBox(height: 15),
 
-              // Linha 6: Botões em largura total com estilo ajustado
+              // Linha 6: Botões
               Row(
                 children: [
                   Expanded(
@@ -229,7 +264,7 @@ class _NovoPedidoState extends State<NovoPedido> {
                       ),
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 24),
-                        backgroundColor: Colors.grey.shade200, // Botão foto
+                        backgroundColor: Colors.grey.shade200,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -239,38 +274,99 @@ class _NovoPedidoState extends State<NovoPedido> {
                   SizedBox(width: 10),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () {
-                        // Salva o pedido
+                      onPressed: () async {
+                        // Captura os dados dos controladores
+                        String clienteNome = clienteController.text;
+                        double pesoTotal =
+                            double.tryParse(pesoTotalController.text) ?? 0.0;
+                        String dataColeta = dataColetaController.text;
+                        String dataEntrega = dataEntregaController.text;
+
+                        // Criar um novo objeto Pedido
+                        Pedido novoPedido = Pedido(
+                          codCliente:
+                              1, // Código do cliente, pode ser obtido com base no nome
+                          qtdProduto: 1, // Defina conforme necessário
+                          valorProdutos: 0.0,
+                          pagamento: 0,
+                          recebimentoStatus: 0.0,
+                          classificacaoStatus: 0.0,
+                          lavagemStatus: 0.0,
+                          centrifugacaoStatus: 0.0,
+                          secagemStatus: 0.0,
+                          passadoriaStatus: 0.0,
+                          finalizacaoStatus: 0.0,
+                          retornoStatus: 0.0,
+                          dataColeta: dataColeta,
+                          dataRecebimento: null,
+                          horaRecebimento: null,
+                          dataLimite: dataEntrega,
+                          dataEntrega: dataEntrega,
+                          pesoTotal: pesoTotal,
+                          recebimentoObs: null,
+                          totalLotes: 0,
+                          classificacaoObs: null,
+                          passadoriaEquipamento: null,
+                          passadoriaTemperatura: null,
+                          passadoriaDataInicio: null,
+                          passadoriaHoraInicio: null,
+                          passadoriaDataFinal: null,
+                          passadoriaHoraFinal: null,
+                          passadoriaObs: null,
+                          finalizacaoReparo: null,
+                          finalizacaoEtiquetamento: null,
+                          finalizacaoTipoEmbalagem: null,
+                          finalizacaoVolumes: null,
+                          finalizacaoControleQualidade: null,
+                          finalizacaoDataFinal: null,
+                          finalizacaoHoraFinal: null,
+                          finalizacaoObs: null,
+                          lotes: [],
+                        );
+                        print(novoPedido);
+                        try {
+                          // Criar instância do PedidoDAO
+                          final pedidoDAO = PedidoDAO();
+
+                          // Inserir pedido no banco de dados
+                          await pedidoDAO.insert(novoPedido);
+
+                          // Chama o onSave para atualizar a interface
+                          widget.onSave();
+
+                          // Exibe uma mensagem de sucesso
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                                content: Text('Pedido inserido com sucesso!')),
+                          );
+                        } catch (e) {
+                          // Em caso de erro, exibe uma mensagem de erro
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                                content: Text('Erro ao inserir pedido: $e')),
+                          );
+                        }
+
                         widget.onSave();
-                        // Exibe a mensagem de sucesso
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text('Pedido salvo com sucesso!'),
-                            backgroundColor:
-                                Colors.green, // Cor de fundo da mensagem
-                            duration:
-                                Duration(seconds: 2), // Duração da mensagem
+                            backgroundColor: Colors.green,
+                            duration: Duration(seconds: 2),
                           ),
                         );
-
-                        // Redireciona para a tela de opções
-                        Navigator.pop(context);
+                        Navigator.pop(context); // Fecha o formulário
                       },
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 24),
-                        backgroundColor: Colors.green
-                            .withOpacity(0.7), // Cor do botão salvar
+                        backgroundColor: Colors.green.withOpacity(0.7),
                         foregroundColor: Colors.white,
-                        side: BorderSide(color: Colors.green, width: 1.5),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      child: Text(
-                        'Salvar Pedido',
-                        style: TextStyle(
-                            color: Colors.white, fontWeight: FontWeight.bold),
-                      ),
+                      child: Text('Salvar',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
                     ),
                   ),
                   SizedBox(width: 10),
@@ -281,10 +377,8 @@ class _NovoPedidoState extends State<NovoPedido> {
                       },
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 24),
-                        backgroundColor:
-                            Colors.red.withOpacity(0.7), // Botão cancelar
+                        backgroundColor: Colors.red.withOpacity(0.7),
                         foregroundColor: Colors.white,
-                        side: BorderSide(color: Colors.red, width: 1.5),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),

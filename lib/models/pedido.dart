@@ -1,7 +1,7 @@
 import 'package:tcc/models/lote.dart';
 
 class Pedido {
-  final int numPedido;
+  int? numPedido;
   final int codCliente;
   final double qtdProduto;
   double valorProdutos;
@@ -56,7 +56,7 @@ class Pedido {
   List<Lote> lotes;
 
   Pedido({
-    required this.numPedido,
+    this.numPedido,
     required this.codCliente,
     required this.qtdProduto,
     required this.valorProdutos,

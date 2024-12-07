@@ -13,20 +13,33 @@ class PedidoDAO implements GenericDAO<Pedido> {
       final result = await conn.query(
         '''
         INSERT INTO pedidos (
-          codCliente, nomeCliente, numPedido, dataColeta, dataRecebimento,
-          horaRecebimento, dataLimite, dataEntrega, pesoTotal
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''',
+          fk_codCliente, qtd_produto, valor_produtos, pagamento, 
+          recebimentoStatus, classificacaoStatus, lavagemStatus, 
+          centrifugacaoStatus, secagemStatus, passadoriaStatus, 
+          finalizacaoStatus, retornoStatus, dataColeta, dataLimite, 
+          dataEntrega, pesoTotal, totalLotes
+        ) VALUES (
+          ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+        )
+      ''',
         [
           pedido.codCliente,
-          //pedido.nomeCliente,
-          pedido.numPedido,
+          pedido.qtdProduto,
+          pedido.valorProdutos,
+          pedido.pagamento,
+          pedido.recebimentoStatus,
+          pedido.classificacaoStatus,
+          pedido.lavagemStatus,
+          pedido.centrifugacaoStatus,
+          pedido.secagemStatus,
+          pedido.passadoriaStatus,
+          pedido.finalizacaoStatus,
+          pedido.retornoStatus,
           pedido.dataColeta,
-          pedido.dataRecebimento,
-          pedido.horaRecebimento,
           pedido.dataLimite,
           pedido.dataEntrega,
           pedido.pesoTotal,
+          pedido.totalLotes,
         ],
       );
       return result.insertId!;
