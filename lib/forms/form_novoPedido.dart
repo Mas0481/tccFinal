@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:tcc/DAO/pedidoDAO.dart';
+import 'package:tcc/models/cliente.dart';
 import 'package:tcc/models/pedido.dart';
 import 'package:tcc/repository/clientes_repository.dart';
 import 'package:tcc/servicos/connection.dart';
@@ -25,9 +26,9 @@ class _NovoPedidoState extends State<NovoPedido> {
       TextEditingController();
   final TextEditingController observacoesController = TextEditingController();
 
-  List<String> clientes = [];
+  List<Map<String, dynamic>> clientes = []; // Armazena código e nome
   String? clienteSelecionado;
-
+  int? codigoClienteSelecionado;
   @override
   void initState() {
     super.initState();
@@ -38,21 +39,20 @@ class _NovoPedidoState extends State<NovoPedido> {
 
   void _loadClientes() async {
     try {
-      // Criando a instância do MySqlConnectionService
       final connectionService = MySqlConnectionService();
-
-      // Criando a instância do ClienteRepository e passando a connectionService
       final clienteRepository = ClienteRepository(connectionService);
-
-      // Chamando o método getClientes
       final resultado = await clienteRepository.getClientes();
 
       setState(() {
-        // Extraindo os nomes dos clientes da lista de mapas e armazenando na lista 'clientes'
-        clientes = resultado.map((cliente) => cliente['nome'] ?? '').toList();
+        clientes = resultado
+            .map((row) => {
+                  'codigo':
+                      row['codCliente'], // Ajustado para usar a chave correta
+                  'nome': row['nome'],
+                })
+            .toList();
       });
     } catch (e) {
-      // Exibindo erro caso algo aconteça durante a execução
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Erro ao carregar clientes: $e'),
@@ -124,16 +124,24 @@ class _NovoPedidoState extends State<NovoPedido> {
                   Expanded(
                     child: DropdownButtonFormField<String>(
                       value: clienteSelecionado,
-                      items: clientes.map((String cliente) {
+                      items: clientes.map((cliente) {
                         return DropdownMenuItem<String>(
-                          value: cliente,
-                          child: Text(cliente),
+                          value: cliente['nome'], // Usa o nome como valor
+                          child:
+                              Text('${cliente['nome']}'), // Exibe código e nome
                         );
                       }).toList(),
                       onChanged: (value) {
                         setState(() {
                           clienteSelecionado = value;
-                          clienteController.text = value!;
+                          // Obtém o código do cliente correspondente ao nome selecionado
+                          final clienteMap = clientes.firstWhere(
+                              (cliente) => cliente['nome'] == value);
+                          codigoClienteSelecionado =
+                              int.tryParse(clienteMap['codigo']!);
+
+                          print(
+                              'Codigo selecionado: $codigoClienteSelecionado');
                         });
                       },
                       decoration: InputDecoration(
@@ -283,9 +291,19 @@ class _NovoPedidoState extends State<NovoPedido> {
                         String dataEntrega = dataEntregaController.text;
 
                         // Criar um novo objeto Pedido
+                        if (codigoClienteSelecionado == null) {
+                          print(codigoClienteSelecionado);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                                content: Text(
+                                    'Erro no código do cliente selecionado')),
+                          );
+                          return;
+                        }
+
                         Pedido novoPedido = Pedido(
                           codCliente:
-                              1, // Código do cliente, pode ser obtido com base no nome
+                              codigoClienteSelecionado!, // Código do cliente, pode ser obtido com base no nome
                           qtdProduto: 1, // Defina conforme necessário
                           valorProdutos: 0.0,
                           pagamento: 0,
@@ -337,7 +355,8 @@ class _NovoPedidoState extends State<NovoPedido> {
                           // Exibe uma mensagem de sucesso
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                                content: Text('Pedido inserido com sucesso!')),
+                                content:
+                                    Text('Aguarde, pedido sendo processado!')),
                           );
                         } catch (e) {
                           // Em caso de erro, exibe uma mensagem de erro
