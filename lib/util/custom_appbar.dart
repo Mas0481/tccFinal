@@ -99,7 +99,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             TextButton(
               onPressed: () {
                 // Chama a rota home do routes.dart
-                Navigator.of(context).pushNamed('/home');
+                Navigator.of(context).pushNamed('/');
               },
               child: Text('Sim'),
             ),

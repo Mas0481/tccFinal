@@ -13,6 +13,33 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _passwordController = TextEditingController();
   bool rememberPassword = false;
 
+  void _performLogin(BuildContext context) async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    userProvider.setUsername(_userController.text);
+    userProvider.setPassword(_passwordController.text);
+
+    // Exibe um carregando enquanto autentica
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => Center(child: CircularProgressIndicator()),
+    );
+
+    // Realiza login
+    String message = await userProvider.login();
+    Navigator.pop(context); // Fecha o indicador de carregamento
+
+    if (userProvider.isAuthenticated) {
+      // Login bem-sucedido
+      Navigator.pushNamed(context, AppRoutes.options);
+    } else {
+      // Exibe mensagem de erro
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -24,13 +51,12 @@ class _LoginPageState extends State<LoginPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Image.asset(
-                  'lib/images/logo.png', // Caminho para o logo local
+                  'lib/images/logo.png',
                   width: 400,
                   height: 250,
                 ),
                 SizedBox(
-                  width:
-                      MediaQuery.of(context).size.width * 0.3, // 30% da largura
+                  width: MediaQuery.of(context).size.width * 0.3,
                   child: TextField(
                     controller: _userController,
                     decoration: InputDecoration(
@@ -39,10 +65,9 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                 ),
-                SizedBox(height: 20), // Espaçamento entre os campos
+                SizedBox(height: 20),
                 SizedBox(
-                  width:
-                      MediaQuery.of(context).size.width * 0.3, // 30% da largura
+                  width: MediaQuery.of(context).size.width * 0.3,
                   child: TextField(
                     controller: _passwordController,
                     obscureText: true,
@@ -52,8 +77,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                 ),
-                SizedBox(
-                    height: 20), // Espaçamento entre o campo de senha e a ajuda
+                SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -67,26 +91,17 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     Text('Lembrar senha'),
                     TextButton(
-                      onPressed: () {
-                        // Ação para "Esqueceu a senha?"
-                      },
+                      onPressed: () {},
                       child: Text('Esqueceu a senha?'),
                     ),
                   ],
                 ),
                 SizedBox(height: 20),
                 SizedBox(
-                  width:
-                      MediaQuery.of(context).size.width * 0.3, // 30% da largura
+                  width: MediaQuery.of(context).size.width * 0.3,
                   height: 50,
                   child: ElevatedButton(
-                    onPressed: () {
-                      Provider.of<UserProvider>(context, listen: false)
-                          .setUsername(_userController.text);
-                      Provider.of<UserProvider>(context, listen: false)
-                          .setPassword(_passwordController.text);
-                      Navigator.pushNamed(context, AppRoutes.options);
-                    },
+                    onPressed: () => _performLogin(context),
                     child: Text('Entrar'),
                   ),
                 ),

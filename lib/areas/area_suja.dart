@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:tcc/DAO/pedidoDAO.dart';
 import 'package:tcc/forms/form_classificacao.dart';
 import 'package:tcc/forms/form_lavagem.dart';
 import 'package:tcc/forms/form_recebimento.dart';
 import 'package:tcc/models/lote.dart';
 import 'package:tcc/models/pedido.dart';
-import 'package:tcc/providers/pedido_provider.dart';
 import 'package:tcc/util/custom_appbar.dart';
 import 'dart:async';
 
