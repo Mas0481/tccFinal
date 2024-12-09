@@ -102,8 +102,7 @@ class VisualizarPedido extends StatelessWidget {
                         _buildGroupTitle('Informações de Entrega'),
                         _buildTextField('Data de Coleta', pedido.dataColeta),
                         _buildTextField('Data Limite', pedido.dataLimite),
-                        _buildTextField(
-                            'Data de Entrega', pedido.dataEntrega ?? 'N/A',
+                        _buildTextField('Data de Entrega', pedido.dataEntrega,
                             isRed: true),
                       ],
                     ),

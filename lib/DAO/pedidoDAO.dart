@@ -367,7 +367,7 @@ class PedidoDAO implements GenericDAO<Pedido> {
   Future<List<Pedido>> getAll() async {
     final conn = await MySqlConnectionService().getConnection();
 
-    // 1. Obter todos os pedidos
+    // 1. Obter todos os pedidos organizados por dataEntrega
     final pedidosQuery = await conn.query('''
     SELECT 
       p.*,                          
@@ -377,7 +377,9 @@ class PedidoDAO implements GenericDAO<Pedido> {
     LEFT JOIN 
       clientes c ON c.codCliente = p.fk_codCliente
     LEFT JOIN 
-      pessoas pe ON pe.cpf = c.fk_cpf;
+      pessoas pe ON pe.cpf = c.fk_cpf
+    ORDER BY 
+      p.dataEntrega ASC;  -- Ordena pela coluna dataEntrega em ordem crescente
   ''');
 
     // Lista de pedidos que será retornada

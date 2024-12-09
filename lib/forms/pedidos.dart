@@ -122,11 +122,18 @@ class _PedidosState extends State<Pedidos> {
               ),
               SizedBox(height: 10),
 
-              // Lista de pedidos
+              // Verificar se há pedidos
               pedidos.isEmpty
                   ? Center(
-                      child:
-                          CircularProgressIndicator()) // Carregamento enquanto os dados são buscados
+                      child: Text(
+                        'Sem Pedidos Registrados',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.normal,
+                          color: Colors.red,
+                        ),
+                      ),
+                    ) // Exibe a mensagem se não houver pedidos
                   : Container(
                       height: MediaQuery.of(context).size.height *
                           0.5, // Definir altura para permitir rolagem

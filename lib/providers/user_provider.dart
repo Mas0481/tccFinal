@@ -23,6 +23,14 @@ class UserProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  // Novo método para limpar os dados de login
+  void clearCredentials() {
+    _username = '';
+    _password = '';
+    _isAuthenticated = false;
+    notifyListeners();
+  }
+
   Future<String> login() async {
     try {
       if (_username.isEmpty || _password.isEmpty) {

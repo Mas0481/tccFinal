@@ -98,7 +98,11 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             ),
             TextButton(
               onPressed: () {
-                // Chama a rota home do routes.dart
+                // Limpa as credenciais no provider
+                Provider.of<UserProvider>(context, listen: false)
+                    .clearCredentials();
+
+                // Volta para a rota inicial (ou raiz)
                 Navigator.of(context).pushNamed('/');
               },
               child: Text('Sim'),

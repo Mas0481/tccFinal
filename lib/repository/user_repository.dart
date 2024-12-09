@@ -1,6 +1,3 @@
-import 'package:crypto/crypto.dart';
-import 'dart:convert';
-import 'package:mysql1/mysql1.dart';
 import 'package:tcc/servicos/connection.dart';
 
 class UserRepository {
@@ -21,7 +18,7 @@ class UserRepository {
       }
 
       final storedHash = results.first['password'] as String;
-      //final inputHash = sha256.convert(utf8.encode(password)).toString(); codigo de ingresso deve usar a mesma criptografia.
+      //final inputHash = sha256.convert(utf8.encode(password)).toString(); código de ingresso deve usar a mesma criptografia.
       final inputHash = password.toString();
 
       return inputHash == storedHash;
