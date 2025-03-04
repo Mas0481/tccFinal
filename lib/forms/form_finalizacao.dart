@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 class Finalizacao extends StatefulWidget {
   final VoidCallback onSave;
 
-  Finalizacao({required this.onSave});
+  const Finalizacao({super.key, required this.onSave});
 
   @override
   _FinalizacaoState createState() => _FinalizacaoState();
@@ -26,8 +26,8 @@ class _FinalizacaoState extends State<Finalizacao> {
   @override
   void initState() {
     super.initState();
-    dataLimiteController.text = DateFormat('dd/MM/yyyy').format(
-        DateTime.now().add(Duration(days: 5))); // Data limite fixa como exemplo
+    dataLimiteController.text = DateFormat('dd/MM/yyyy').format(DateTime.now()
+        .add(const Duration(days: 5))); // Data limite fixa como exemplo
     dataInicioController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
     horaInicioController.text = DateFormat('HH:mm').format(DateTime.now());
   }
@@ -68,10 +68,10 @@ class _FinalizacaoState extends State<Finalizacao> {
                     width: 200,
                     height: 130,
                     errorBuilder: (context, error, stackTrace) {
-                      return Icon(Icons.error, size: 150);
+                      return const Icon(Icons.error, size: 150);
                     },
                   ),
-                  Expanded(
+                  const Expanded(
                     child: Center(
                       child: Text(
                         'Finalização',
@@ -82,11 +82,11 @@ class _FinalizacaoState extends State<Finalizacao> {
                       ),
                     ),
                   ),
-                  Container(
+                  SizedBox(
                     width: 150,
                     child: TextField(
                       controller: dataLimiteController,
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.red,
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
@@ -102,7 +102,7 @@ class _FinalizacaoState extends State<Finalizacao> {
                   ),
                 ],
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
 
               // Cliente
               TextField(
@@ -114,7 +114,7 @@ class _FinalizacaoState extends State<Finalizacao> {
                   ),
                 ),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
 
               // Pedido, Reparo, Etiquetamento e Data de Início
               Row(
@@ -131,7 +131,7 @@ class _FinalizacaoState extends State<Finalizacao> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: TextField(
                       controller: reparoController,
@@ -143,7 +143,7 @@ class _FinalizacaoState extends State<Finalizacao> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: TextField(
                       controller: etiquetamentoController,
@@ -155,7 +155,7 @@ class _FinalizacaoState extends State<Finalizacao> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: GestureDetector(
                       onTap: () => _selectDate(context, dataInicioController),
@@ -174,7 +174,7 @@ class _FinalizacaoState extends State<Finalizacao> {
                   ),
                 ],
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
 
               // Tipo de Embalagem, Volumes, Controle de Qualidade e Hora de Início
               Row(
@@ -190,7 +190,7 @@ class _FinalizacaoState extends State<Finalizacao> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: TextField(
                       controller: volumesController,
@@ -203,7 +203,7 @@ class _FinalizacaoState extends State<Finalizacao> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: TextField(
                       controller: qualidadeController,
@@ -215,7 +215,7 @@ class _FinalizacaoState extends State<Finalizacao> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: TextField(
                       controller: horaInicioController,
@@ -230,7 +230,7 @@ class _FinalizacaoState extends State<Finalizacao> {
                   ),
                 ],
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
 
               // Observações e botões
               Row(
@@ -248,7 +248,7 @@ class _FinalizacaoState extends State<Finalizacao> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   SizedBox(
                     width: 90,
                     child: ElevatedButton(
@@ -257,7 +257,7 @@ class _FinalizacaoState extends State<Finalizacao> {
                         Navigator.pop(context);
                       },
                       style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(vertical: 40),
+                        padding: const EdgeInsets.symmetric(vertical: 40),
                         backgroundColor: Colors.blueAccent,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
@@ -267,7 +267,7 @@ class _FinalizacaoState extends State<Finalizacao> {
                           style: TextStyle(color: Colors.white)),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   SizedBox(
                     width: 90,
                     child: ElevatedButton(
@@ -275,7 +275,7 @@ class _FinalizacaoState extends State<Finalizacao> {
                         Navigator.pop(context);
                       },
                       style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(vertical: 40),
+                        padding: const EdgeInsets.symmetric(vertical: 40),
                         backgroundColor: Colors.red,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
@@ -287,7 +287,7 @@ class _FinalizacaoState extends State<Finalizacao> {
                   ),
                 ],
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
             ],
           ),
         ),

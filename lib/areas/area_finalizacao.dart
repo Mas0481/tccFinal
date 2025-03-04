@@ -8,6 +8,8 @@ import '../models/lote.dart';
 import '../models/pedido.dart';
 
 class AreaFinalizacao extends StatelessWidget {
+  const AreaFinalizacao({super.key});
+
   // final PageController _pageController =
   //   PageController(initialPage: 0, viewportFraction: 0.1);
 
@@ -60,7 +62,7 @@ class AreaFinalizacao extends StatelessWidget {
 class AreaFinalizacaoPage extends StatefulWidget {
   final List<Pedido> pedidos;
 
-  AreaFinalizacaoPage({required this.pedidos});
+  const AreaFinalizacaoPage({super.key, required this.pedidos});
 
   @override
   _AreaFinalizacaoPageState createState() => _AreaFinalizacaoPageState();
@@ -78,7 +80,7 @@ class _AreaFinalizacaoPageState extends State<AreaFinalizacaoPage> {
   }
 
   void startTimer() {
-    timer = Timer.periodic(Duration(seconds: 01), (timer) {
+    timer = Timer.periodic(const Duration(seconds: 01), (timer) {
       setState(() {
         // Aqui você pode implementar a lógica para atualizar os pedidos
       });
@@ -100,13 +102,13 @@ class _AreaFinalizacaoPageState extends State<AreaFinalizacaoPage> {
         children: [
           Center(
             child: Container(
-              margin: EdgeInsets.only(left: 25),
+              margin: const EdgeInsets.only(left: 25),
               height: MediaQuery.of(context).size.height * 0.807,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: pedidos.length,
                 itemBuilder: (context, index) {
-                  return Container(
+                  return SizedBox(
                     width: MediaQuery.of(context).size.width * 0.24,
                     child: buildPedidoCard(pedidos[index]),
                   );
@@ -122,7 +124,7 @@ class _AreaFinalizacaoPageState extends State<AreaFinalizacaoPage> {
   Widget buildPedidoCard(Pedido pedido) {
     return Container(
       width: MediaQuery.of(context).size.width * 0.25,
-      margin: EdgeInsets.all(10),
+      margin: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -137,26 +139,29 @@ class _AreaFinalizacaoPageState extends State<AreaFinalizacaoPage> {
               // Text('Cliente: ${pedido.nomeCliente}',
               // style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
               Text('Pedido: ${pedido.numPedido}',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-              SizedBox(height: 5),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 15)),
+              const SizedBox(height: 5),
               Text('Data Entrega: ${pedido.dataEntrega}',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 15)),
               Text('Peso Total: ${pedido.pesoTotal}kg',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-              SizedBox(height: 6),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 15)),
+              const SizedBox(height: 6),
               buildProgressBar(
                   'Passadoria', pedido.passadoriaStatus.toDouble(), pedido),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               buildLoteRow(pedido, 'Passadoria'),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               buildProgressBar(
                   'Finalização', pedido.finalizacaoStatus.toDouble(), pedido),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               buildLoteRow(pedido, 'Finalização'),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               buildProgressBar(
                   'Retorno', pedido.retornoStatus.toDouble(), pedido),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               buildLoteRow(pedido, 'Retorno'),
             ],
           ),
@@ -182,12 +187,12 @@ class _AreaFinalizacaoPageState extends State<AreaFinalizacaoPage> {
             context: context,
             builder: (BuildContext context) {
               return AlertDialog(
-                title: Text('Atenção'),
-                content: Text('Processo Concluido!'),
+                title: const Text('Atenção'),
+                content: const Text('Processo Concluido!'),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: Text('OK'),
+                    child: const Text('OK'),
                   ),
                 ],
               );
@@ -198,12 +203,12 @@ class _AreaFinalizacaoPageState extends State<AreaFinalizacaoPage> {
             context: context,
             builder: (BuildContext context) {
               return AlertDialog(
-                title: Text('Atenção'),
-                content: Text('Processo Concluido!'),
+                title: const Text('Atenção'),
+                content: const Text('Processo Concluido!'),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: Text('OK'),
+                    child: const Text('OK'),
                   ),
                 ],
               );
@@ -214,12 +219,12 @@ class _AreaFinalizacaoPageState extends State<AreaFinalizacaoPage> {
             context: context,
             builder: (BuildContext context) {
               return AlertDialog(
-                title: Text('Atenção'),
-                content: Text('Processo Concluido!'),
+                title: const Text('Atenção'),
+                content: const Text('Processo Concluido!'),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: Text('OK'),
+                    child: const Text('OK'),
                   ),
                 ],
               );
@@ -230,13 +235,13 @@ class _AreaFinalizacaoPageState extends State<AreaFinalizacaoPage> {
             context: context,
             builder: (BuildContext context) {
               return AlertDialog(
-                title: Text('Atenção'),
+                title: const Text('Atenção'),
                 content: Text(
                     'Para Iniciar o Processo de $label Clique no Botão Registrar Inicio!'),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: Text('OK'),
+                    child: const Text('OK'),
                   ),
                 ],
               );
@@ -252,14 +257,14 @@ class _AreaFinalizacaoPageState extends State<AreaFinalizacaoPage> {
             value: progress / 2, // Para uma visualização adequada
             backgroundColor: Colors.grey[200],
             borderRadius: BorderRadius.circular(8),
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+            valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
             minHeight: 67,
           ),
           Positioned.fill(
             child: Center(
               child: Text(
                 displayLabel,
-                style: TextStyle(color: Colors.black),
+                style: const TextStyle(color: Colors.black),
               ),
             ),
           ),
@@ -269,12 +274,12 @@ class _AreaFinalizacaoPageState extends State<AreaFinalizacaoPage> {
   }
 
   Widget buildLoteRow(Pedido pedido, String processo) {
-    return Container(
+    return SizedBox(
       height: 67,
       child: Row(
         children: [
           Expanded(child: buildLoteButtonIniciar(pedido, processo)),
-          SizedBox(width: 10),
+          const SizedBox(width: 10),
           Expanded(child: buildLoteButtonFinalizar(pedido, processo)),
         ],
       ),
@@ -364,13 +369,13 @@ class _AreaFinalizacaoPageState extends State<AreaFinalizacaoPage> {
                   context: context,
                   builder: (BuildContext context) {
                     return AlertDialog(
-                      title: Text('Atenção'),
-                      content: Text(
+                      title: const Text('Atenção'),
+                      content: const Text(
                           'Para dar início ao Processo de Retorno, todos os Processos anteriores devem estar Finalizados!'),
                       actions: [
                         TextButton(
                             onPressed: () => Navigator.of(context).pop(),
-                            child: Text('OK'))
+                            child: const Text('OK'))
                       ],
                     );
                   },
@@ -380,13 +385,13 @@ class _AreaFinalizacaoPageState extends State<AreaFinalizacaoPage> {
                   context: context,
                   builder: (BuildContext context) {
                     return AlertDialog(
-                      title: Text('Atenção'),
+                      title: const Text('Atenção'),
                       content: Text(
                           'Para dar início ao Processo de $processo, todos os Processos anteriores devem estar no mínimo iniciados!'),
                       actions: [
                         TextButton(
                             onPressed: () => Navigator.of(context).pop(),
-                            child: Text('OK'))
+                            child: const Text('OK'))
                       ],
                     );
                   },
@@ -400,9 +405,10 @@ class _AreaFinalizacaoPageState extends State<AreaFinalizacaoPage> {
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: Colors.grey[300]!, width: 1),
             ),
-            padding: EdgeInsets.symmetric(vertical: 20),
+            padding: const EdgeInsets.symmetric(vertical: 20),
             child: Center(
-                child: Text(buttonText, style: TextStyle(color: Colors.black))),
+                child: Text(buttonText,
+                    style: const TextStyle(color: Colors.black))),
           ),
         );
       },
@@ -455,13 +461,13 @@ class _AreaFinalizacaoPageState extends State<AreaFinalizacaoPage> {
                 context: context,
                 builder: (BuildContext context) {
                   return AlertDialog(
-                    title: Text('Atenção'),
-                    content: Text(
+                    title: const Text('Atenção'),
+                    content: const Text(
                         'O processo precisa ser iniciado antes de ser finalizado.'),
                     actions: [
                       TextButton(
                           onPressed: () => Navigator.of(context).pop(),
-                          child: Text('OK'))
+                          child: const Text('OK'))
                     ],
                   );
                 },
@@ -474,9 +480,10 @@ class _AreaFinalizacaoPageState extends State<AreaFinalizacaoPage> {
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: Colors.grey[300]!, width: 1),
             ),
-            padding: EdgeInsets.symmetric(vertical: 20),
+            padding: const EdgeInsets.symmetric(vertical: 20),
             child: Center(
-                child: Text(buttonText, style: TextStyle(color: Colors.black))),
+                child: Text(buttonText,
+                    style: const TextStyle(color: Colors.black))),
           ),
         );
       },
@@ -488,19 +495,20 @@ class _AreaFinalizacaoPageState extends State<AreaFinalizacaoPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Confirmação'),
-          content: Text('Tem certeza que deseja finalizar este processo?'),
+          title: const Text('Confirmação'),
+          content:
+              const Text('Tem certeza que deseja finalizar este processo?'),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text('Cancelar'),
+              child: const Text('Cancelar'),
             ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
                 onConfirm(); // Executa a função de confirmação
               },
-              child: Text('Confirmar'),
+              child: const Text('Confirmar'),
             ),
           ],
         );
@@ -513,12 +521,12 @@ class _AreaFinalizacaoPageState extends State<AreaFinalizacaoPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Atenção'),
+          title: const Text('Atenção'),
           content: Text(message),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text('OK'),
+              child: const Text('OK'),
             ),
           ],
         );
@@ -531,7 +539,7 @@ class _AreaFinalizacaoPageState extends State<AreaFinalizacaoPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Atenção'),
+          title: const Text('Atenção'),
           content: Text(
               'O processo anterior ($processoAnterior) ainda não foi iniciado.'),
           actions: [
@@ -539,7 +547,7 @@ class _AreaFinalizacaoPageState extends State<AreaFinalizacaoPage> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('OK'),
+              child: const Text('OK'),
             ),
           ],
         );

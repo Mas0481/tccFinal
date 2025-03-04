@@ -4,6 +4,8 @@ import 'package:tcc/util/custom_appbar.dart';
 import 'routes.dart';
 
 class OptionsPage extends StatelessWidget {
+  const OptionsPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -22,9 +24,9 @@ class OptionsPage extends StatelessWidget {
               height: 250,
             ),
             buildOptionButton(context, 'Área Suja', AppRoutes.areaSuja),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             buildOptionButton(context, 'Área Preparação', AppRoutes.preparacao),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             buildOptionButton(
                 context, 'Área Finalização', AppRoutes.finalizacao),
           ],
@@ -53,10 +55,10 @@ class OptionsPage extends StatelessWidget {
               backgroundColor:
                   const Color.fromARGB(255, 238, 233, 237), // Cor do botão
               foregroundColor: const Color.fromARGB(255, 119, 90, 113),
-              side: BorderSide(color: Color.fromARGB(255, 238, 233, 237)),
-              shape: CircleBorder(),
+              side: const BorderSide(color: Color.fromARGB(255, 238, 233, 237)),
+              shape: const CircleBorder(),
             ),
-            child: Text(
+            child: const Text(
               '+',
               style: TextStyle(
                   color: Color.fromARGB(255, 119, 90, 113), fontSize: 30),

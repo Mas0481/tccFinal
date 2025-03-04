@@ -4,7 +4,7 @@ import 'package:intl/intl.dart'; // Para formatar datas
 class Recebimento extends StatefulWidget {
   final VoidCallback onSave; // Adiciona um callback
 
-  Recebimento({required this.onSave}); // Construtor
+  const Recebimento({super.key, required this.onSave}); // Construtor
 
   @override
   _RecebimentoState createState() => _RecebimentoState();
@@ -69,12 +69,12 @@ class _RecebimentoState extends State<Recebimento> {
                     width: 200, // Tamanho do logo
                     height: 130,
                     errorBuilder: (context, error, stackTrace) {
-                      return Icon(Icons.error,
+                      return const Icon(Icons.error,
                           size:
                               150); // Ícone de erro caso não carregue a imagem
                     },
                   ),
-                  Expanded(
+                  const Expanded(
                     child: Center(
                       child: Text(
                         'Recebimento',
@@ -108,7 +108,8 @@ class _RecebimentoState extends State<Recebimento> {
                   ),
                 ],
               ),
-              SizedBox(height: 10), // Mantendo o mesmo espaçamento entre linhas
+              const SizedBox(
+                  height: 10), // Mantendo o mesmo espaçamento entre linhas
 
               // Pedido e Data Coleta (na mesma linha)
               Row(
@@ -129,7 +130,7 @@ class _RecebimentoState extends State<Recebimento> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
@@ -154,7 +155,8 @@ class _RecebimentoState extends State<Recebimento> {
                   ),
                 ],
               ),
-              SizedBox(height: 10), // Mantendo o mesmo espaçamento entre linhas
+              const SizedBox(
+                  height: 10), // Mantendo o mesmo espaçamento entre linhas
 
               // Data Entrega e Peso Total (na mesma linha)
               Row(
@@ -181,7 +183,7 @@ class _RecebimentoState extends State<Recebimento> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: TextField(
                       controller: pesoTotalController,
@@ -200,7 +202,8 @@ class _RecebimentoState extends State<Recebimento> {
                   ),
                 ],
               ),
-              SizedBox(height: 10), // Mantendo o mesmo espaçamento entre linhas
+              const SizedBox(
+                  height: 10), // Mantendo o mesmo espaçamento entre linhas
 
               // Observações e Botão OK (na mesma linha)
               Row(
@@ -222,7 +225,7 @@ class _RecebimentoState extends State<Recebimento> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   SizedBox(
                     width: 90,
                     child: ElevatedButton(
@@ -232,19 +235,19 @@ class _RecebimentoState extends State<Recebimento> {
                         Navigator.pop(context);
                       },
                       style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(vertical: 40),
+                        padding: const EdgeInsets.symmetric(vertical: 40),
                         backgroundColor: Colors.blueAccent,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      child: Text(
+                      child: const Text(
                         'OK',
                         style: TextStyle(fontSize: 18, color: Colors.white),
                       ),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   SizedBox(
                     width: 90,
                     child: ElevatedButton(
@@ -252,13 +255,13 @@ class _RecebimentoState extends State<Recebimento> {
                         Navigator.pop(context);
                       },
                       style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(vertical: 40),
+                        padding: const EdgeInsets.symmetric(vertical: 40),
                         backgroundColor: Colors.red, // Cor vermelha
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      child: Text(
+                      child: const Text(
                         'Cancelar',
                         style: TextStyle(fontSize: 18, color: Colors.white),
                       ),

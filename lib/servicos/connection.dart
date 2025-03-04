@@ -2,10 +2,10 @@ import 'package:mysql1/mysql1.dart';
 
 class MySqlConnectionService {
   final ConnectionSettings settings = ConnectionSettings(
-    host: '10.0.0.121',
+    host: '100.122.103.5',
     port: 3306,
-    user: 'admin',
-    password: 'Internet123!',
+    user: 'tcc',
+    password: 'tcc123',
     db: 'projeto_final',
   );
 
@@ -16,7 +16,7 @@ class MySqlConnectionService {
       return connection;
     } catch (e) {
       print('Erro ao conectar ao banco de dados: $e');
-      throw e;
+      rethrow;
     }
   }
 }

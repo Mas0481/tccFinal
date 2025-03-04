@@ -7,7 +7,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool usuario;
   final bool logo;
 
-  CustomAppBar({
+  const CustomAppBar({
+    super.key,
     required this.titulo,
     required this.usuario,
     required this.logo,
@@ -27,7 +28,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
             title: Text(
               titulo,
-              style: TextStyle(
+              style: const TextStyle(
                 fontWeight: FontWeight.bold, // Define o título em negrito
               ),
             ),
@@ -40,15 +41,15 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       IconButton(
-                        icon:
-                            Icon(Icons.account_circle, size: 40), // Ícone maior
+                        icon: const Icon(Icons.account_circle,
+                            size: 40), // Ícone maior
                         onPressed: () {
                           _onUserPressed(context);
                         },
                       ),
                       Text(
                         username,
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Colors.black,
                           fontSize: 12,
                         ), // Nome do usuário
@@ -64,7 +65,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           Positioned(
             left: 50, // Margem de 16 à esquerda
             top: 30, // Margem de 16 no topo
-            child: Container(
+            child: SizedBox(
               width: 220, // Ajuste a largura conforme necessário
               height: 65, // A altura da logo deve ser igual à altura da AppBar
               child: ClipRect(
@@ -87,21 +88,21 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Trocar de Usuário'),
-          content: Text('Você deseja trocar de usuário?'),
+          title: const Text('Trocar de Usuário'),
+          content: const Text('Você deseja trocar de usuário?'),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(); // Fecha o diálogo
               },
-              child: Text('Não'),
+              child: const Text('Não'),
             ),
             TextButton(
               onPressed: () {
                 // Chama a rota home do routes.dart
                 Navigator.of(context).pushNamed('/home');
               },
-              child: Text('Sim'),
+              child: const Text('Sim'),
             ),
           ],
         );
@@ -110,5 +111,5 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   @override
-  Size get preferredSize => Size.fromHeight(80.0);
+  Size get preferredSize => const Size.fromHeight(80.0);
 }

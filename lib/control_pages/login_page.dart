@@ -4,6 +4,8 @@ import 'package:tcc/control_pages/routes.dart';
 import 'package:tcc/providers/user_provider.dart'; // Certifique-se de que o caminho esteja correto
 
 class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
+
   @override
   _LoginPageState createState() => _LoginPageState();
 }
@@ -33,26 +35,26 @@ class _LoginPageState extends State<LoginPage> {
                       MediaQuery.of(context).size.width * 0.3, // 30% da largura
                   child: TextField(
                     controller: _userController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'Usuário',
                       border: OutlineInputBorder(),
                     ),
                   ),
                 ),
-                SizedBox(height: 20), // Espaçamento entre os campos
+                const SizedBox(height: 20), // Espaçamento entre os campos
                 SizedBox(
                   width:
                       MediaQuery.of(context).size.width * 0.3, // 30% da largura
                   child: TextField(
                     controller: _passwordController,
                     obscureText: true,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'Senha',
                       border: OutlineInputBorder(),
                     ),
                   ),
                 ),
-                SizedBox(
+                const SizedBox(
                     height: 20), // Espaçamento entre o campo de senha e a ajuda
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -65,16 +67,16 @@ class _LoginPageState extends State<LoginPage> {
                         });
                       },
                     ),
-                    Text('Lembrar senha'),
+                    const Text('Lembrar senha'),
                     TextButton(
                       onPressed: () {
                         // Ação para "Esqueceu a senha?"
                       },
-                      child: Text('Esqueceu a senha?'),
+                      child: const Text('Esqueceu a senha?'),
                     ),
                   ],
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 SizedBox(
                   width:
                       MediaQuery.of(context).size.width * 0.3, // 30% da largura
@@ -87,7 +89,7 @@ class _LoginPageState extends State<LoginPage> {
                           .setPassword(_passwordController.text);
                       Navigator.pushNamed(context, AppRoutes.options);
                     },
-                    child: Text('Entrar'),
+                    child: const Text('Entrar'),
                   ),
                 ),
               ],

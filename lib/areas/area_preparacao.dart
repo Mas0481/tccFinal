@@ -9,6 +9,8 @@ import '../models/lote.dart';
 import '../models/pedido.dart';
 
 class AreaPreparacao extends StatelessWidget {
+  const AreaPreparacao({super.key});
+
   @override
   Widget build(BuildContext context) {
     List<Pedido> pedidos = [
@@ -58,7 +60,7 @@ class AreaPreparacao extends StatelessWidget {
 class AreaPreparacaoPage extends StatefulWidget {
   final List<Pedido> pedidos;
 
-  AreaPreparacaoPage({required this.pedidos});
+  const AreaPreparacaoPage({super.key, required this.pedidos});
 
   @override
   _AreaPreparacaoPageState createState() => _AreaPreparacaoPageState();
@@ -76,7 +78,7 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
   }
 
   void startTimer() {
-    timer = Timer.periodic(Duration(seconds: 30), (timer) {
+    timer = Timer.periodic(const Duration(seconds: 30), (timer) {
       // Aqui você pode implementar a lógica para atualizar os pedidos
       setState(() {
         // Atualize os pedidos conforme necessário
@@ -102,13 +104,13 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
         children: [
           Center(
             child: Container(
-              margin: EdgeInsets.only(left: 25),
+              margin: const EdgeInsets.only(left: 25),
               height: MediaQuery.of(context).size.height * 0.807,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: pedidos.length,
                 itemBuilder: (context, index) {
-                  return Container(
+                  return SizedBox(
                     width: MediaQuery.of(context).size.width * 0.24,
                     child: buildPedidoCard(pedidos[index]),
                   );
@@ -129,7 +131,7 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
     return Container(
       width: MediaQuery.of(context).size.width *
           0.25, // Cada elemento ocupa 25% da largura
-      margin: EdgeInsets.all(10),
+      margin: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -147,28 +149,28 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('Cliente: ${pedido.centrifugacaoStatus}',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 15)),
                   Text('Pedido: ${pedido.numPedido}',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                  SizedBox(height: 5),
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 15)),
+                  const SizedBox(height: 5),
                   Text('Data Entrega: ${pedido.dataEntrega}',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 15)),
                   Text('Peso Total: ${pedido.pesoTotal}kg',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 15)),
                 ],
               ),
-              SizedBox(height: 06),
+              const SizedBox(height: 06),
 
               // Barras de Progresso
               Column(
                 children: [
                   buildProgressBar1(
                       'Centrifugação', progressoCentrifugacao, pedido),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                 ],
               ),
 
@@ -176,7 +178,7 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
               SizedBox(
                 height: 145, // Aumentando a altura do GridView
                 child: GridView.builder(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2, // Define duas colunas
                     childAspectRatio: 2, // Proporção de aspecto dos botões
                     crossAxisSpacing: 10, // Espaçamento horizontal
@@ -193,15 +195,15 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
                   },
                 ),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               buildProgressBar1('Secagem', progressoSecagem, pedido),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
 
               // Lotes - dois por linha usando GridView
               SizedBox(
                 height: 320, // Aumentando a altura do GridView
                 child: GridView.builder(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2, // Define duas colunas
                     childAspectRatio: 2, // Proporção de aspecto dos botões
                     crossAxisSpacing: 10, // Espaçamento horizontal
@@ -242,13 +244,13 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
             context: context,
             builder: (BuildContext context) {
               return AlertDialog(
-                title: Text('Atenção'),
-                content:
-                    Text('Todos os lotes de Centrifugação foram concluídos!'),
+                title: const Text('Atenção'),
+                content: const Text(
+                    'Todos os lotes de Centrifugação foram concluídos!'),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: Text('OK'),
+                    child: const Text('OK'),
                   ),
                 ],
               );
@@ -259,12 +261,13 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
             context: context,
             builder: (BuildContext context) {
               return AlertDialog(
-                title: Text('Atenção'),
-                content: Text('Todos os lotes de Secagem foram concluídos!'),
+                title: const Text('Atenção'),
+                content:
+                    const Text('Todos os lotes de Secagem foram concluídos!'),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: Text('OK'),
+                    child: const Text('OK'),
                   ),
                 ],
               );
@@ -275,13 +278,13 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
             context: context,
             builder: (BuildContext context) {
               return AlertDialog(
-                title: Text('Atenção'),
+                title: const Text('Atenção'),
                 content: Text(
                     'Para iniciar o processo de $label, use o botão do Lote desejado.'),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: Text('OK'),
+                    child: const Text('OK'),
                   ),
                 ],
               );
@@ -297,7 +300,7 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
             value: progress,
             backgroundColor: Colors.grey[200],
             borderRadius: BorderRadius.circular(8),
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+            valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
             minHeight: 67,
           ),
           // Texto sobreposto
@@ -305,7 +308,7 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
             child: Center(
               child: Text(
                 displayLabel,
-                style: TextStyle(
+                style: const TextStyle(
                   color: Colors.black,
                 ),
               ),
@@ -343,13 +346,13 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
             context: context,
             builder: (BuildContext context) {
               return AlertDialog(
-                title: Text('Atenção'),
+                title: const Text('Atenção'),
                 content:
                     Text('O processo de $processo do lote já foi concluído.'),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: Text('OK'),
+                    child: const Text('OK'),
                   ),
                 ],
               );
@@ -361,13 +364,13 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
             context: context,
             builder: (BuildContext context) {
               return AlertDialog(
-                title: Text('Atenção'),
+                title: const Text('Atenção'),
                 content:
                     Text('O processo de $processo do lote já foi concluído.'),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: Text('OK'),
+                    child: const Text('OK'),
                   ),
                 ],
               );
@@ -428,13 +431,13 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
             context: context,
             builder: (BuildContext context) {
               return AlertDialog(
-                title: Text('Atenção'),
+                title: const Text('Atenção'),
                 content: Text(
                     'Para iniciar o processo de $processo, verifique os status dos processos anteriores. É necessário que tenham pelo menos sido iniciado.'),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: Text('OK'),
+                    child: const Text('OK'),
                   ),
                 ],
               );
@@ -448,9 +451,9 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: Colors.grey[300]!, width: 1),
         ),
-        padding: EdgeInsets.symmetric(vertical: 20),
+        padding: const EdgeInsets.symmetric(vertical: 20),
         child: Center(
-          child: Text(buttonText, style: TextStyle(color: Colors.black)),
+          child: Text(buttonText, style: const TextStyle(color: Colors.black)),
         ),
       ),
     );

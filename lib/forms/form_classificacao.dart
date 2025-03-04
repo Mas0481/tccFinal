@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class Classificacao extends StatefulWidget {
   final VoidCallback onSave; // Adiciona um callback
 
-  Classificacao({required this.onSave}); // Construtor
+  const Classificacao({super.key, required this.onSave}); // Construtor
 
   @override
   _ClassificacaoState createState() => _ClassificacaoState();
@@ -57,10 +57,10 @@ class _ClassificacaoState extends State<Classificacao> {
                     width: 200,
                     height: 130,
                     errorBuilder: (context, error, stackTrace) {
-                      return Icon(Icons.error, size: 150);
+                      return const Icon(Icons.error, size: 150);
                     },
                   ),
-                  Expanded(
+                  const Expanded(
                     child: Center(
                       child: Text(
                         'Classificação',
@@ -93,8 +93,8 @@ class _ClassificacaoState extends State<Classificacao> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 10),
-                  Container(
+                  const SizedBox(width: 10),
+                  SizedBox(
                     width: MediaQuery.of(context).size.width *
                         0.5 *
                         0.2, // 20% da largura do container
@@ -115,7 +115,7 @@ class _ClassificacaoState extends State<Classificacao> {
                   ),
                 ],
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
 
               // Container com os processos
               Container(
@@ -136,18 +136,18 @@ class _ClassificacaoState extends State<Classificacao> {
                         child: Row(
                           children: [
                             // Largura do lote ajustada
-                            Container(
+                            SizedBox(
                               width: 30, // Largura fixa para o número do lote
                               child: Center(
                                 child: Text(
                                   '${index + 1}', // Identificação do lote
-                                  style: TextStyle(fontSize: 16),
+                                  style: const TextStyle(fontSize: 16),
                                 ),
                               ),
                             ),
-                            SizedBox(width: 10),
+                            const SizedBox(width: 10),
                             // Largura do dropdown processo
-                            Container(
+                            SizedBox(
                               width: MediaQuery.of(context).size.width *
                                   0.5 *
                                   0.55, // 55% da largura do container
@@ -177,9 +177,9 @@ class _ClassificacaoState extends State<Classificacao> {
                                 },
                               ),
                             ),
-                            SizedBox(width: 10),
+                            const SizedBox(width: 10),
                             // Largura do peso
-                            Container(
+                            SizedBox(
                               width: MediaQuery.of(context).size.width *
                                   0.5 *
                                   0.2, // 20% da largura do container
@@ -201,26 +201,25 @@ class _ClassificacaoState extends State<Classificacao> {
                               ),
                             ),
                             IconButton(
-                              icon: Icon(Icons.remove_circle,
+                              icon: const Icon(Icons.remove_circle,
                                   color: Colors.blueAccent),
                               onPressed: () => _removeProcesso(index),
                             ),
                           ],
                         ),
                       );
-                    }).toList(),
-                    SizedBox(height: 10),
+                    }),
+                    const SizedBox(height: 10),
                     ElevatedButton(
-                      onPressed: _addProcesso,
-                      child: Text('+ Adicionar Lote',
-                          style: TextStyle(
-                              color: Colors.white)), // Cor da fonte alterada
+                      onPressed: _addProcesso, // Cor da fonte alterada
                       style: ElevatedButton.styleFrom(
                         backgroundColor:
                             Colors.blueAccent, // Cor azul para o botão
                       ),
+                      child: Text('+ Adicionar Lote',
+                          style: TextStyle(color: Colors.white)),
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     // Linha com quantidade de lotes e peso total
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -235,7 +234,7 @@ class _ClassificacaoState extends State<Classificacao> {
                 ),
               ),
 
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
 
               // Observações e Botão OK
               Row(
@@ -256,7 +255,7 @@ class _ClassificacaoState extends State<Classificacao> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   SizedBox(
                     width: 90,
                     child: ElevatedButton(
@@ -266,19 +265,19 @@ class _ClassificacaoState extends State<Classificacao> {
                         Navigator.pop(context);
                       },
                       style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(vertical: 40),
+                        padding: const EdgeInsets.symmetric(vertical: 40),
                         backgroundColor: Colors.blueAccent,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      child: Text(
+                      child: const Text(
                         'OK',
                         style: TextStyle(fontSize: 18, color: Colors.white),
                       ),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   SizedBox(
                     width: 90,
                     child: ElevatedButton(
@@ -286,13 +285,13 @@ class _ClassificacaoState extends State<Classificacao> {
                         Navigator.pop(context);
                       },
                       style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(vertical: 40),
+                        padding: const EdgeInsets.symmetric(vertical: 40),
                         backgroundColor: Colors.red, // Cor vermelha
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      child: Text(
+                      child: const Text(
                         'Cancelar',
                         style: TextStyle(fontSize: 18, color: Colors.white),
                       ),

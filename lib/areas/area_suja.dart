@@ -11,6 +11,8 @@ import 'package:tcc/util/custom_appbar.dart';
 import 'dart:async';
 
 class AreaSuja extends StatelessWidget {
+  const AreaSuja({super.key});
+
   @override
   Widget build(BuildContext context) {
     PedidoDAO pedidoDAO = PedidoDAO();
@@ -23,14 +25,14 @@ class AreaSuja extends StatelessWidget {
           builder: (context, snapshot) {
             // Verifica o estado do Future
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(
+              return const Center(
                   child: CircularProgressIndicator()); // Exibe carregamento
             } else if (snapshot.hasError) {
               return Center(
                 child: Text("Erro ao carregar pedidos: ${snapshot.error}"),
               );
             } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return Center(child: Text("Nenhum pedido aguardando."));
+              return const Center(child: Text("Nenhum pedido aguardando."));
             } else {
               // Dados carregados com sucesso
               List<Pedido> pedidos = snapshot.data!;
@@ -47,7 +49,7 @@ class AreaSuja extends StatelessWidget {
 class AreaSujaPage extends StatefulWidget {
   final List<Pedido> pedidos;
 
-  AreaSujaPage({required this.pedidos});
+  const AreaSujaPage({super.key, required this.pedidos});
 
   @override
   _AreaSujaPageState createState() => _AreaSujaPageState();
@@ -65,7 +67,7 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
   }
 
   void startTimer() {
-    timer = Timer.periodic(Duration(seconds: 30), (timer) {
+    timer = Timer.periodic(const Duration(seconds: 30), (timer) {
       setState(() {
         // Atualizações periódicas
       });
@@ -90,13 +92,13 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
         children: [
           Center(
             child: Container(
-              margin: EdgeInsets.only(left: 25),
+              margin: const EdgeInsets.only(left: 25),
               height: MediaQuery.of(context).size.height * 0.807,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: pedidos.length,
                 itemBuilder: (context, index) {
-                  return Container(
+                  return SizedBox(
                     width: MediaQuery.of(context).size.width * 0.24,
                     child: buildPedidoCard(pedidos[index]),
                   );
@@ -114,7 +116,7 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
     print(pedido);
     return Container(
       width: MediaQuery.of(context).size.width * 0.25,
-      margin: EdgeInsets.all(10),
+      margin: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -128,32 +130,36 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
             children: [
               // Dados do pedido
               Text('Cliente: ${pedido.nomCliente}',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 15)),
               Text('Pedido: ${pedido.numPedido}',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-              SizedBox(height: 5),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 15)),
+              const SizedBox(height: 5),
               Text('Data Entrega: ${pedido.dataEntrega}',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 15)),
               Text('Peso Total: ${pedido.pesoTotal}kg',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-              SizedBox(height: 6),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 15)),
+              const SizedBox(height: 6),
 
               // Barras de progresso
               Column(
                 children: [
                   buildProgressBar('Recebimento', pedido),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   buildProgressBar('Classificação', pedido),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   buildProgressBar1('Lavagem', progressoLavagem, pedido),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                 ],
               ),
               // Lotes
               SizedBox(
                 height: 320,
                 child: GridView.builder(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     childAspectRatio: 2,
                     crossAxisSpacing: 10,
@@ -179,17 +185,17 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
     String buttonText = label;
 
     if (label == 'Recebimento') {
-      progress = pedido.recebimentoStatus as double;
+      progress = pedido.recebimentoStatus;
       barColor = (progress == 1.0) ? Colors.blue : Colors.grey[300]!;
       buttonText = (progress == 1.0) ? "$label Concluído" : label;
     } else if (label == 'Classificação') {
-      progress = pedido.classificacaoStatus as double;
+      progress = pedido.classificacaoStatus;
       barColor =
           (pedido.classificacaoStatus == 1.0) ? Colors.blue : Colors.grey[300]!;
       buttonText =
           (pedido.classificacaoStatus == 1.0) ? "$label Concluído" : label;
     } else if (label == 'Lavagem') {
-      progress = pedido.lavagemStatus as double;
+      progress = pedido.lavagemStatus;
       //barColor = (progress == 1.0) ? Colors.blue : Colors.red[300]!;
       buttonText = (progress == 1.0) ? "$label Concluído" : label;
     }
@@ -201,12 +207,12 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
             context: context,
             builder: (BuildContext context) {
               return AlertDialog(
-                title: Text('Atenção'),
+                title: const Text('Atenção'),
                 content: Text('O processo de $label já foi concluído.'),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: Text('OK'),
+                    child: const Text('OK'),
                   ),
                 ],
               );
@@ -217,12 +223,12 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
             context: context,
             builder: (BuildContext context) {
               return AlertDialog(
-                title: Text('Atenção'),
+                title: const Text('Atenção'),
                 content: Text('O processo de $label já foi concluído.'),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: Text('OK'),
+                    child: const Text('OK'),
                   ),
                 ],
               );
@@ -260,12 +266,13 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
               context: context,
               builder: (BuildContext context) {
                 return AlertDialog(
-                  title: Text('Sucesso'),
-                  content: Text('Todos os lotes de lavagem foram concluídos!'),
+                  title: const Text('Sucesso'),
+                  content:
+                      const Text('Todos os lotes de lavagem foram concluídos!'),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      child: Text('OK'),
+                      child: const Text('OK'),
                     ),
                   ],
                 );
@@ -276,13 +283,13 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
               context: context,
               builder: (BuildContext context) {
                 return AlertDialog(
-                  title: Text('Atenção'),
-                  content: Text(
+                  title: const Text('Atenção'),
+                  content: const Text(
                       'Para dar início nos processos de lavagem, utilize os botões de lote.'),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      child: Text('OK'),
+                      child: const Text('OK'),
                     ),
                   ],
                 );
@@ -294,13 +301,13 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
             context: context,
             builder: (BuildContext context) {
               return AlertDialog(
-                title: Text('Atenção'),
+                title: const Text('Atenção'),
                 content: Text(
                     'O processo de $label não pode ser iniciado. Verifique os status dos processos anteriores.'),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: Text('OK'),
+                    child: const Text('OK'),
                   ),
                 ],
               );
@@ -314,9 +321,9 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: Colors.grey[300]!, width: 1),
         ),
-        padding: EdgeInsets.symmetric(vertical: 20),
+        padding: const EdgeInsets.symmetric(vertical: 20),
         child: Center(
-          child: Text(buttonText, style: TextStyle(color: Colors.black)),
+          child: Text(buttonText, style: const TextStyle(color: Colors.black)),
         ),
       ),
     );
@@ -336,13 +343,13 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
             context: context,
             builder: (BuildContext context) {
               return AlertDialog(
-                title: Text('Atenção'),
-                content: Text(
+                title: const Text('Atenção'),
+                content: const Text(
                     'Para iniciar o processo de lavagem, verifique se o recebimento e a classificação estão completos.'),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: Text('OK'),
+                    child: const Text('OK'),
                   ),
                 ],
               );
@@ -353,12 +360,13 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
             context: context,
             builder: (BuildContext context) {
               return AlertDialog(
-                title: Text('Atenção'),
-                content: Text('Todos os lotes de lavagem foram concluídos!'),
+                title: const Text('Atenção'),
+                content:
+                    const Text('Todos os lotes de lavagem foram concluídos!'),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: Text('OK'),
+                    child: const Text('OK'),
                   ),
                 ],
               );
@@ -369,13 +377,13 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
             context: context,
             builder: (BuildContext context) {
               return AlertDialog(
-                title: Text('Atenção'),
-                content: Text(
+                title: const Text('Atenção'),
+                content: const Text(
                     'Para iniciar o processo de lavagem, use o botão do Lote desejado.'),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: Text('OK'),
+                    child: const Text('OK'),
                   ),
                 ],
               );
@@ -391,7 +399,7 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
             value: progress,
             backgroundColor: Colors.grey[200],
             borderRadius: BorderRadius.circular(8),
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+            valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
             minHeight: 67,
           ),
           // Texto sobreposto
@@ -399,7 +407,7 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
             child: Center(
               child: Text(
                 displayLabel,
-                style: TextStyle(
+                style: const TextStyle(
                   color: Colors.black,
                 ),
               ),
@@ -422,13 +430,13 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
             context: context,
             builder: (BuildContext context) {
               return AlertDialog(
-                title: Text('Atenção'),
-                content:
-                    Text('O processo de Lavagem do lote já foi concluído.'),
+                title: const Text('Atenção'),
+                content: const Text(
+                    'O processo de Lavagem do lote já foi concluído.'),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: Text('OK'),
+                    child: const Text('OK'),
                   ),
                 ],
               );
@@ -454,13 +462,13 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
               context: context,
               builder: (BuildContext context) {
                 return AlertDialog(
-                  title: Text('Atenção'),
-                  content: Text(
+                  title: const Text('Atenção'),
+                  content: const Text(
                       'Para iniciar o processo de lavagem, verifique os status dos Processos anteriores, é necessário que Recebimento e Classificação estejam Concluídos.'),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      child: Text('OK'),
+                      child: const Text('OK'),
                     ),
                   ],
                 );
@@ -475,9 +483,9 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: Colors.grey[300]!, width: 1),
         ),
-        padding: EdgeInsets.symmetric(vertical: 20),
+        padding: const EdgeInsets.symmetric(vertical: 20),
         child: Center(
-          child: Text(buttonText, style: TextStyle(color: Colors.black)),
+          child: Text(buttonText, style: const TextStyle(color: Colors.black)),
         ),
       ),
     );

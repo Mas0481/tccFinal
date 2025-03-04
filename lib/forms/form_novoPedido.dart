@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 class NovoPedido extends StatefulWidget {
   final VoidCallback onSave;
 
-  NovoPedido({required this.onSave});
+  const NovoPedido({super.key, required this.onSave});
 
   @override
   _NovoPedidoState createState() => _NovoPedidoState();
@@ -66,10 +66,10 @@ class _NovoPedidoState extends State<NovoPedido> {
                     width: 150,
                     height: 100,
                     errorBuilder: (context, error, stackTrace) {
-                      return Icon(Icons.error, size: 80);
+                      return const Icon(Icons.error, size: 80);
                     },
                   ),
-                  Expanded(
+                  const Expanded(
                     child: Center(
                       child: Text(
                         'Novo Pedido',
@@ -82,7 +82,7 @@ class _NovoPedidoState extends State<NovoPedido> {
                   ),
                 ],
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
 
               // Linha 2: Cliente
               Row(
@@ -111,7 +111,7 @@ class _NovoPedidoState extends State<NovoPedido> {
                   ),
                 ],
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
 
               // Linha 3: Data de Coleta, Peso Total, Data de Entrega
               Row(
@@ -134,7 +134,7 @@ class _NovoPedidoState extends State<NovoPedido> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: TextField(
                       controller: pesoTotalController,
@@ -147,7 +147,7 @@ class _NovoPedidoState extends State<NovoPedido> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
@@ -168,7 +168,7 @@ class _NovoPedidoState extends State<NovoPedido> {
                   ),
                 ],
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
 
               // Linha 4: Responsável pela Coleta e Entrega
               Row(
@@ -184,7 +184,7 @@ class _NovoPedidoState extends State<NovoPedido> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: TextField(
                       controller: responsavelEntregaController,
@@ -198,7 +198,7 @@ class _NovoPedidoState extends State<NovoPedido> {
                   ),
                 ],
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
 
               // Linha 5: Observações
               TextField(
@@ -211,7 +211,7 @@ class _NovoPedidoState extends State<NovoPedido> {
                   ),
                 ),
               ),
-              SizedBox(height: 15),
+              const SizedBox(height: 15),
 
               // Linha 6: Botões em largura total com estilo ajustado
               Row(
@@ -221,8 +221,8 @@ class _NovoPedidoState extends State<NovoPedido> {
                       onPressed: () {
                         // Lógica para adicionar foto
                       },
-                      icon: Icon(Icons.camera_alt, color: Colors.black),
-                      label: Text(
+                      icon: const Icon(Icons.camera_alt, color: Colors.black),
+                      label: const Text(
                         'Adicionar Foto',
                         style: TextStyle(
                             color: Colors.black, fontWeight: FontWeight.bold),
@@ -236,7 +236,7 @@ class _NovoPedidoState extends State<NovoPedido> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
@@ -244,7 +244,7 @@ class _NovoPedidoState extends State<NovoPedido> {
                         widget.onSave();
                         // Exibe a mensagem de sucesso
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
+                          const SnackBar(
                             content: Text('Pedido salvo com sucesso!'),
                             backgroundColor:
                                 Colors.green, // Cor de fundo da mensagem
@@ -261,19 +261,19 @@ class _NovoPedidoState extends State<NovoPedido> {
                         backgroundColor: Colors.green
                             .withOpacity(0.7), // Cor do botão salvar
                         foregroundColor: Colors.white,
-                        side: BorderSide(color: Colors.green, width: 1.5),
+                        side: const BorderSide(color: Colors.green, width: 1.5),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      child: Text(
+                      child: const Text(
                         'Salvar Pedido',
                         style: TextStyle(
                             color: Colors.white, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
@@ -284,12 +284,12 @@ class _NovoPedidoState extends State<NovoPedido> {
                         backgroundColor:
                             Colors.red.withOpacity(0.7), // Botão cancelar
                         foregroundColor: Colors.white,
-                        side: BorderSide(color: Colors.red, width: 1.5),
+                        side: const BorderSide(color: Colors.red, width: 1.5),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      child: Text(
+                      child: const Text(
                         'Cancelar',
                         style: TextStyle(
                             color: Colors.white, fontWeight: FontWeight.bold),

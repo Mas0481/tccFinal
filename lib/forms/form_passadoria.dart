@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 class Passadoria extends StatefulWidget {
   final VoidCallback onSave;
 
-  Passadoria({required this.onSave});
+  const Passadoria({super.key, required this.onSave});
 
   @override
   _PassadoriaState createState() => _PassadoriaState();
@@ -25,8 +25,8 @@ class _PassadoriaState extends State<Passadoria> {
   @override
   void initState() {
     super.initState();
-    dataLimiteController.text = DateFormat('dd/MM/yyyy').format(
-        DateTime.now().add(Duration(days: 5))); // Data limite fixa como exemplo
+    dataLimiteController.text = DateFormat('dd/MM/yyyy').format(DateTime.now()
+        .add(const Duration(days: 5))); // Data limite fixa como exemplo
     dataInicioController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
     horaInicioController.text = DateFormat('HH:mm').format(DateTime.now());
   }
@@ -67,10 +67,10 @@ class _PassadoriaState extends State<Passadoria> {
                     width: 200,
                     height: 130,
                     errorBuilder: (context, error, stackTrace) {
-                      return Icon(Icons.error, size: 150);
+                      return const Icon(Icons.error, size: 150);
                     },
                   ),
-                  Expanded(
+                  const Expanded(
                     child: Center(
                       child: Text(
                         'Passadoria',
@@ -81,11 +81,11 @@ class _PassadoriaState extends State<Passadoria> {
                       ),
                     ),
                   ),
-                  Container(
+                  SizedBox(
                     width: 150,
                     child: TextField(
                       controller: dataLimiteController,
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.red,
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
@@ -101,7 +101,7 @@ class _PassadoriaState extends State<Passadoria> {
                   ),
                 ],
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
 
               // Cliente
               TextField(
@@ -113,7 +113,7 @@ class _PassadoriaState extends State<Passadoria> {
                   ),
                 ),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
 
               // Pedido e Data de Início
               Row(
@@ -130,7 +130,7 @@ class _PassadoriaState extends State<Passadoria> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: GestureDetector(
                       onTap: () => _selectDate(context, dataInicioController),
@@ -149,7 +149,7 @@ class _PassadoriaState extends State<Passadoria> {
                   ),
                 ],
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
 
               // Equipamento, Temperatura e Hora de Início
               Row(
@@ -165,7 +165,7 @@ class _PassadoriaState extends State<Passadoria> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: TextField(
                       controller: temperaturaController,
@@ -178,7 +178,7 @@ class _PassadoriaState extends State<Passadoria> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: TextField(
                       controller: horaInicioController,
@@ -193,11 +193,11 @@ class _PassadoriaState extends State<Passadoria> {
                   ),
                 ],
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
 
               // Checkbox para peças passadas a ferro
               CheckboxListTile(
-                title: Text(
+                title: const Text(
                   "Existem peças passadas a ferro neste pedido (registrar as informações nas observações)",
                   style: TextStyle(fontSize: 16),
                 ),
@@ -209,7 +209,7 @@ class _PassadoriaState extends State<Passadoria> {
                 },
                 controlAffinity: ListTileControlAffinity.leading,
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
 
               // Observações e botões
               Row(
@@ -227,7 +227,7 @@ class _PassadoriaState extends State<Passadoria> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   SizedBox(
                     width: 90,
                     child: ElevatedButton(
@@ -236,7 +236,7 @@ class _PassadoriaState extends State<Passadoria> {
                         Navigator.pop(context);
                       },
                       style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(vertical: 40),
+                        padding: const EdgeInsets.symmetric(vertical: 40),
                         backgroundColor: Colors.blueAccent,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
@@ -246,7 +246,7 @@ class _PassadoriaState extends State<Passadoria> {
                           style: TextStyle(color: Colors.white)),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   SizedBox(
                     width: 90,
                     child: ElevatedButton(
@@ -254,7 +254,7 @@ class _PassadoriaState extends State<Passadoria> {
                         Navigator.pop(context);
                       },
                       style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(vertical: 40),
+                        padding: const EdgeInsets.symmetric(vertical: 40),
                         backgroundColor: Colors.red,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
@@ -266,7 +266,7 @@ class _PassadoriaState extends State<Passadoria> {
                   ),
                 ],
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
             ],
           ),
         ),
