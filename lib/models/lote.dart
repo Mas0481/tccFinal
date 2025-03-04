@@ -66,4 +66,22 @@ class Lote {
     this.secagemHoraFinal = '',
     this.secagemObs = '',
   });
+
+  @override
+  String toString() {
+    return 'Lote(pedidoNum: $pedidoNum, loteNum: $loteNum, loteStatus: $loteStatus, '
+        'loteLavagemStatus: $loteLavagemStatus, lavagemEquipamento: $lavagemEquipamento, '
+        'lavagemProcesso: $lavagemProcesso, lavagemDataInicio: $lavagemDataInicio, '
+        'lavagemHoraInicio: $lavagemHoraInicio, lavagemDataFinal: $lavagemDataFinal, '
+        'lavagemHoraFinal: $lavagemHoraFinal, lavagemObs: $lavagemObs, '
+        'loteCentrifugacaoStatus: $loteCentrifugacaoStatus, centrifugacaoEquipamento: $centrifugacaoEquipamento, '
+        'centrifugacaoTempoProcesso: $centrifugacaoTempoProcesso, centrifugacaoDataInicio: $centrifugacaoDataInicio, '
+        'centrifugacaoHoraInicio: $centrifugacaoHoraInicio, centrifugacaoDataFinal: $centrifugacaoDataFinal, '
+        'centrifugacaoHoraFinal: $centrifugacaoHoraFinal, centrifugacaoObs: $centrifugacaoObs, '
+        'loteSecagemStatus: $loteSecagemStatus, secagemEquipamento: $secagemEquipamento, '
+        'secagemTempoProcesso: $secagemTempoProcesso, secagemTemperatura: $secagemTemperatura, '
+        'secagemDataInicio: $secagemDataInicio, secagemHoraInicio: $secagemHoraInicio, '
+        'secagemDataFinal: $secagemDataFinal, secagemHoraFinal: $secagemHoraFinal, '
+        'secagemObs: $secagemObs)';
+  }
 }
