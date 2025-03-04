@@ -127,7 +127,7 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
               // Dados do pedido
               Text('Cliente: ${pedido.nomCliente}',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-              Text('Pedido: ${pedido.numPedido}',
+              Text('Pedidoooo: ${pedido.numPedido}',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
               SizedBox(height: 5),
               Text('Data Entrega: ${pedido.dataEntrega}',
