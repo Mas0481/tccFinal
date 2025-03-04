@@ -24,7 +24,6 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         Container(
           child: AppBar(
             toolbarHeight: 80, // Definindo altura do AppBar
-
             title: Text(
               titulo,
               style: TextStyle(
@@ -62,8 +61,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         // Logo sobreposta, apenas se o argumento logo for verdadeiro
         if (logo)
           Positioned(
-            left: 50, // Margem de 16 à esquerda
-            top: 30, // Margem de 16 no topo
+            left: 50, // Margem de 50 à esquerda
+            top: 30, // Margem de 30 no topo
             child: Container(
               width: 220, // Ajuste a largura conforme necessário
               height: 65, // A altura da logo deve ser igual à altura da AppBar
@@ -102,8 +101,12 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                 Provider.of<UserProvider>(context, listen: false)
                     .clearCredentials();
 
-                // Volta para a rota inicial (ou raiz)
-                Navigator.of(context).pushNamed('/');
+                // Volta para a tela de login e limpa a pilha de navegação
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  '/', // Rota para a tela de login
+                  (route) => false, // Remove todas as rotas da pilha
+                );
               },
               child: Text('Sim'),
             ),

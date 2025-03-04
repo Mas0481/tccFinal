@@ -2,10 +2,10 @@ import 'package:mysql1/mysql1.dart';
 
 class MySqlConnectionService {
   final ConnectionSettings settings = ConnectionSettings(
-    host: '100.122.103.5',
+    host: '10.0.0.109',
     port: 3306,
-    user: 'admin',
-    password: 'Internet123!',
+    user: 'tcc',
+    password: 'tcc123',
     db: 'projeto_final',
   );
 
