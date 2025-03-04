@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:intl/intl.dart';
 import 'package:tcc/DAO/genericDAO.dart';
 import 'package:tcc/models/lote.dart';
@@ -367,6 +369,16 @@ class PedidoDAO implements GenericDAO<Pedido> {
   Future<List<Pedido>> getAll() async {
     final conn = await MySqlConnectionService().getConnection();
 
+    //metodo para converter os dados TEXT do Bd que estavam ficando como Blob
+    String getObs(dynamic obs) {
+      if (obs is List<int>) {
+        // Verifica se o campo é BLOB (List<int>)
+        return utf8.decode(obs); // Converte BLOB para String
+      }
+      return obs?.toString() ??
+          ''; // Retorna a String ou um campo vazio se for null
+    }
+
     // 1. Obter todos os pedidos organizados por dataEntrega
     final pedidosQuery = await conn.query('''
     SELECT 
@@ -393,6 +405,8 @@ class PedidoDAO implements GenericDAO<Pedido> {
 
       // Criar a lista de lotes para o pedido atual
       List<Lote> lotes = lotesQuery.map((loteRow) {
+        // Função para garantir que o campo 'obs' seja convertido corretamente para String
+
         return Lote(
           pedidoNum: loteRow['pedidoNum'],
           loteNum: loteRow['loteNum'],
@@ -404,7 +418,8 @@ class PedidoDAO implements GenericDAO<Pedido> {
           lavagemHoraInicio: loteRow['lavagemHoraInicio'] ?? '',
           lavagemDataFinal: loteRow['lavagemDataFinal'] ?? '',
           lavagemHoraFinal: loteRow['lavagemHoraFinal'] ?? '',
-          lavagemObs: loteRow['lavagemObs'] ?? '',
+          lavagemObs:
+              getObs(loteRow['lavagemObs']), // Converte o campo 'lavagemObs'
           loteCentrifugacaoStatus: loteRow['loteCentrifugacaoStatus'] ?? 0,
           centrifugacaoEquipamento: loteRow['centrifugacaoEquipamento'] ?? '',
           centrifugacaoTempoProcesso:
@@ -448,9 +463,7 @@ class PedidoDAO implements GenericDAO<Pedido> {
         dataLimite: row['dataLimite'],
         dataEntrega: row['dataEntrega'],
         pesoTotal: row['pesoTotal'],
-        recebimentoObs: row['recebimentoObs'],
         totalLotes: row['totalLotes'],
-        classificacaoObs: row['classificacaoObs'],
         classificacaoDataInicio: row['classificacaoDataInicio'],
         classificacaoHoraInicio: row['classificacaoHoraInicio'],
         classificacaoDataFinal: row['classificacaoDataFinal'],
@@ -461,7 +474,6 @@ class PedidoDAO implements GenericDAO<Pedido> {
         passadoriaHoraInicio: row['passadoriaHoraInicio'],
         passadoriaDataFinal: row['passadoriaDataFinal'],
         passadoriaHoraFinal: row['passadoriaHoraFinal'],
-        passadoriaObs: row['passadoriaObs'],
         finalizacaoReparo: row['finalizacaoReparo'],
         finalizacaoEtiquetamento: row['finalizacaoEtiquetamento'],
         finalizacaoTipoEmbalagem: row['finalizacaoTipoEmbalagem'],
@@ -471,14 +483,18 @@ class PedidoDAO implements GenericDAO<Pedido> {
         finalizacaoHoraInicio: row['finalizacaoHoraInicio'],
         finalizacaoDataFinal: row['finalizacaoDataFinal'],
         finalizacaoHoraFinal: row['finalizacaoHoraFinal'],
-        finalizacaoObs: row['finalizacaoObs'],
         retornoData: row['retornoData'],
         retornoHoraCarregamento: row['retornoHoraCarregamento'],
         retornoVolumes: row['retornoVolumes'],
         retornoNomeMotorista: row['retornoNomeMotorista'],
         retornoVeiculo: row['retornoVeiculo'],
         retornoPlaca: row['retornoPlaca'],
-        retornoObs: row['retornoObs'],
+        // Convertendo os campos obs
+        recebimentoObs: getObs(row['recebimentoObs']),
+        classificacaoObs: getObs(row['classificacaoObs']),
+        passadoriaObs: getObs(row['passadoriaObs']),
+        finalizacaoObs: getObs(row['finalizacaoObs']),
+        retornoObs: getObs(row['retornoObs']),
         nomCliente: row['nome_cliente'],
         lotes: lotes,
       ));
