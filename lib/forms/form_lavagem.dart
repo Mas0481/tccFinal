@@ -4,7 +4,7 @@ import 'package:intl/intl.dart'; // Para formatar datas
 class Lavagem extends StatefulWidget {
   final VoidCallback onSave; // Adiciona um callback
 
-  Lavagem({required this.onSave}); // Construtor
+  const Lavagem({super.key, required this.onSave}); // Construtor
 
   @override
   _LavagemState createState() => _LavagemState();
@@ -77,12 +77,12 @@ class _LavagemState extends State<Lavagem> {
                     width: 200, // Tamanho do logo
                     height: 130,
                     errorBuilder: (context, error, stackTrace) {
-                      return Icon(Icons.error,
+                      return const Icon(Icons.error,
                           size:
                               150); // Ícone de erro caso não carregue a imagem
                     },
                   ),
-                  Expanded(
+                  const Expanded(
                     child: Center(
                       child: Text(
                         'Lavagem',
@@ -94,7 +94,7 @@ class _LavagemState extends State<Lavagem> {
                     ),
                   ),
                   // Campo Data Limite alinhado à direita, em destaque, com fonte vermelha e bold
-                  Container(
+                  SizedBox(
                     width: 150, // Aumenta a largura do campo Data Limite
                     child: GestureDetector(
                       onTap: () {
@@ -144,7 +144,7 @@ class _LavagemState extends State<Lavagem> {
                   ),
                 ],
               ),
-              SizedBox(height: 10), // Espaçamento entre as linhas
+              const SizedBox(height: 10), // Espaçamento entre as linhas
 
               // Linha com Pedido, Lote e Equipamento
               Row(
@@ -165,7 +165,7 @@ class _LavagemState extends State<Lavagem> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: TextField(
                       controller: loteController,
@@ -181,7 +181,7 @@ class _LavagemState extends State<Lavagem> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: TextField(
                       controller: equipamentoController,
@@ -199,7 +199,8 @@ class _LavagemState extends State<Lavagem> {
                   ),
                 ],
               ),
-              SizedBox(height: 10), // Mantendo o mesmo espaçamento entre linhas
+              const SizedBox(
+                  height: 10), // Mantendo o mesmo espaçamento entre linhas
 
               // Linha com Processo, Data de Início e Hora de Início
               Row(
@@ -219,7 +220,7 @@ class _LavagemState extends State<Lavagem> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: TextField(
                       controller: dataInicioController,
@@ -235,7 +236,7 @@ class _LavagemState extends State<Lavagem> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: TextField(
                       controller: horaInicioController,
@@ -253,7 +254,8 @@ class _LavagemState extends State<Lavagem> {
                   ),
                 ],
               ),
-              SizedBox(height: 10), // Mantendo o mesmo espaçamento entre linhas
+              const SizedBox(
+                  height: 10), // Mantendo o mesmo espaçamento entre linhas
 
               // Observações e Botões
               Row(
@@ -275,7 +277,7 @@ class _LavagemState extends State<Lavagem> {
                       ),
                     ),
                   ),
-                  SizedBox(
+                  const SizedBox(
                       width: 10), // Espaçamento entre Observações e botão OK
                   SizedBox(
                     width: 90, // Largura fixa para o botão OK
@@ -288,7 +290,7 @@ class _LavagemState extends State<Lavagem> {
                             context); // Fechando o popup ao clicar no botão OK
                       },
                       style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(vertical: 40),
+                        padding: const EdgeInsets.symmetric(vertical: 40),
                         backgroundColor: Colors.blueAccent,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
@@ -298,7 +300,7 @@ class _LavagemState extends State<Lavagem> {
                           style: TextStyle(color: Colors.white)),
                     ),
                   ),
-                  SizedBox(width: 10), // Espaçamento entre os botões
+                  const SizedBox(width: 10), // Espaçamento entre os botões
                   SizedBox(
                     width: 90, // Largura fixa para o botão Cancelar
                     child: ElevatedButton(
@@ -307,7 +309,7 @@ class _LavagemState extends State<Lavagem> {
                             context); // Fechando o popup ao clicar no botão Cancelar
                       },
                       style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(
+                        padding: const EdgeInsets.symmetric(
                             vertical:
                                 40), // Altura igual à do campo Observações
                         backgroundColor: Colors.red, // Cor vermelha
@@ -321,7 +323,7 @@ class _LavagemState extends State<Lavagem> {
                   ),
                 ],
               ),
-              SizedBox(height: 20), // Espaçamento adicional no final
+              const SizedBox(height: 20), // Espaçamento adicional no final
             ],
           ),
         ),

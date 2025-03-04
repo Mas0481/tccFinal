@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 class Retorno extends StatefulWidget {
   final VoidCallback onSave;
 
-  Retorno({required this.onSave});
+  const Retorno({super.key, required this.onSave});
 
   @override
   _RetornoState createState() => _RetornoState();
@@ -28,8 +28,8 @@ class _RetornoState extends State<Retorno> {
   void initState() {
     super.initState();
     // Data Limite predefinida em vermelho
-    dataLimiteController.text = DateFormat('dd/MM/yyyy').format(
-        DateTime.now().add(Duration(days: 5))); // Exemplo de data limite fixa
+    dataLimiteController.text = DateFormat('dd/MM/yyyy').format(DateTime.now()
+        .add(const Duration(days: 5))); // Exemplo de data limite fixa
   }
 
   Future<void> _selectDate(
@@ -69,10 +69,10 @@ class _RetornoState extends State<Retorno> {
                     width: 200,
                     height: 130,
                     errorBuilder: (context, error, stackTrace) {
-                      return Icon(Icons.error, size: 150);
+                      return const Icon(Icons.error, size: 150);
                     },
                   ),
-                  Expanded(
+                  const Expanded(
                     child: Center(
                       child: Text(
                         'Retorno',
@@ -83,11 +83,11 @@ class _RetornoState extends State<Retorno> {
                       ),
                     ),
                   ),
-                  Container(
+                  SizedBox(
                     width: 150,
                     child: TextField(
                       controller: dataLimiteController,
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.red,
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
@@ -103,7 +103,7 @@ class _RetornoState extends State<Retorno> {
                   ),
                 ],
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
 
               // Linha Cliente
               TextField(
@@ -115,7 +115,7 @@ class _RetornoState extends State<Retorno> {
                   ),
                 ),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
 
               // Linha Endereço de Entrega
               TextField(
@@ -127,7 +127,7 @@ class _RetornoState extends State<Retorno> {
                   ),
                 ),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
 
               // Linha Pedido, Volumes e Hora do Carregamento
               Row(
@@ -143,7 +143,7 @@ class _RetornoState extends State<Retorno> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: TextField(
                       controller: volumesController,
@@ -155,7 +155,7 @@ class _RetornoState extends State<Retorno> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: TextField(
                       controller: horaCarregamentoController,
@@ -170,7 +170,7 @@ class _RetornoState extends State<Retorno> {
                   ),
                 ],
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
 
               // Linha Nome do Motorista, Veículo e Placa
               Row(
@@ -187,7 +187,7 @@ class _RetornoState extends State<Retorno> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: TextField(
                       controller: veiculoController,
@@ -199,7 +199,7 @@ class _RetornoState extends State<Retorno> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: TextField(
                       controller: placaController,
@@ -213,7 +213,7 @@ class _RetornoState extends State<Retorno> {
                   ),
                 ],
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
 
               // Observações e botões OK e Cancelar
               Row(
@@ -231,7 +231,7 @@ class _RetornoState extends State<Retorno> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   SizedBox(
                     width: 90,
                     child: ElevatedButton(
@@ -240,7 +240,7 @@ class _RetornoState extends State<Retorno> {
                         Navigator.pop(context);
                       },
                       style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(vertical: 40),
+                        padding: const EdgeInsets.symmetric(vertical: 40),
                         backgroundColor: Colors.blueAccent,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
@@ -250,7 +250,7 @@ class _RetornoState extends State<Retorno> {
                           style: TextStyle(color: Colors.white)),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   SizedBox(
                     width: 90,
                     child: ElevatedButton(
@@ -258,7 +258,7 @@ class _RetornoState extends State<Retorno> {
                         Navigator.pop(context);
                       },
                       style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(vertical: 40),
+                        padding: const EdgeInsets.symmetric(vertical: 40),
                         backgroundColor: Colors.red,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
@@ -270,7 +270,7 @@ class _RetornoState extends State<Retorno> {
                   ),
                 ],
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
             ],
           ),
         ),

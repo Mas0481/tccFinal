@@ -16,7 +16,7 @@ class MySqlConnectionService {
       return connection;
     } catch (e) {
       print('Erro ao conectar ao banco de dados: $e');
-      throw e;
+      rethrow;
     }
   }
 }

@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 class Secagem extends StatefulWidget {
   final VoidCallback onSave; // Adiciona um callback
 
-  Secagem({required this.onSave}); // Construtor
+  const Secagem({super.key, required this.onSave}); // Construtor
 
   @override
   _SecagemState createState() => _SecagemState();
@@ -72,10 +72,10 @@ class _SecagemState extends State<Secagem> {
                     width: 200,
                     height: 130,
                     errorBuilder: (context, error, stackTrace) {
-                      return Icon(Icons.error, size: 150);
+                      return const Icon(Icons.error, size: 150);
                     },
                   ),
-                  Expanded(
+                  const Expanded(
                     child: Center(
                       child: Text(
                         'Secagem',
@@ -86,7 +86,7 @@ class _SecagemState extends State<Secagem> {
                       ),
                     ),
                   ),
-                  Container(
+                  SizedBox(
                     width: 150,
                     child: GestureDetector(
                       onTap: () {
@@ -134,7 +134,7 @@ class _SecagemState extends State<Secagem> {
                   ),
                 ],
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               Row(
                 children: [
                   Expanded(
@@ -153,7 +153,7 @@ class _SecagemState extends State<Secagem> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: TextField(
                       controller: loteController,
@@ -169,7 +169,7 @@ class _SecagemState extends State<Secagem> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
@@ -194,7 +194,7 @@ class _SecagemState extends State<Secagem> {
                   ),
                 ],
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               Row(
                 children: [
                   Expanded(
@@ -212,7 +212,7 @@ class _SecagemState extends State<Secagem> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: TextField(
                       controller: tempoProcessoController,
@@ -228,7 +228,7 @@ class _SecagemState extends State<Secagem> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: TextField(
                       controller: temperaturaController,
@@ -244,7 +244,7 @@ class _SecagemState extends State<Secagem> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: TextField(
                       controller: horaInicioController,
@@ -262,7 +262,7 @@ class _SecagemState extends State<Secagem> {
                   ),
                 ],
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               Row(
                 children: [
                   Expanded(
@@ -282,7 +282,7 @@ class _SecagemState extends State<Secagem> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   SizedBox(
                     width: 90,
                     child: ElevatedButton(
@@ -290,7 +290,7 @@ class _SecagemState extends State<Secagem> {
                         Navigator.pop(context);
                       },
                       style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(vertical: 40),
+                        padding: const EdgeInsets.symmetric(vertical: 40),
                         backgroundColor: Colors.redAccent,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
@@ -300,7 +300,7 @@ class _SecagemState extends State<Secagem> {
                           style: TextStyle(color: Colors.white)),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   SizedBox(
                     width: 90,
                     child: ElevatedButton(
@@ -311,7 +311,7 @@ class _SecagemState extends State<Secagem> {
                             .onSave(); // Chama o callback para atualizar o status do lote
                       },
                       style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(vertical: 40),
+                        padding: const EdgeInsets.symmetric(vertical: 40),
                         backgroundColor: Colors.blueAccent,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
