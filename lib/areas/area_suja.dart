@@ -127,7 +127,7 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Dados do pedido
-              Text('Clientes: ${pedido.nomCliente}',
+              Text('Cliente: ${pedido.nomCliente}',
                   style: const TextStyle(
                       fontWeight: FontWeight.bold, fontSize: 15)),
               Text('Pedido: ${pedido.numPedido}',
