@@ -1,18 +1,55 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:tcc/models/pedido.dart';
 
 class Classificacao extends StatefulWidget {
+  final Pedido pedido; // Adiciona o pedido como parâmetro
   final VoidCallback onSave; // Adiciona um callback
 
-  const Classificacao({super.key, required this.onSave}); // Construtor
+  const Classificacao(
+      {super.key, required this.pedido, required this.onSave}); // Construtor
 
   @override
   _ClassificacaoState createState() => _ClassificacaoState();
 }
 
 class _ClassificacaoState extends State<Classificacao> {
-  final TextEditingController pedidoController = TextEditingController();
-  final TextEditingController pesoTotalController = TextEditingController();
+  late TextEditingController clienteController;
+  late TextEditingController pedidoController;
+  late TextEditingController pesoTotalController;
+  late TextEditingController dataLimiteController;
+  late TextEditingController dataColetaController;
   final List<Processo> processos = [];
+
+  @override
+  void initState() {
+    super.initState();
+    clienteController =
+        TextEditingController(text: widget.pedido.codCliente.toString());
+    pedidoController =
+        TextEditingController(text: widget.pedido.numPedido.toString());
+    pesoTotalController =
+        TextEditingController(text: widget.pedido.qtdProduto.toString());
+    dataLimiteController =
+        TextEditingController(text: widget.pedido.dataLimite.toString());
+    dataColetaController =
+        TextEditingController(text: widget.pedido.dataColeta.toString());
+  }
+
+  Future<void> _selectDate(
+      BuildContext context, TextEditingController controller) async {
+    DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+    if (picked != null) {
+      setState(() {
+        controller.text = DateFormat('dd/MM/yyyy').format(picked);
+      });
+    }
+  }
 
   void _addProcesso() {
     setState(() {
@@ -57,10 +94,10 @@ class _ClassificacaoState extends State<Classificacao> {
                     width: 200,
                     height: 130,
                     errorBuilder: (context, error, stackTrace) {
-                      return const Icon(Icons.error, size: 150);
+                      return Icon(Icons.error, size: 150);
                     },
                   ),
-                  const Expanded(
+                  Expanded(
                     child: Center(
                       child: Text(
                         'Classificação',
@@ -71,9 +108,49 @@ class _ClassificacaoState extends State<Classificacao> {
                       ),
                     ),
                   ),
+                  Container(
+                    width: 150,
+                    child: GestureDetector(
+                      onTap: () {
+                        _selectDate(context, dataLimiteController);
+                      },
+                      child: AbsorbPointer(
+                        child: TextField(
+                          controller: dataLimiteController,
+                          style: const TextStyle(
+                            color: Colors.red,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                          decoration: InputDecoration(
+                            labelText: 'Data Limite',
+                            border: OutlineInputBorder(
+                              borderSide:
+                                  BorderSide(color: Colors.grey.withAlpha(80)),
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(8)),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
-
+              SizedBox(height: 10),
+              // Linha com Cliente
+              TextField(
+                controller: clienteController,
+                style: const TextStyle(color: Colors.black),
+                decoration: InputDecoration(
+                  labelText: 'Cliente',
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.grey.withAlpha(80)),
+                    borderRadius: const BorderRadius.all(Radius.circular(8)),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
               // Linha com Pedido e Peso Total
               Row(
                 children: [
@@ -94,16 +171,13 @@ class _ClassificacaoState extends State<Classificacao> {
                     ),
                   ),
                   const SizedBox(width: 10),
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width *
-                        0.5 *
-                        0.2, // 20% da largura do container
+                  Expanded(
                     child: TextField(
-                      controller: pesoTotalController,
+                      controller: dataColetaController,
                       keyboardType: TextInputType.number,
                       style: const TextStyle(color: Colors.black),
                       decoration: InputDecoration(
-                        labelText: 'Peso Total (kg)',
+                        labelText: 'Data da Coleta',
                         border: OutlineInputBorder(
                           borderSide:
                               BorderSide(color: Colors.grey.withAlpha(80)),
@@ -113,6 +187,24 @@ class _ClassificacaoState extends State<Classificacao> {
                       ),
                     ),
                   ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: TextField(
+                      controller: pesoTotalController,
+                      keyboardType: TextInputType.number,
+                      style: const TextStyle(color: Colors.black),
+                      decoration: InputDecoration(
+                        labelText: 'Peso Total',
+                        border: OutlineInputBorder(
+                          borderSide:
+                              BorderSide(color: Colors.grey.withAlpha(80)),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(8)),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
                 ],
               ),
               const SizedBox(height: 10),

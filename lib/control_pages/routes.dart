@@ -10,6 +10,7 @@ import 'package:tcc/forms/form_recebimento.dart';
 import 'package:tcc/forms/form_classificacao.dart';
 import 'package:tcc/control_pages/login_page.dart';
 import 'package:tcc/control_pages/options_page.dart';
+import 'package:tcc/models/pedido.dart';
 
 class AppRoutes {
   static const String home = '/';
@@ -54,16 +55,19 @@ class AppRoutes {
         return Container(); // Retorne um container vazio pois estamos exibindo um dialog
       },
       classificacao: (context) {
-        // Exibir o popup quando a rota 'recebimento' é chamada
-        WidgetsBinding.instance.addPostFrameCallback((_) {
+        final pedido = ModalRoute.of(context)!.settings.arguments as Pedido;
+
+        Future.microtask(() {
           showDialog(
             context: context,
             builder: (context) => Classificacao(
+              pedido: pedido,
               onSave: () {},
             ),
           );
         });
-        return Container(); // Retorne um container vazio pois estamos exibindo um dialog
+
+        return Container(); // Retorna um container vazio, pois o diálogo será exibido
       },
       novoPedido: (context) {
         // Exibir o popup quando a rota 'recebimento' é chamada

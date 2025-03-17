@@ -255,13 +255,15 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
           showDialog(
             context: context,
             builder: (BuildContext context) {
-              return Classificacao(onSave: () async {
-                setState(() {
-                  pedido.classificacaoStatus = 1;
-                });
-                int retorno = await pedidoDAO.update(pedido);
-                print("Atualizado com sucesso! Retorno: $retorno");
-              });
+              return Classificacao(
+                  pedido: pedido, // Passa o pedido
+                  onSave: () async {
+                    setState(() {
+                      pedido.classificacaoStatus = 1;
+                    });
+                    int retorno = await pedidoDAO.update(pedido);
+                    print("Atualizado com sucesso! Retorno: $retorno");
+                  });
             },
           );
         } else if (label == 'Lavagem' &&
