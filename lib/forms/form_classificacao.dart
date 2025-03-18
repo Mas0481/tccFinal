@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:tcc/models/pedido.dart';
 import 'package:tcc/models/lote.dart';
+import 'package:tcc/DAO/pedidoDAO.dart';
+import 'package:tcc/DAO/loteDAO.dart';
 
 class Classificacao extends StatefulWidget {
   final Pedido pedido; // Adiciona o pedido como parâmetro
@@ -40,8 +42,11 @@ class _ClassificacaoState extends State<Classificacao> {
     if (widget.pedido.lotes != null && widget.pedido.lotes.isNotEmpty) {
       for (var lote in widget.pedido.lotes) {
         processos.add(Processo(
-          selectedProcesso: lote.processo,
-          pesoController: TextEditingController(text: lote.toString()),
+          selectedProcesso:
+              ['Processo 1', 'Processo 2', 'Processo 3'].contains(lote.processo)
+                  ? lote.processo
+                  : 'Processo 1',
+          pesoController: TextEditingController(text: lote.peso.toString()),
         ));
       }
     }
@@ -105,7 +110,7 @@ class _ClassificacaoState extends State<Classificacao> {
     );
   }
 
-  void _onSave() {
+  void _onSave() async {
     double pesoTotalLotes = processos.fold<double>(
         0, (sum, p) => sum + (double.tryParse(p.pesoController.text) ?? 0));
     double pesoTotalPedido = double.tryParse(pesoTotalController.text) ?? 0;
@@ -118,11 +123,26 @@ class _ClassificacaoState extends State<Classificacao> {
       widget.pedido.classificacaoStatus = 1;
     }
 
-//    // widget.pedido.lotes = processos.map((p) => Lote(
-//     // processo: p.selectedProcesso,
-//    //  peso: double.tryParse(p.pesoController.text) ?? 0,
-//  // status: 'Pendente',
-// ))// .toList();
+    // Atualizar os lotes no pedido
+    widget.pedido.lotes = processos
+        .map((p) => Lote(
+              processo: p.selectedProcesso!,
+              peso: double.tryParse(p.pesoController.text) ?? 0,
+              status: 'Pendente',
+              pedidoNum: widget.pedido.numPedido ?? 0,
+              loteNum: widget.pedido.lotes.length + 1,
+            ))
+        .toList();
+
+    // Persistir o pedido atualizado no banco de dados
+    PedidoDAO pedidoDAO = PedidoDAO();
+    await pedidoDAO.update(widget.pedido);
+
+    // Persistir os lotes atualizados no banco de dados
+    LoteDAO loteDAO = LoteDAO();
+    for (var lote in widget.pedido.lotes) {
+      await loteDAO.update(lote);
+    }
 
     widget.onSave();
     Navigator.pop(context);
@@ -479,6 +499,7 @@ class Processo {
   final TextEditingController pesoController;
   String lote = '';
 
-  Processo({this.selectedProcesso, TextEditingController? pesoController})
-      : pesoController = pesoController ?? TextEditingController();
+  Processo({String? selectedProcesso, TextEditingController? pesoController})
+      : selectedProcesso = selectedProcesso ?? 'Processo 1', // Valor padrão
+        pesoController = pesoController ?? TextEditingController();
 }

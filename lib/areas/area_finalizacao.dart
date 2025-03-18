@@ -42,6 +42,7 @@ class AreaFinalizacao extends StatelessWidget {
             processo: 'Hospital Pesado',
             loteCentrifugacaoStatus: 0,
             loteSecagemStatus: 0,
+            status: '',
           ),
           Lote(
             pedidoNum: 001,
@@ -50,6 +51,7 @@ class AreaFinalizacao extends StatelessWidget {
             processo: 'Hospital Leve',
             loteSecagemStatus: 0,
             loteCentrifugacaoStatus: 0,
+            status: '',
           )
         ],
         nomCliente: '', qtdProduto: 1, valorProdutos: 1, pagamento: 1,

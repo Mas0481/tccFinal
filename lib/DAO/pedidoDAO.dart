@@ -303,6 +303,7 @@ class PedidoDAO implements GenericDAO<Pedido> {
           secagemObs: loteRow['secagemObs'] ?? '',
           peso: loteRow['peso'] ?? 0,
           processo: loteRow['processo'] ?? '',
+          status: loteRow['status'] ?? '',
         );
       }).toList();
 
@@ -441,7 +442,7 @@ class PedidoDAO implements GenericDAO<Pedido> {
           secagemHoraFinal: loteRow['secagemHoraFinal'] ?? '',
           secagemObs: loteRow['secagemObs'] ?? '',
           peso: loteRow['peso'] ?? 0,
-          processo: loteRow['processo'] ?? '',
+          processo: loteRow['processo'] ?? '', status: loteRow['status'] ?? '',
         );
       }).toList();
 

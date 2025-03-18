@@ -77,6 +77,7 @@ class LoteDAO implements GenericDAO<Lote> {
         loteStatus: result.first['loteStatus'],
         peso: result.first['peso'],
         processo: result.first['processo'],
+        status: result.first['status'],
       );
       return lote;
     } finally {
@@ -96,6 +97,7 @@ class LoteDAO implements GenericDAO<Lote> {
           loteStatus: row['loteStatus'],
           peso: row['peso'],
           processo: row['processo'],
+          status: row['status'],
         );
       }).toList();
     } finally {
