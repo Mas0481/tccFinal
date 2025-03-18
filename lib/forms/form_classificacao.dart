@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:tcc/models/pedido.dart';
+import 'package:tcc/models/lote.dart';
 
 class Classificacao extends StatefulWidget {
   final Pedido pedido; // Adiciona o pedido como parâmetro
@@ -29,11 +30,21 @@ class _ClassificacaoState extends State<Classificacao> {
     pedidoController =
         TextEditingController(text: widget.pedido.numPedido.toString());
     pesoTotalController =
-        TextEditingController(text: widget.pedido.qtdProduto.toString());
+        TextEditingController(text: widget.pedido.pesoTotal.toString());
     dataLimiteController =
         TextEditingController(text: widget.pedido.dataLimite.toString());
     dataColetaController =
         TextEditingController(text: widget.pedido.dataColeta.toString());
+
+    // Verifica se existem lotes no pedido e atualiza a lista de processos
+    if (widget.pedido.lotes != null && widget.pedido.lotes.isNotEmpty) {
+      for (var lote in widget.pedido.lotes) {
+        processos.add(Processo(
+          selectedProcesso: lote.processo,
+          pesoController: TextEditingController(text: lote.toString()),
+        ));
+      }
+    }
   }
 
   Future<void> _selectDate(
@@ -52,9 +63,18 @@ class _ClassificacaoState extends State<Classificacao> {
   }
 
   void _addProcesso() {
-    setState(() {
-      processos.add(Processo());
-    });
+    double pesoTotalLotes = processos.fold<double>(
+        0, (sum, p) => sum + (double.tryParse(p.pesoController.text) ?? 0));
+    double pesoTotalPedido = double.tryParse(pesoTotalController.text) ?? 0;
+
+    if (pesoTotalLotes < pesoTotalPedido) {
+      setState(() {
+        processos.add(Processo());
+      });
+    } else {
+      _showMessage(
+          'O peso total dos lotes não pode ultrapassar o peso total do pedido.');
+    }
   }
 
   void _removeProcesso(int index) {
@@ -63,6 +83,49 @@ class _ClassificacaoState extends State<Classificacao> {
         processos.removeAt(index);
       }
     });
+  }
+
+  void _showMessage(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Aviso'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _onSave() {
+    double pesoTotalLotes = processos.fold<double>(
+        0, (sum, p) => sum + (double.tryParse(p.pesoController.text) ?? 0));
+    double pesoTotalPedido = double.tryParse(pesoTotalController.text) ?? 0;
+
+    if (processos.isEmpty) {
+      widget.pedido.classificacaoStatus = 0;
+    } else if (pesoTotalLotes >= pesoTotalPedido) {
+      widget.pedido.classificacaoStatus = 2;
+    } else {
+      widget.pedido.classificacaoStatus = 1;
+    }
+
+//    // widget.pedido.lotes = processos.map((p) => Lote(
+//     // processo: p.selectedProcesso,
+//    //  peso: double.tryParse(p.pesoController.text) ?? 0,
+//  // status: 'Pendente',
+// ))// .toList();
+
+    widget.onSave();
+    Navigator.pop(context);
   }
 
   @override
@@ -288,7 +351,24 @@ class _ClassificacaoState extends State<Classificacao> {
                                   ),
                                 ),
                                 onChanged: (value) {
-                                  setState(() {});
+                                  setState(() {
+                                    double pesoTotalLotes =
+                                        processos.fold<double>(
+                                            0,
+                                            (sum, p) =>
+                                                sum +
+                                                (double.tryParse(p
+                                                        .pesoController.text) ??
+                                                    0));
+                                    double pesoTotalPedido = double.tryParse(
+                                            pesoTotalController.text) ??
+                                        0;
+                                    if (pesoTotalLotes > pesoTotalPedido) {
+                                      _showMessage(
+                                          'O peso total dos lotes não pode ultrapassar o peso total do pedido.');
+                                      processo.pesoController.text = '';
+                                    }
+                                  });
                                 },
                               ),
                             ),
@@ -351,11 +431,7 @@ class _ClassificacaoState extends State<Classificacao> {
                   SizedBox(
                     width: 90,
                     child: ElevatedButton(
-                      onPressed: () {
-                        // Lógica de persistência no banco de dados aqui
-                        widget.onSave();
-                        Navigator.pop(context);
-                      },
+                      onPressed: _onSave,
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 40),
                         backgroundColor: Colors.blueAccent,
@@ -380,8 +456,7 @@ class _ClassificacaoState extends State<Classificacao> {
                         padding: const EdgeInsets.symmetric(vertical: 40),
                         backgroundColor: Colors.red, // Cor vermelha
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
+                            borderRadius: BorderRadius.circular(8)),
                       ),
                       child: const Text(
                         'Cancelar',
@@ -401,8 +476,9 @@ class _ClassificacaoState extends State<Classificacao> {
 
 class Processo {
   String? selectedProcesso;
-  final TextEditingController pesoController = TextEditingController();
+  final TextEditingController pesoController;
   String lote = '';
 
-  Processo({this.selectedProcesso});
+  Processo({this.selectedProcesso, TextEditingController? pesoController})
+      : pesoController = pesoController ?? TextEditingController();
 }

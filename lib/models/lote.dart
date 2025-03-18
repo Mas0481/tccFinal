@@ -1,6 +1,8 @@
 class Lote {
   final int pedidoNum;
   final int loteNum;
+  final double peso;
+  final String processo;
 
   // 0 representa aguardando, 1 representa iniciado, 2 representa concluído
   int loteStatus;
@@ -39,6 +41,8 @@ class Lote {
   Lote({
     required this.pedidoNum,
     required this.loteNum,
+    required this.peso,
+    required this.processo,
     this.loteStatus = 0,
     this.loteLavagemStatus = 0,
     this.lavagemEquipamento = '',
@@ -69,7 +73,7 @@ class Lote {
 
   @override
   String toString() {
-    return 'Lote(pedidoNum: $pedidoNum, loteNum: $loteNum, loteStatus: $loteStatus, '
+    return 'Lote(pedidoNum: $pedidoNum, loteNum: $loteNum, peso: $peso, processo: $processo, loteStatus: $loteStatus, '
         'loteLavagemStatus: $loteLavagemStatus, lavagemEquipamento: $lavagemEquipamento, '
         'lavagemProcesso: $lavagemProcesso, lavagemDataInicio: $lavagemDataInicio, '
         'lavagemHoraInicio: $lavagemHoraInicio, lavagemDataFinal: $lavagemDataFinal, '

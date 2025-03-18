@@ -7,6 +7,8 @@ class Pedido {
   double valorProdutos;
   int pagamento;
   String? dataPagamento;
+
+  //o status do processo tem três níveis 0 - não iniciado, 1 - processando, 2 - concluído
   double recebimentoStatus;
   double classificacaoStatus;
   double lavagemStatus;
@@ -15,6 +17,7 @@ class Pedido {
   double passadoriaStatus;
   double finalizacaoStatus;
   double retornoStatus;
+
   final String dataColeta;
   String? dataRecebimento;
   String? horaRecebimento;

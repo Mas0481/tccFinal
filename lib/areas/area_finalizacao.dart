@@ -38,12 +38,16 @@ class AreaFinalizacao extends StatelessWidget {
           Lote(
             pedidoNum: 001,
             loteNum: 001,
+            peso: 1,
+            processo: 'Hospital Pesado',
             loteCentrifugacaoStatus: 0,
             loteSecagemStatus: 0,
           ),
           Lote(
             pedidoNum: 001,
             loteNum: 002,
+            peso: 15,
+            processo: 'Hospital Leve',
             loteSecagemStatus: 0,
             loteCentrifugacaoStatus: 0,
           )
