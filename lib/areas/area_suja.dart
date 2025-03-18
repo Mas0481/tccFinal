@@ -184,18 +184,20 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
     String buttonText = label;
 
     if (label == 'Recebimento') {
-      progress = pedido.recebimentoStatus;
+      progress = pedido.recebimentoStatus.toDouble();
       barColor = (progress == 2.0) ? Colors.blue : Colors.grey[300]!;
       buttonText = (progress == 2.0) ? "$label Concluído" : label;
     } else if (label == 'Classificação') {
-      progress = pedido.classificacaoStatus;
+      double pesoTotalLotes =
+          pedido.lotes.fold<double>(0, (sum, lote) => sum + lote.peso);
+      double pesoTotalPedido = pedido.pesoTotal.toDouble();
+      progress = pesoTotalLotes / pesoTotalPedido;
       barColor =
           (pedido.classificacaoStatus == 2.0) ? Colors.blue : Colors.grey[300]!;
       buttonText =
           (pedido.classificacaoStatus == 2.0) ? "$label Concluído" : label;
     } else if (label == 'Lavagem') {
-      progress = pedido.lavagemStatus;
-      //barColor = (progress == 1.0) ? Colors.blue : Colors.red[300]!;
+      progress = pedido.lavagemStatus.toDouble();
       buttonText = (progress == 2.0) ? "$label Concluído" : label;
     }
 
@@ -256,16 +258,39 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
             context: context,
             builder: (BuildContext context) {
               return Classificacao(
-                  pedido: pedido, // Passa o pedido
-                  onSave: () async {
-                    setState(() {
-                      pedido.classificacaoStatus = 2;
-                    });
-                    int retorno = await pedidoDAO.update(pedido);
-                    print("Atualizado com sucesso! Retorno: $retorno");
+                pedido: pedido, // Passa o pedido
+                onSave: () async {
+                  setState(() {
+                    //pedido.classificacaoStatus = 2;
                   });
+                  Navigator.pop(context, pedido);
+                },
+              );
             },
-          );
+          ).then((updatedPedido) async {
+            print("entrou no then");
+            if (updatedPedido != null) {
+              double pesoTotalLotes = updatedPedido.lotes
+                  .fold<double>(0, (sum, lote) => sum + lote.peso);
+              double pesoTotalPedido = updatedPedido.pesoTotal;
+
+              if (pesoTotalLotes == pesoTotalPedido) {
+                updatedPedido.classificacaoStatus = 2;
+              } else {
+                updatedPedido.classificacaoStatus = 1;
+              }
+
+              PedidoDAO pedidoDAO = PedidoDAO();
+              int retorno = await pedidoDAO.update(pedido);
+              print("Atualizado com sucesso! Retorno: $retorno");
+
+              setState(() {
+                pedidos[pedidos.indexWhere(
+                        (p) => p.numPedido == updatedPedido.numPedido)] =
+                    updatedPedido;
+              });
+            }
+          });
         } else if (label == 'Lavagem' &&
             pedido.recebimentoStatus == 2.0 &&
             pedido.classificacaoStatus == 2.0) {
