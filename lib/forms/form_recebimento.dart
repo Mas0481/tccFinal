@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:tcc/models/pedido.dart'; // Para formatar datas
+import 'package:tcc/repository/clientes_repository.dart';
+import 'package:tcc/servicos/connection.dart'; // Importar o ClienteRepository
 
 class Recebimento extends StatefulWidget {
   final Pedido pedido; // Adiciona o pedido como parâmetro
@@ -22,9 +24,13 @@ class _RecebimentoState extends State<Recebimento> {
   TextEditingController dataEntregaController = TextEditingController();
   TextEditingController pesoTotalController = TextEditingController();
   TextEditingController observacoesController = TextEditingController();
+  ClienteRepository clienteRepository =
+      ClienteRepository(MySqlConnectionService());
+
   @override
   void initState() {
     super.initState();
+    _loadClienteName();
     clienteController =
         TextEditingController(text: widget.pedido.codCliente.toString());
     pedidoController =
@@ -37,6 +43,15 @@ class _RecebimentoState extends State<Recebimento> {
         TextEditingController(text: widget.pedido.pesoTotal.toString());
     observacoesController =
         TextEditingController(text: widget.pedido.recebimentoObs.toString());
+  }
+
+  Future<void> _loadClienteName() async {
+    final cliente = await clienteRepository.findById(widget.pedido.codCliente);
+    if (cliente != null) {
+      setState(() {
+        clienteController.text = cliente['nome']!;
+      });
+    }
   }
 
   // Função para selecionar datas

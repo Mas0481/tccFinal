@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
 import 'package:tcc/models/pedido.dart';
 import 'package:tcc/models/lote.dart';
 import 'package:tcc/DAO/pedidoDAO.dart';
+import 'package:tcc/repository/clientes_repository.dart';
+import 'package:tcc/servicos/connection.dart';
 
 class Classificacao extends StatefulWidget {
   final Pedido pedido; // Adiciona o pedido como parâmetro
@@ -23,10 +25,13 @@ class _ClassificacaoState extends State<Classificacao> {
   late TextEditingController dataLimiteController;
   late TextEditingController dataColetaController;
   final List<Processo> processos = [];
+  ClienteRepository clienteRepository =
+      ClienteRepository(MySqlConnectionService());
 
   @override
   void initState() {
     super.initState();
+    _loadClienteName();
     clienteController =
         TextEditingController(text: widget.pedido.codCliente.toString());
     pedidoController =
@@ -49,6 +54,15 @@ class _ClassificacaoState extends State<Classificacao> {
           pesoController: TextEditingController(text: lote.peso.toString()),
         ));
       }
+    }
+  }
+
+  Future<void> _loadClienteName() async {
+    final cliente = await clienteRepository.findById(widget.pedido.codCliente);
+    if (cliente != null) {
+      setState(() {
+        clienteController.text = cliente['nome']!;
+      });
     }
   }
 
