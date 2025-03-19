@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:tcc/models/pedido.dart';
 import 'package:tcc/repository/clientes_repository.dart';
 import 'package:tcc/servicos/connection.dart';
+import 'package:tcc/repository/equipamentos_repository.dart';
 
 class Lavagem extends StatefulWidget {
   final Pedido pedido; // Adiciona o pedido como parâmetro
@@ -20,17 +21,21 @@ class _LavagemState extends State<Lavagem> {
   TextEditingController dataLimiteController = TextEditingController();
   TextEditingController dataInicioController = TextEditingController();
   TextEditingController loteController = TextEditingController();
-  TextEditingController equipamentoController = TextEditingController();
   TextEditingController horaInicioController = TextEditingController();
   TextEditingController processoController = TextEditingController();
   TextEditingController observacoesController = TextEditingController();
   ClienteRepository clienteRepository =
       ClienteRepository(MySqlConnectionService());
+  List<Map<String, dynamic>> equipamentos = [];
+  String? equipamentoSelecionado;
+  EquipamentosRepository equipamentosRepository =
+      EquipamentosRepository(MySqlConnectionService());
 
   @override
   void initState() {
     super.initState();
     _loadClienteName();
+    _loadEquipamentos();
     clienteController =
         TextEditingController(text: widget.pedido.codCliente.toString());
     pedidoController =
@@ -44,8 +49,7 @@ class _LavagemState extends State<Lavagem> {
       dataInicioController = TextEditingController(
           text: DateFormat('dd/MM/yyyy').format(DateTime.now()));
       loteController = TextEditingController(text: lote.loteNum.toString());
-      equipamentoController =
-          TextEditingController(text: lote.lavagemEquipamento.toString());
+      equipamentoSelecionado = lote.lavagemEquipamento?.toString() ?? '';
       horaInicioController = TextEditingController(
           text: DateFormat('HH:mm').format(DateTime.now()));
       processoController =
@@ -61,6 +65,27 @@ class _LavagemState extends State<Lavagem> {
       setState(() {
         clienteController.text = cliente['nome']!;
       });
+    }
+  }
+
+  Future<void> _loadEquipamentos() async {
+    try {
+      final listaEquipamentos = await equipamentosRepository.getEquipamentos();
+      setState(() {
+        print('lista de equipamentos dentro do loadEquipamentos: ');
+        print(listaEquipamentos);
+        equipamentos = listaEquipamentos
+            .map((e) => {
+                  'codigo': e['codigoEquipamento'],
+                  'nome': e['nomeEquipamento']
+                })
+            .toList();
+        if (equipamentos.isNotEmpty) {
+          equipamentoSelecionado = equipamentos.first['nome'];
+        }
+      });
+    } catch (e) {
+      print('Erro ao buscar os equipamentos: $e');
     }
   }
 
@@ -217,9 +242,22 @@ class _LavagemState extends State<Lavagem> {
                   ),
                   const SizedBox(width: 10),
                   Expanded(
-                    child: TextField(
-                      controller: equipamentoController,
-                      style: const TextStyle(color: Colors.black),
+                    child: DropdownButtonFormField<String>(
+                      value: equipamentoSelecionado != null &&
+                              equipamentoSelecionado!.isNotEmpty
+                          ? equipamentoSelecionado
+                          : null,
+                      items: equipamentos.map((equipamento) {
+                        return DropdownMenuItem<String>(
+                          value: equipamento['nome'],
+                          child: Text(equipamento['nome']),
+                        );
+                      }).toList(),
+                      onChanged: (newValue) {
+                        setState(() {
+                          equipamentoSelecionado = newValue ?? '';
+                        });
+                      },
                       decoration: InputDecoration(
                         labelText: 'Equipamento',
                         border: OutlineInputBorder(
