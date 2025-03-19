@@ -3,7 +3,6 @@ import 'package:intl/intl.dart';
 import 'package:tcc/models/pedido.dart';
 import 'package:tcc/models/lote.dart';
 import 'package:tcc/DAO/pedidoDAO.dart';
-import 'package:tcc/DAO/loteDAO.dart';
 
 class Classificacao extends StatefulWidget {
   final Pedido pedido; // Adiciona o pedido como parâmetro

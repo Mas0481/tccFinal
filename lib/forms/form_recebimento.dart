@@ -1,25 +1,42 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // Para formatar datas
+import 'package:intl/intl.dart';
+import 'package:tcc/models/pedido.dart'; // Para formatar datas
 
 class Recebimento extends StatefulWidget {
+  final Pedido pedido; // Adiciona o pedido como parâmetro
   final VoidCallback onSave; // Adiciona um callback
 
-  const Recebimento({super.key, required this.onSave}); // Construtor
+  const Recebimento(
+      {super.key, required this.pedido, required this.onSave}); // Construtor
+
+  Pedido? get processos => null; // Construtor
 
   @override
   _RecebimentoState createState() => _RecebimentoState();
 }
 
 class _RecebimentoState extends State<Recebimento> {
-  final TextEditingController clienteController = TextEditingController();
-  final TextEditingController pedidoController = TextEditingController();
-  final TextEditingController dataColetaController = TextEditingController();
-  final TextEditingController dataEntregaController = TextEditingController();
-  final TextEditingController pesoTotalController = TextEditingController();
-  final TextEditingController observacoesController = TextEditingController();
+  TextEditingController clienteController = TextEditingController();
+  TextEditingController pedidoController = TextEditingController();
+  TextEditingController dataColetaController = TextEditingController();
+  TextEditingController dataEntregaController = TextEditingController();
+  TextEditingController pesoTotalController = TextEditingController();
+  TextEditingController observacoesController = TextEditingController();
   @override
   void initState() {
     super.initState();
+    clienteController =
+        TextEditingController(text: widget.pedido.codCliente.toString());
+    pedidoController =
+        TextEditingController(text: widget.pedido.numPedido.toString());
+    dataColetaController =
+        TextEditingController(text: widget.pedido.dataColeta.toString());
+    dataEntregaController =
+        TextEditingController(text: widget.pedido.dataEntrega.toString());
+    pesoTotalController =
+        TextEditingController(text: widget.pedido.pesoTotal.toString());
+    observacoesController =
+        TextEditingController(text: widget.pedido.recebimentoObs.toString());
   }
 
   // Função para selecionar datas

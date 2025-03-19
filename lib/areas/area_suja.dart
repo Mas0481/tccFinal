@@ -239,16 +239,18 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
           showDialog(
             context: context,
             builder: (BuildContext context) {
-              return Recebimento(onSave: () async {
-                setState(() {
-                  pedido.recebimentoStatus = 2;
-                });
+              return Recebimento(
+                  pedido: pedido,
+                  onSave: () async {
+                    setState(() {
+                      pedido.recebimentoStatus = 2;
+                    });
 
-                // Verifique se o pedidoDAO está acessível aqui
+                    // Verifique se o pedidoDAO está acessível aqui
 
-                int retorno = await pedidoDAO.update(pedido);
-                print("Atualizado com sucesso! Retorno: $retorno");
-              });
+                    int retorno = await pedidoDAO.update(pedido);
+                    print("Atualizado com sucesso! Retorno: $retorno");
+                  });
             },
           );
         } else if (label == 'Classificação' &&

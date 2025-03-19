@@ -30,18 +30,25 @@ class AppRoutes {
       areaSuja: (context) => AreaSuja(),
       preparacao: (context) => AreaPreparacao(),
       finalizacao: (context) => AreaFinalizacao(),
+
+      // Exibir o popup quando a rota 'recebimento' é chamada
+
       recebimento: (context) {
-        // Exibir o popup quando a rota 'recebimento' é chamada
-        WidgetsBinding.instance.addPostFrameCallback((_) {
+        final pedido = ModalRoute.of(context)!.settings.arguments as Pedido;
+
+        Future.microtask(() {
           showDialog(
             context: context,
             builder: (context) => Recebimento(
+              pedido: pedido,
               onSave: () {},
             ),
           );
         });
-        return Container(); // Retorne um container vazio pois estamos exibindo um dialog
+
+        return Container(); // Retorna um container vazio, pois o diálogo será exibido
       },
+
       lavagem: (context) {
         // Exibir o popup quando a rota 'recebimento' é chamada
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -69,6 +76,7 @@ class AppRoutes {
 
         return Container(); // Retorna um container vazio, pois o diálogo será exibido
       },
+
       novoPedido: (context) {
         // Exibir o popup quando a rota 'recebimento' é chamada
         WidgetsBinding.instance.addPostFrameCallback((_) {
