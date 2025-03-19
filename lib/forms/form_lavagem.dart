@@ -1,33 +1,67 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // Para formatar datas
+import 'package:intl/intl.dart';
+import 'package:tcc/models/pedido.dart';
+import 'package:tcc/repository/clientes_repository.dart';
+import 'package:tcc/servicos/connection.dart';
 
 class Lavagem extends StatefulWidget {
+  final Pedido pedido; // Adiciona o pedido como parâmetro
   final VoidCallback onSave; // Adiciona um callback
 
-  const Lavagem({super.key, required this.onSave}); // Construtor
+  const Lavagem({super.key, required this.pedido, required this.onSave});
 
   @override
   _LavagemState createState() => _LavagemState();
 }
 
 class _LavagemState extends State<Lavagem> {
-  final TextEditingController clienteController = TextEditingController();
-  final TextEditingController pedidoController = TextEditingController();
-  final TextEditingController dataLimiteController = TextEditingController();
-  final TextEditingController dataInicioController = TextEditingController();
-  final TextEditingController loteController = TextEditingController();
-  final TextEditingController equipamentoController = TextEditingController();
-  final TextEditingController horaInicioController = TextEditingController();
-  final TextEditingController processoController = TextEditingController();
-  final TextEditingController observacoesController = TextEditingController();
+  TextEditingController clienteController = TextEditingController();
+  TextEditingController pedidoController = TextEditingController();
+  TextEditingController dataLimiteController = TextEditingController();
+  TextEditingController dataInicioController = TextEditingController();
+  TextEditingController loteController = TextEditingController();
+  TextEditingController equipamentoController = TextEditingController();
+  TextEditingController horaInicioController = TextEditingController();
+  TextEditingController processoController = TextEditingController();
+  TextEditingController observacoesController = TextEditingController();
+  ClienteRepository clienteRepository =
+      ClienteRepository(MySqlConnectionService());
 
   @override
   void initState() {
     super.initState();
-    // Definindo a data de início como a data atual
-    dataInicioController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
-    // Definindo a hora de início como a hora atual
-    horaInicioController.text = DateFormat('HH:mm').format(DateTime.now());
+    _loadClienteName();
+    clienteController =
+        TextEditingController(text: widget.pedido.codCliente.toString());
+    pedidoController =
+        TextEditingController(text: widget.pedido.numPedido.toString());
+    dataLimiteController =
+        TextEditingController(text: widget.pedido.dataLimite.toString());
+
+    if (widget.pedido.lotes.isNotEmpty) {
+      final lote = widget.pedido.lotes.first;
+
+      dataInicioController = TextEditingController(
+          text: DateFormat('dd/MM/yyyy').format(DateTime.now()));
+      loteController = TextEditingController(text: lote.loteNum.toString());
+      equipamentoController =
+          TextEditingController(text: lote.lavagemEquipamento.toString());
+      horaInicioController = TextEditingController(
+          text: DateFormat('HH:mm').format(DateTime.now()));
+      processoController =
+          TextEditingController(text: lote.processo.toString());
+      observacoesController =
+          TextEditingController(text: lote.lavagemObs.toString());
+    }
+  }
+
+  Future<void> _loadClienteName() async {
+    final cliente = await clienteRepository.findById(widget.pedido.codCliente);
+    if (cliente != null) {
+      setState(() {
+        clienteController.text = cliente['nome']!;
+      });
+    }
   }
 
   // Função para selecionar datas
@@ -222,16 +256,23 @@ class _LavagemState extends State<Lavagem> {
                   ),
                   const SizedBox(width: 10),
                   Expanded(
-                    child: TextField(
-                      controller: dataInicioController,
-                      style: const TextStyle(color: Colors.black),
-                      decoration: InputDecoration(
-                        labelText: 'Data de Início',
-                        border: OutlineInputBorder(
-                          borderSide:
-                              BorderSide(color: Colors.grey.withAlpha(80)),
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(8)),
+                    child: GestureDetector(
+                      onTap: () {
+                        _selectDate(context, dataInicioController);
+                      },
+                      child: AbsorbPointer(
+                        child: TextField(
+                          controller: dataInicioController,
+                          style: const TextStyle(color: Colors.black),
+                          decoration: InputDecoration(
+                            labelText: 'Data de Início',
+                            border: OutlineInputBorder(
+                              borderSide:
+                                  BorderSide(color: Colors.grey.withAlpha(80)),
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(8)),
+                            ),
+                          ),
                         ),
                       ),
                     ),

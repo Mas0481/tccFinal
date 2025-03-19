@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:tcc/areas/area_finalizacao.dart';
 import 'package:tcc/areas/area_preparacao.dart';
 import 'package:tcc/areas/area_suja.dart';
-import 'package:tcc/forms/form_lavagem.dart';
 import 'package:tcc/forms/form_novoPedido.dart';
 
 import 'package:tcc/forms/form_recebimento.dart';
@@ -50,17 +49,21 @@ class AppRoutes {
       },
 
       lavagem: (context) {
-        // Exibir o popup quando a rota 'recebimento' é chamada
-        WidgetsBinding.instance.addPostFrameCallback((_) {
+        final pedido = ModalRoute.of(context)!.settings.arguments as Pedido;
+
+        Future.microtask(() {
           showDialog(
             context: context,
-            builder: (context) => Lavagem(
+            builder: (context) => Recebimento(
+              pedido: pedido,
               onSave: () {},
             ),
           );
         });
-        return Container(); // Retorne um container vazio pois estamos exibindo um dialog
+
+        return Container(); // Retorna um container vazio, pois o diálogo será exibido
       },
+
       classificacao: (context) {
         final pedido = ModalRoute.of(context)!.settings.arguments as Pedido;
 

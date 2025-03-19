@@ -489,13 +489,15 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
             showDialog(
               context: context,
               builder: (BuildContext context) {
-                return Lavagem(onSave: () async {
-                  setState(() {
-                    lote.loteStatus = 2; // Atualiza o status do lote
-                  });
-                  int retorno = await pedidoDAO.update(pedido);
-                  print("Atualizado com sucesso! Retorno: $retorno");
-                });
+                return Lavagem(
+                    pedido: pedido,
+                    onSave: () async {
+                      setState(() {
+                        lote.loteStatus = 2; // Atualiza o status do lote
+                      });
+                      int retorno = await pedidoDAO.update(pedido);
+                      print("Atualizado com sucesso! Retorno: $retorno");
+                    });
               },
             );
           } else {

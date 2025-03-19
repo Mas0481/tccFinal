@@ -44,7 +44,7 @@ class _ClassificacaoState extends State<Classificacao> {
         TextEditingController(text: widget.pedido.dataColeta.toString());
 
     // Verifica se existem lotes no pedido e atualiza a lista de processos
-    if (widget.pedido.lotes != null && widget.pedido.lotes.isNotEmpty) {
+    if (widget.pedido.lotes.isNotEmpty) {
       for (var lote in widget.pedido.lotes) {
         processos.add(Processo(
           selectedProcesso:
