@@ -7,18 +7,48 @@ class LoteDAO implements GenericDAO<Lote> {
   Future<int> insert(Lote lote) async {
     final conn = await MySqlConnectionService().getConnection();
     try {
-      final result = await conn.query(
-        '''
+      final result = await conn.query('''
         INSERT INTO lotes (
-          pedidoNum, loteNum, loteStatus
-        ) VALUES (?, ?, ?)
-        ''',
-        [
-          lote.pedidoNum,
-          lote.loteNum,
-          lote.loteStatus,
-        ],
-      );
+          pedidoNum, loteNum, loteStatus, loteLavagemStatus, lavagemEquipamento, 
+          lavagemProcesso, lavagemDataInicio, lavagemHoraInicio, lavagemDataFinal, 
+          lavagemHoraFinal, lavagemObs, loteCentrifugacaoStatus, centrifugacaoEquipamento, 
+          centrifugacaoTempoProcesso, centrifugacaoDataInicio, centrifugacaoHoraInicio, 
+          centrifugacaoDataFinal, centrifugacaoHoraFinal, centrifugacaoObs, loteSecagemStatus, 
+          secagemEquipamento, secagemTempoProcesso, secagemTemperatura, secagemDataInicio, 
+          secagemHoraInicio, secagemDataFinal, secagemHoraFinal, secagemObs, peso, processo
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', [
+        lote.pedidoNum,
+        lote.loteNum,
+        lote.loteStatus,
+        lote.loteLavagemStatus,
+        lote.lavagemEquipamento,
+        lote.lavagemProcesso,
+        lote.lavagemDataInicio,
+        lote.lavagemHoraInicio,
+        lote.lavagemDataFinal,
+        lote.lavagemHoraFinal,
+        lote.lavagemObs,
+        lote.loteCentrifugacaoStatus,
+        lote.centrifugacaoEquipamento,
+        lote.centrifugacaoTempoProcesso,
+        lote.centrifugacaoDataInicio,
+        lote.centrifugacaoHoraInicio,
+        lote.centrifugacaoDataFinal,
+        lote.centrifugacaoHoraFinal,
+        lote.centrifugacaoObs,
+        lote.loteSecagemStatus,
+        lote.secagemEquipamento,
+        lote.secagemTempoProcesso,
+        lote.secagemTemperatura,
+        lote.secagemDataInicio,
+        lote.secagemHoraInicio,
+        lote.secagemDataFinal,
+        lote.secagemHoraFinal,
+        lote.secagemObs,
+        lote.peso,
+        lote.processo,
+      ]);
       return result.insertId!;
     } finally {
       await conn.close();
@@ -27,16 +57,51 @@ class LoteDAO implements GenericDAO<Lote> {
 
   @override
   Future<int> update(Lote lote) async {
+    print('entrou no update lote');
     final conn = await MySqlConnectionService().getConnection();
     try {
       final result = await conn.query(
         '''
         UPDATE lotes SET
-          loteStatus = ?
+loteStatus = ?, loteLavagemStatus = ?, lavagemEquipamento = ?, lavagemProcesso = ?, 
+          lavagemDataInicio = ?, lavagemHoraInicio = ?, lavagemDataFinal = ?, lavagemHoraFinal = ?, 
+          lavagemObs = ?, loteCentrifugacaoStatus = ?, centrifugacaoEquipamento = ?, 
+          centrifugacaoTempoProcesso = ?, centrifugacaoDataInicio = ?, centrifugacaoHoraInicio = ?, 
+          centrifugacaoDataFinal = ?, centrifugacaoHoraFinal = ?, centrifugacaoObs = ?, 
+          loteSecagemStatus = ?, secagemEquipamento = ?, secagemTempoProcesso = ?, 
+          secagemTemperatura = ?, secagemDataInicio = ?, secagemHoraInicio = ?, 
+          secagemDataFinal = ?, secagemHoraFinal = ?, secagemObs = ?, peso = ?, processo = ?
         WHERE pedidoNum = ? AND loteNum = ?
         ''',
         [
           lote.loteStatus,
+          lote.loteLavagemStatus,
+          lote.lavagemEquipamento,
+          lote.lavagemProcesso,
+          lote.lavagemDataInicio,
+          lote.lavagemHoraInicio,
+          lote.lavagemDataFinal,
+          lote.lavagemHoraFinal,
+          lote.lavagemObs,
+          lote.loteCentrifugacaoStatus,
+          lote.centrifugacaoEquipamento,
+          lote.centrifugacaoTempoProcesso,
+          lote.centrifugacaoDataInicio,
+          lote.centrifugacaoHoraInicio,
+          lote.centrifugacaoDataFinal,
+          lote.centrifugacaoHoraFinal,
+          lote.centrifugacaoObs,
+          lote.loteSecagemStatus,
+          lote.secagemEquipamento,
+          lote.secagemTempoProcesso,
+          lote.secagemTemperatura,
+          lote.secagemDataInicio,
+          lote.secagemHoraInicio,
+          lote.secagemDataFinal,
+          lote.secagemHoraFinal,
+          lote.secagemObs,
+          lote.peso,
+          lote.processo,
           lote.pedidoNum,
           lote.loteNum,
         ],
@@ -77,7 +142,6 @@ class LoteDAO implements GenericDAO<Lote> {
         loteStatus: result.first['loteStatus'],
         peso: result.first['peso'],
         processo: result.first['processo'],
-        status: result.first['status'],
       );
       return lote;
     } finally {
@@ -97,7 +161,6 @@ class LoteDAO implements GenericDAO<Lote> {
           loteStatus: row['loteStatus'],
           peso: row['peso'],
           processo: row['processo'],
-          status: row['status'],
         );
       }).toList();
     } finally {

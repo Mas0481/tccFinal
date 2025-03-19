@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:intl/intl.dart';
 import 'package:tcc/DAO/genericDAO.dart';
+import 'package:tcc/DAO/loteDAO.dart';
 import 'package:tcc/models/lote.dart';
 import 'package:tcc/servicos/connection.dart';
 
@@ -11,6 +12,8 @@ class PedidoDAO implements GenericDAO<Pedido> {
   @override
   Future<int> insert(Pedido pedido) async {
     final conn = await MySqlConnectionService().getConnection();
+    int totalAffectedRows = 0;
+
     try {
       final result = await conn.query(
         '''
@@ -44,17 +47,25 @@ class PedidoDAO implements GenericDAO<Pedido> {
           pedido.totalLotes,
         ],
       );
-      return result.insertId!;
+      totalAffectedRows += result.affectedRows!;
+
+      // Inserir os lotes relacionados ao pedido
+      LoteDAO loteDAO = LoteDAO();
+      for (final lote in pedido.lotes) {
+        final loteResult = await loteDAO.insert(lote);
+        totalAffectedRows += loteResult;
+      }
     } finally {
       await conn.close();
     }
+
+    return totalAffectedRows;
   }
 
   @override
-  @override
-  @override
   Future<int> update(Pedido pedido) async {
     final conn = await MySqlConnectionService().getConnection();
+    final loteDAO = LoteDAO();
     int totalAffectedRows = 0;
 
     try {
@@ -167,68 +178,26 @@ class PedidoDAO implements GenericDAO<Pedido> {
       ]);
       totalAffectedRows += pedidoResult.affectedRows!;
 
-      // Atualizar os lotes relacionados ao pedido
+      // Atualizar ou inserir lotes
       for (final lote in pedido.lotes) {
-        final loteResult = await conn.query('''
-        UPDATE lotes SET
-          loteStatus = ?, 
-          loteLavagemStatus = ?, 
-          lavagemEquipamento = ?, 
-          lavagemProcesso = ?, 
-          lavagemDataInicio = ?, 
-          lavagemHoraInicio = ?, 
-          lavagemDataFinal = ?, 
-          lavagemHoraFinal = ?, 
-          lavagemObs = ?, 
-          loteCentrifugacaoStatus = ?, 
-          centrifugacaoEquipamento = ?, 
-          centrifugacaoTempoProcesso = ?, 
-          centrifugacaoDataInicio = ?, 
-          centrifugacaoHoraInicio = ?, 
-          centrifugacaoDataFinal = ?, 
-          centrifugacaoHoraFinal = ?, 
-          centrifugacaoObs = ?, 
-          loteSecagemStatus = ?, 
-          secagemEquipamento = ?, 
-          secagemTempoProcesso = ?, 
-          secagemTemperatura = ?, 
-          secagemDataInicio = ?, 
-          secagemHoraInicio = ?, 
-          secagemDataFinal = ?, 
-          secagemHoraFinal = ?, 
-          secagemObs = ?
-        WHERE pedidoNum = ? AND loteNum = ?
-      ''', [
-          lote.loteStatus,
-          lote.loteLavagemStatus,
-          lote.lavagemEquipamento,
-          lote.lavagemProcesso,
-          lote.lavagemDataInicio,
-          lote.lavagemHoraInicio,
-          lote.lavagemDataFinal,
-          lote.lavagemHoraFinal,
-          lote.lavagemObs,
-          lote.loteCentrifugacaoStatus,
-          lote.centrifugacaoEquipamento,
-          lote.centrifugacaoTempoProcesso,
-          lote.centrifugacaoDataInicio,
-          lote.centrifugacaoHoraInicio,
-          lote.centrifugacaoDataFinal,
-          lote.centrifugacaoHoraFinal,
-          lote.centrifugacaoObs,
-          lote.loteSecagemStatus,
-          lote.secagemEquipamento,
-          lote.secagemTempoProcesso,
-          lote.secagemTemperatura,
-          lote.secagemDataInicio,
-          lote.secagemHoraInicio,
-          lote.secagemDataFinal,
-          lote.secagemHoraFinal,
-          lote.secagemObs,
-          lote.pedidoNum,
-          lote.loteNum,
-        ]);
-        totalAffectedRows += loteResult.affectedRows!;
+        print(
+            'Verificando pedidoNum: ${pedido.numPedido}, loteNum: ${lote.loteNum}');
+        final result = await conn.query(
+          'SELECT COUNT(*) FROM lotes WHERE pedidoNum = ? AND loteNum = ?',
+          [pedido.numPedido, lote.loteNum],
+        );
+
+        final exists = (result.first[0] as int) > 0;
+
+        if (exists) {
+          // Se o lote já existe, atualiza usando o LoteDAO
+          print('entrou no update de lote');
+          totalAffectedRows += await loteDAO.update(lote);
+        } else {
+          // Se o lote não existe, insere usando o LoteDAO
+          print('entrou no insert');
+          totalAffectedRows += await loteDAO.insert(lote);
+        }
       }
     } finally {
       await conn.close();
@@ -238,14 +207,13 @@ class PedidoDAO implements GenericDAO<Pedido> {
   }
 
   @override
-  @override
   Future<Pedido?> getById(int pedidoId) async {
     final conn = await MySqlConnectionService().getConnection();
 
     try {
       // Buscar o pedido pelo ID
       final pedidoQuery = await conn.query('''
-      SELECT 
+                SELECT 
         p.*, 
         pe.nome AS nome_cliente
       FROM 
@@ -303,7 +271,6 @@ class PedidoDAO implements GenericDAO<Pedido> {
           secagemObs: loteRow['secagemObs'] ?? '',
           peso: loteRow['peso'] ?? 0,
           processo: loteRow['processo'] ?? '',
-          status: loteRow['status'] ?? '',
         );
       }).toList();
 
@@ -442,7 +409,7 @@ class PedidoDAO implements GenericDAO<Pedido> {
           secagemHoraFinal: loteRow['secagemHoraFinal'] ?? '',
           secagemObs: loteRow['secagemObs'] ?? '',
           peso: loteRow['peso'] ?? 0,
-          processo: loteRow['processo'] ?? '', status: loteRow['status'] ?? '',
+          processo: loteRow['processo'] ?? '',
         );
       }).toList();
 

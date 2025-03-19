@@ -9,8 +9,9 @@ class Classificacao extends StatefulWidget {
   final Pedido pedido; // Adiciona o pedido como parâmetro
   final VoidCallback onSave; // Adiciona um callback
 
-  const Classificacao(
-      {super.key, required this.pedido, required this.onSave}); // Construtor
+  const Classificacao({super.key, required this.pedido, required this.onSave});
+
+  Pedido? get processos => null; // Construtor
 
   @override
   _ClassificacaoState createState() => _ClassificacaoState();
@@ -117,7 +118,7 @@ class _ClassificacaoState extends State<Classificacao> {
 
     if (processos.isEmpty) {
       widget.pedido.classificacaoStatus = 0;
-    } else if (pesoTotalLotes >= pesoTotalPedido) {
+    } else if (pesoTotalLotes == pesoTotalPedido) {
       widget.pedido.classificacaoStatus = 2;
     } else {
       widget.pedido.classificacaoStatus = 1;
@@ -128,21 +129,23 @@ class _ClassificacaoState extends State<Classificacao> {
         .map((p) => Lote(
               processo: p.selectedProcesso!,
               peso: double.tryParse(p.pesoController.text) ?? 0,
-              status: 'Pendente',
               pedidoNum: widget.pedido.numPedido ?? 0,
               loteNum: widget.pedido.lotes.length + 1,
             ))
         .toList();
 
     // Persistir o pedido atualizado no banco de dados
+    print('chamou o pedidoDAO');
+    // print(widget.pedido.toString());
+    // print(widget.pedido.lotes.toString());
     PedidoDAO pedidoDAO = PedidoDAO();
     await pedidoDAO.update(widget.pedido);
 
     // Persistir os lotes atualizados no banco de dados
-    LoteDAO loteDAO = LoteDAO();
-    for (var lote in widget.pedido.lotes) {
-      await loteDAO.update(lote);
-    }
+    // LoteDAO loteDAO = LoteDAO();
+    // for (var lote in widget.pedido.lotes) {
+    //    await loteDAO.update(lote);
+    // }
 
     widget.onSave();
     Navigator.pop(context);

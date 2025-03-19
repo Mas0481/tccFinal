@@ -111,7 +111,7 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
 
   Widget buildPedidoCard(Pedido pedido) {
     double progressoLavagem = calcularProgressoLavagem(pedido.lotes);
-    print(pedido);
+    //print(pedido);
     return Container(
       width: MediaQuery.of(context).size.width * 0.25,
       margin: const EdgeInsets.all(10),
@@ -260,9 +260,12 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
               return Classificacao(
                 pedido: pedido, // Passa o pedido
                 onSave: () async {
-                  setState(() {
-                    //pedido.classificacaoStatus = 2;
-                  });
+                  //PedidoDAO pedidoDAO = PedidoDAO();
+                  //int retorno = await pedidoDAO.update(pedido);
+                  // print("Atualizado com sucesso! Retorno: $retorno");
+                  // setState(() {
+                  //pedido.classificacaoStatus = 2;
+                  //});
                   Navigator.pop(context, pedido);
                 },
               );
@@ -280,9 +283,9 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
                 updatedPedido.classificacaoStatus = 1;
               }
 
-              PedidoDAO pedidoDAO = PedidoDAO();
-              int retorno = await pedidoDAO.update(pedido);
-              print("Atualizado com sucesso! Retorno: $retorno");
+              //PedidoDAO pedidoDAO = PedidoDAO();
+              //int retorno = await pedidoDAO.update(pedido);
+              // print("Atualizado com sucesso! Retorno: $retorno");
 
               setState(() {
                 pedidos[pedidos.indexWhere(

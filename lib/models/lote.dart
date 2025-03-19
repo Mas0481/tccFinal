@@ -69,7 +69,6 @@ class Lote {
     this.secagemDataFinal = '',
     this.secagemHoraFinal = '',
     this.secagemObs = '',
-    required String status,
   });
 
   @override
