@@ -72,16 +72,17 @@ class _LavagemState extends State<Lavagem> {
     try {
       final listaEquipamentos = await equipamentosRepository.getEquipamentos();
       setState(() {
-        print('lista de equipamentos dentro do loadEquipamentos: ');
-        print(listaEquipamentos);
         equipamentos = listaEquipamentos
             .map((e) => {
                   'codigo': e['codigoEquipamento'],
                   'nome': e['nomeEquipamento']
                 })
             .toList();
-        if (equipamentos.isNotEmpty) {
-          equipamentoSelecionado = equipamentos.first['nome'];
+        if (equipamentos.isNotEmpty &&
+            (equipamentoSelecionado == null ||
+                equipamentoSelecionado!.isEmpty)) {
+          equipamentoSelecionado =
+              null; // Ensure the hint text "Selecione" is shown
         }
       });
     } catch (e) {
@@ -247,6 +248,8 @@ class _LavagemState extends State<Lavagem> {
                               equipamentoSelecionado!.isNotEmpty
                           ? equipamentoSelecionado
                           : null,
+                      hint: const Text(
+                          'Selecione'), // Adiciona a máscara de texto "Selecione"
                       items: equipamentos.map((equipamento) {
                         return DropdownMenuItem<String>(
                           value: equipamento['nome'],

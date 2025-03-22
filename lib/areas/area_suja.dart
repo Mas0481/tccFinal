@@ -203,7 +203,9 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
 
     return GestureDetector(
       onTap: () {
-        if (pedido.recebimentoStatus == 2.0 && label == 'Recebimento') {
+        if (pedido.recebimentoStatus == 2.0 && label == 'Recebimento' ||
+            pedido.classificacaoStatus == 2.0 && label == 'Classificação' ||
+            pedido.lavagemStatus == 2.0 && label == 'Lavagem') {
           showDialog(
             context: context,
             builder: (BuildContext context) {
