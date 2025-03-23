@@ -385,14 +385,16 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
             context: context,
             builder: (BuildContext context) {
               return Lavagem(
-                  pedido: pedido,
-                  onSave: () {
-                    setState(() {
-                      print("entrou no setstate da lavagem");
-                      pedido.lavagemStatus =
-                          1; // Atualiza o status para indicar conclusão de Lavagem
-                    });
+                pedido: pedido,
+                onSave: () {
+                  setState(() {
+                    print("entrou no setstate da lavagem");
+                    pedido.lavagemStatus =
+                        1; // Atualiza o status para indicar conclusão de Lavagem
                   });
+                },
+                lote: lote,
+              );
             },
           );
         } else if (processo == "Centrifugação" &&

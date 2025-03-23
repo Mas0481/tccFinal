@@ -5,6 +5,7 @@ import 'package:tcc/models/lote.dart';
 import 'package:tcc/DAO/pedidoDAO.dart';
 import 'package:tcc/repository/clientes_repository.dart';
 import 'package:tcc/servicos/connection.dart';
+import 'package:tcc/repository/processos_repository.dart';
 
 class Classificacao extends StatefulWidget {
   final Pedido pedido; // Adiciona o pedido como parâmetro
@@ -27,11 +28,13 @@ class _ClassificacaoState extends State<Classificacao> {
   final List<Processo> processos = [];
   ClienteRepository clienteRepository =
       ClienteRepository(MySqlConnectionService());
+  List<String> processosDisponiveis = [];
 
   @override
   void initState() {
     super.initState();
     _loadClienteName();
+    _loadProcessosDisponiveis();
     clienteController =
         TextEditingController(text: widget.pedido.codCliente.toString());
     pedidoController =
@@ -47,10 +50,7 @@ class _ClassificacaoState extends State<Classificacao> {
     if (widget.pedido.lotes.isNotEmpty) {
       for (var lote in widget.pedido.lotes) {
         processos.add(Processo(
-          selectedProcesso:
-              ['Processo 1', 'Processo 2', 'Processo 3'].contains(lote.processo)
-                  ? lote.processo
-                  : 'Processo 1',
+          selectedProcesso: lote.processo,
           pesoController: TextEditingController(text: lote.peso.toString()),
         ));
       }
@@ -63,6 +63,31 @@ class _ClassificacaoState extends State<Classificacao> {
       setState(() {
         clienteController.text = cliente['nome']!;
       });
+    }
+  }
+
+  Future<void> _loadProcessosDisponiveis() async {
+    ProcessosRepository processosRepository =
+        ProcessosRepository(MySqlConnectionService());
+    try {
+      processosDisponiveis = ['Selecione Processo'] +
+          (await processosRepository.getProcessos())
+              .map((processo) => processo['nomeProcesso'] ?? 'Desconhecido')
+              .toList();
+      setState(() {
+        // Ensure each processo's selectedProcesso is in the list
+        for (var processo in processos) {
+          if (!processosDisponiveis.contains(processo.selectedProcesso)) {
+            processo.selectedProcesso = processosDisponiveis.isNotEmpty
+                ? processosDisponiveis.first
+                : 'Desconhecido';
+          }
+        }
+      });
+    } catch (e) {
+      print('Erro ao buscar os processos: $e');
+      processosDisponiveis = ['Erro ao carregar processos'];
+      setState(() {});
     }
   }
 
@@ -88,7 +113,9 @@ class _ClassificacaoState extends State<Classificacao> {
 
     if (pesoTotalLotes < pesoTotalPedido) {
       setState(() {
-        processos.add(Processo());
+        processos.add(Processo(
+          selectedProcesso: 'Selecione Processo',
+        ));
       });
     } else {
       _showMessage(
@@ -344,13 +371,12 @@ class _ClassificacaoState extends State<Classificacao> {
                                   0.55, // 55% da largura do container
                               child: DropdownButtonFormField<String>(
                                 value: processo.selectedProcesso,
-                                items:
-                                    ['Processo 1', 'Processo 2', 'Processo 3']
-                                        .map((processo) => DropdownMenuItem(
-                                              value: processo,
-                                              child: Text(processo),
-                                            ))
-                                        .toList(),
+                                items: processosDisponiveis
+                                    .map((processo) => DropdownMenuItem(
+                                          value: processo,
+                                          child: Text(processo),
+                                        ))
+                                    .toList(),
                                 decoration: InputDecoration(
                                   labelText: 'Processo',
                                   border: OutlineInputBorder(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:tcc/models/lote.dart';
 import 'package:tcc/models/pedido.dart';
 import 'package:tcc/repository/clientes_repository.dart';
 import 'package:tcc/servicos/connection.dart';
@@ -7,9 +8,14 @@ import 'package:tcc/repository/equipamentos_repository.dart';
 
 class Lavagem extends StatefulWidget {
   final Pedido pedido; // Adiciona o pedido como parâmetro
+  final Lote lote; // Adiciona o lote como parâmetro
   final VoidCallback onSave; // Adiciona um callback
 
-  const Lavagem({super.key, required this.pedido, required this.onSave});
+  const Lavagem(
+      {super.key,
+      required this.pedido,
+      required this.lote,
+      required this.onSave});
 
   @override
   _LavagemState createState() => _LavagemState();
@@ -24,6 +30,7 @@ class _LavagemState extends State<Lavagem> {
   TextEditingController horaInicioController = TextEditingController();
   TextEditingController processoController = TextEditingController();
   TextEditingController observacoesController = TextEditingController();
+  TextEditingController pesoController = TextEditingController();
   ClienteRepository clienteRepository =
       ClienteRepository(MySqlConnectionService());
   List<Map<String, dynamic>> equipamentos = [];
@@ -43,20 +50,18 @@ class _LavagemState extends State<Lavagem> {
     dataLimiteController =
         TextEditingController(text: widget.pedido.dataLimite.toString());
 
-    if (widget.pedido.lotes.isNotEmpty) {
-      final lote = widget.pedido.lotes.first;
+    final lote = widget.lote;
 
-      dataInicioController = TextEditingController(
-          text: DateFormat('dd/MM/yyyy').format(DateTime.now()));
-      loteController = TextEditingController(text: lote.loteNum.toString());
-      equipamentoSelecionado = lote.lavagemEquipamento?.toString() ?? '';
-      horaInicioController = TextEditingController(
-          text: DateFormat('HH:mm').format(DateTime.now()));
-      processoController =
-          TextEditingController(text: lote.processo.toString());
-      observacoesController =
-          TextEditingController(text: lote.lavagemObs.toString());
-    }
+    dataInicioController = TextEditingController(
+        text: DateFormat('dd/MM/yyyy').format(DateTime.now()));
+    loteController = TextEditingController(text: lote.loteNum.toString());
+    equipamentoSelecionado = lote.lavagemEquipamento?.toString() ?? '';
+    horaInicioController =
+        TextEditingController(text: DateFormat('HH:mm').format(DateTime.now()));
+    processoController = TextEditingController(text: lote.processo.toString());
+    observacoesController =
+        TextEditingController(text: lote.lavagemObs.toString());
+    pesoController = TextEditingController(text: lote.peso.toString());
   }
 
   Future<void> _loadClienteName() async {
@@ -206,10 +211,11 @@ class _LavagemState extends State<Lavagem> {
               ),
               const SizedBox(height: 10), // Espaçamento entre as linhas
 
-              // Linha com Pedido, Lote e Equipamento
+              // Linha com Pedido, Lote e Processo
               Row(
                 children: [
                   Expanded(
+                    flex: 17,
                     child: TextField(
                       controller: pedidoController,
                       keyboardType: TextInputType.number,
@@ -227,6 +233,7 @@ class _LavagemState extends State<Lavagem> {
                   ),
                   const SizedBox(width: 10),
                   Expanded(
+                    flex: 17,
                     child: TextField(
                       controller: loteController,
                       style: const TextStyle(color: Colors.black),
@@ -243,6 +250,31 @@ class _LavagemState extends State<Lavagem> {
                   ),
                   const SizedBox(width: 10),
                   Expanded(
+                    flex: 66,
+                    child: TextField(
+                      controller: processoController,
+                      style: const TextStyle(color: Colors.black),
+                      decoration: InputDecoration(
+                        labelText: 'Processo',
+                        border: OutlineInputBorder(
+                          borderSide:
+                              BorderSide(color: Colors.grey.withAlpha(80)),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(8)),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(
+                  height: 10), // Mantendo o mesmo espaçamento entre linhas
+
+              // Linha com Equipamento, Peso, Data de Início e Hora de Início
+              Row(
+                children: [
+                  Expanded(
+                    flex: 25,
                     child: DropdownButtonFormField<String>(
                       value: equipamentoSelecionado != null &&
                               equipamentoSelecionado!.isNotEmpty
@@ -272,20 +304,14 @@ class _LavagemState extends State<Lavagem> {
                       ),
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(
-                  height: 10), // Mantendo o mesmo espaçamento entre linhas
-
-              // Linha com Processo, Data de Início e Hora de Início
-              Row(
-                children: [
+                  const SizedBox(width: 10),
                   Expanded(
+                    flex: 20,
                     child: TextField(
-                      controller: processoController,
+                      controller: pesoController,
                       style: const TextStyle(color: Colors.black),
                       decoration: InputDecoration(
-                        labelText: 'Processo',
+                        labelText: 'Peso',
                         border: OutlineInputBorder(
                           borderSide:
                               BorderSide(color: Colors.grey.withAlpha(80)),
@@ -297,6 +323,7 @@ class _LavagemState extends State<Lavagem> {
                   ),
                   const SizedBox(width: 10),
                   Expanded(
+                    flex: 35,
                     child: GestureDetector(
                       onTap: () {
                         _selectDate(context, dataInicioController);
@@ -320,6 +347,7 @@ class _LavagemState extends State<Lavagem> {
                   ),
                   const SizedBox(width: 10),
                   Expanded(
+                    flex: 20,
                     child: TextField(
                       controller: horaInicioController,
                       style: const TextStyle(color: Colors.black),

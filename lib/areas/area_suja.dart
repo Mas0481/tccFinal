@@ -166,6 +166,8 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
                   shrinkWrap: true,
                   itemCount: pedido.lotes.length,
                   itemBuilder: (context, index) {
+                    print(pedido.lotes[index]);
+                    print('enviou o lote para o botão');
                     return buildLoteButton(pedido.lotes[index], pedido);
                   },
                 ),
@@ -204,8 +206,7 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
     return GestureDetector(
       onTap: () {
         if (pedido.recebimentoStatus == 2.0 && label == 'Recebimento' ||
-            pedido.classificacaoStatus == 2.0 && label == 'Classificação' ||
-            pedido.lavagemStatus == 2.0 && label == 'Lavagem') {
+            pedido.classificacaoStatus == 2.0 && label == 'Classificação') {
           showDialog(
             context: context,
             builder: (BuildContext context) {
@@ -493,6 +494,7 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
               builder: (BuildContext context) {
                 return Lavagem(
                     pedido: pedido,
+                    lote: lote, // Passa o lote específico
                     onSave: () async {
                       setState(() {
                         lote.loteStatus = 2; // Atualiza o status do lote
