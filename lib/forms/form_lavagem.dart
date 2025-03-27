@@ -55,7 +55,7 @@ class _LavagemState extends State<Lavagem> {
     dataInicioController = TextEditingController(
         text: DateFormat('dd/MM/yyyy').format(DateTime.now()));
     loteController = TextEditingController(text: lote.loteNum.toString());
-    equipamentoSelecionado = lote.lavagemEquipamento?.toString() ?? '';
+    equipamentoSelecionado = lote.lavagemEquipamento.toString();
     horaInicioController =
         TextEditingController(text: DateFormat('HH:mm').format(DateTime.now()));
     processoController = TextEditingController(text: lote.processo.toString());

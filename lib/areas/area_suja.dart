@@ -625,6 +625,10 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
 
   // Verifica se todos os lotes estão concluídos
   bool todosLotesConcluidos(Pedido pedido) {
+    if (pedido.lotes.isEmpty) {
+      return false; // Retorna falso se não houver lotes
+    }
+
     for (var lote in pedido.lotes) {
       if (lote.loteStatus != 2) {
         // 1.0 indica que o lote ainda não está concluído
