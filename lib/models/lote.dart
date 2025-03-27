@@ -1,8 +1,8 @@
 class Lote {
   final int pedidoNum;
   final int loteNum;
-  final double peso;
-  final String processo;
+  double peso;
+  String processo;
 
   // 0 representa aguardando, 1 representa iniciado, 2 representa concluído
   int loteStatus;

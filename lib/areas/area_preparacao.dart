@@ -51,7 +51,7 @@ class AreaPreparacao extends StatelessWidget {
           )
         ],
         nomCliente: '', qtdProduto: 1, valorProdutos: 1, pagamento: 1,
-        totalLotes: 1,
+        totalLotes: 1, pesoTotalLotes: 0.0,
       ),
     ];
 

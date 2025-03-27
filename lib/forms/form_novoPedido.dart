@@ -338,6 +338,7 @@ class _NovoPedidoState extends State<NovoPedido> {
                           finalizacaoDataFinal: null,
                           finalizacaoHoraFinal: null,
                           finalizacaoObs: null,
+                          pesoTotalLotes: 0.0,
                           lotes: [],
                         );
                         print(novoPedido);

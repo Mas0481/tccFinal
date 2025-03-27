@@ -33,8 +33,13 @@ class _ClassificacaoState extends State<Classificacao> {
   @override
   void initState() {
     super.initState();
+    _initializeControllers();
     _loadClienteName();
     _loadProcessosDisponiveis();
+    _initializeProcessos();
+  }
+
+  void _initializeControllers() {
     clienteController =
         TextEditingController(text: widget.pedido.codCliente.toString());
     pedidoController =
@@ -45,8 +50,9 @@ class _ClassificacaoState extends State<Classificacao> {
         TextEditingController(text: widget.pedido.dataLimite.toString());
     dataColetaController =
         TextEditingController(text: widget.pedido.dataColeta.toString());
+  }
 
-    // Verifica se existem lotes no pedido e atualiza a lista de processos
+  void _initializeProcessos() {
     if (widget.pedido.lotes.isNotEmpty) {
       for (var lote in widget.pedido.lotes) {
         processos.add(Processo(
@@ -75,7 +81,6 @@ class _ClassificacaoState extends State<Classificacao> {
               .map((processo) => processo['nomeProcesso'] ?? 'Desconhecido')
               .toList();
       setState(() {
-        // Ensure each processo's selectedProcesso is in the list
         for (var processo in processos) {
           if (!processosDisponiveis.contains(processo.selectedProcesso)) {
             processo.selectedProcesso = processosDisponiveis.isNotEmpty
@@ -175,19 +180,12 @@ class _ClassificacaoState extends State<Classificacao> {
         .toList();
 
     // Persistir o pedido atualizado no banco de dados
-    print('chamou o pedidoDAO');
-    // print(widget.pedido.toString());
-    // print(widget.pedido.lotes.toString());
     PedidoDAO pedidoDAO = PedidoDAO();
     await pedidoDAO.update(widget.pedido);
 
-    // Persistir os lotes atualizados no banco de dados
-    // LoteDAO loteDAO = LoteDAO();
-    // for (var lote in widget.pedido.lotes) {
-    //    await loteDAO.update(lote);
-    // }
-
     widget.onSave();
+    setState(() {});
+
     Navigator.pop(context);
   }
 

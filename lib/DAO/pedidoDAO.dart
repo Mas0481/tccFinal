@@ -22,9 +22,9 @@ class PedidoDAO implements GenericDAO<Pedido> {
           recebimentoStatus, classificacaoStatus, lavagemStatus, 
           centrifugacaoStatus, secagemStatus, passadoriaStatus, 
           finalizacaoStatus, retornoStatus, dataColeta, dataLimite, 
-          dataEntrega, pesoTotal, totalLotes
+          dataEntrega, pesoTotal, totalLotes, pesoTotalLotes
         ) VALUES (
-          ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+          ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
         )
       ''',
         [
@@ -45,6 +45,7 @@ class PedidoDAO implements GenericDAO<Pedido> {
           pedido.dataEntrega,
           pedido.pesoTotal,
           pedido.totalLotes,
+          pedido.pesoTotalLotes,
         ],
       );
       totalAffectedRows += result.affectedRows!;
@@ -121,7 +122,8 @@ class PedidoDAO implements GenericDAO<Pedido> {
         retornoNomeMotorista = ?, 
         retornoVeiculo = ?, 
         retornoPlaca = ?, 
-        retornoObs = ?
+        retornoObs = ?,
+        pesoTotalLotes = ?
       WHERE codPedido = ?
     ''', [
         pedido.codCliente,
@@ -174,6 +176,7 @@ class PedidoDAO implements GenericDAO<Pedido> {
         pedido.retornoVeiculo,
         pedido.retornoPlaca,
         pedido.retornoObs,
+        pedido.pesoTotalLotes,
         pedido.numPedido,
       ]);
       totalAffectedRows += pedidoResult.affectedRows!;
@@ -328,6 +331,7 @@ class PedidoDAO implements GenericDAO<Pedido> {
         retornoPlaca: row['retornoPlaca'],
         retornoObs: row['retornoObs'],
         nomCliente: row['nome_cliente'],
+        pesoTotalLotes: row['pesoTotalLotes'],
         lotes: lotes,
       );
     } finally {
@@ -468,6 +472,7 @@ class PedidoDAO implements GenericDAO<Pedido> {
         finalizacaoObs: getObs(row['finalizacaoObs']),
         retornoObs: getObs(row['retornoObs']),
         nomCliente: row['nome_cliente'],
+        pesoTotalLotes: row['pesoTotalLotes'],
         lotes: lotes,
       ));
     }

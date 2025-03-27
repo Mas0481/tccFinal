@@ -6,6 +6,7 @@ class Pedido {
   final double qtdProduto;
   double valorProdutos;
   int pagamento;
+  double pesoTotalLotes = 0.0;
   String? dataPagamento;
 
   //o status do processo tem três níveis 0 - não iniciado, 1 - processando, 2 - concluído
@@ -112,6 +113,7 @@ class Pedido {
     this.retornoObs,
     this.nomCliente,
     required this.lotes,
+    required pesoTotalLotes,
   });
 
   @override
@@ -136,6 +138,7 @@ Pedido {
   dataEntrega: $dataEntrega,
   pesoTotal: $pesoTotal,
   totalLotes: $totalLotes,
+  totalPesoLotes: $pesoTotalLotes,
   lotes: $lotes,
 }''';
   }

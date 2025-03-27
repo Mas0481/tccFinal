@@ -147,7 +147,13 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
                 children: [
                   buildProgressBar('Recebimento', pedido),
                   const SizedBox(height: 10),
-                  buildProgressBar('Classificação', pedido),
+                  buildProgressBar1(
+                    'Classificação',
+                    pedido.lotes
+                            .fold<double>(0.0, (sum, lote) => sum + lote.peso) /
+                        pedido.pesoTotal,
+                    pedido,
+                  ),
                   const SizedBox(height: 10),
                   buildProgressBar1('Lavagem', progressoLavagem, pedido),
                   const SizedBox(height: 10),
@@ -166,8 +172,8 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
                   shrinkWrap: true,
                   itemCount: pedido.lotes.length,
                   itemBuilder: (context, index) {
-                    print(pedido.lotes[index]);
-                    print('enviou o lote para o botão');
+                    // print(pedido);
+                    // print('enviou o lote para o botão');
                     return buildLoteButton(pedido.lotes[index], pedido);
                   },
                 ),
@@ -190,10 +196,14 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
       barColor = (progress == 2.0) ? Colors.blue : Colors.grey[300]!;
       buttonText = (progress == 2.0) ? "$label Concluído" : label;
     } else if (label == 'Classificação') {
-      double pesoTotalLotes =
-          pedido.lotes.fold<double>(0, (sum, lote) => sum + lote.peso);
+      double pesoProcessado =
+          pedido.lotes.fold(0, (sum, lote) => sum + lote.peso);
       double pesoTotalPedido = pedido.pesoTotal.toDouble();
-      progress = pesoTotalLotes / pesoTotalPedido;
+      progress = pesoProcessado / pesoTotalPedido;
+      print('Este é o peso processado: $progress');
+      if (pesoProcessado == pesoTotalPedido) {
+        pedido.classificacaoStatus = 2.0;
+      }
       barColor =
           (pedido.classificacaoStatus == 2.0) ? Colors.blue : Colors.grey[300]!;
       buttonText =
@@ -271,11 +281,12 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
                   // setState(() {
                   //pedido.classificacaoStatus = 2;
                   //});
-                  Navigator.pop(context, pedido);
+                  // Navigator.pop(context, pedido);
                 },
               );
             },
           ).then((updatedPedido) async {
+            // This block is executed after the dialog is dismissed
             print("entrou no then");
             if (updatedPedido != null) {
               double pesoTotalLotes = updatedPedido.lotes
@@ -288,14 +299,13 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
                 updatedPedido.classificacaoStatus = 1;
               }
 
-              //PedidoDAO pedidoDAO = PedidoDAO();
-              //int retorno = await pedidoDAO.update(pedido);
-              // print("Atualizado com sucesso! Retorno: $retorno");
-
+              // Update the pedidos list with the updatedPedido
               setState(() {
-                pedidos[pedidos.indexWhere(
-                        (p) => p.numPedido == updatedPedido.numPedido)] =
-                    updatedPedido;
+                // Find the index of the pedido to be updated
+                int index = pedidos
+                    .indexWhere((p) => p.numPedido == updatedPedido.numPedido);
+                // Update the pedido at the found index
+                pedidos[index] = updatedPedido;
               });
             }
           });
@@ -378,11 +388,36 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
 
     return InkWell(
       onTap: () {
-        if (pedido.recebimentoStatus != 2.0 ||
+        print(pedido);
+        if (pedido.recebimentoStatus != 2.0 &&
             pedido.classificacaoStatus != 2.0) {
           showDialog(
             context: context,
             builder: (BuildContext context) {
+              if (label == 'Classificação') {
+                return AlertDialog(
+                  title: const Text('Atenção'),
+                  content: const Text(
+                      'Para iniciar o processo de lavagem, verifique se o recebimento esta completo e a classificação com no mínimo 1 lote concluido.'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('OK'),
+                    )
+                  ],
+                );
+              } else if (label == 'Lavagem') {
+                return AlertDialog(
+                    title: const Text('Atenção'),
+                    content: const Text(
+                        'Para iniciar o processo de lavagem, verifique se o recebimento esta completo e a classificação com no mínimo 1 lote concluido.'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text('OK'),
+                      ),
+                    ]);
+              }
               return AlertDialog(
                 title: const Text('Atenção'),
                 content: const Text(
@@ -413,6 +448,49 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
               );
             },
           );
+        } else if (label == 'Classificação' &&
+            pedido.recebimentoStatus == 2.0 &&
+            pedido.classificacaoStatus != 2.0) {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return Classificacao(
+                pedido: pedido, // Passa o pedido
+                onSave: () async {
+                  //PedidoDAO pedidoDAO = PedidoDAO();
+                  //int retorno = await pedidoDAO.update(pedido);
+                  // print("Atualizado com sucesso! Retorno: $retorno");
+                  // setState(() {
+                  //pedido.classificacaoStatus = 2;
+                  //});
+                  // Navigator.pop(context, pedido);
+                },
+              );
+            },
+          ).then((updatedPedido) async {
+            // This block is executed after the dialog is dismissed
+            print("entrou no then");
+            if (updatedPedido != null) {
+              double pesoTotalLotes = updatedPedido.lotes
+                  .fold<double>(0, (sum, lote) => sum + lote.peso);
+              double pesoTotalPedido = updatedPedido.pesoTotal;
+
+              if (pesoTotalLotes == pesoTotalPedido) {
+                updatedPedido.classificacaoStatus = 2;
+              } else {
+                updatedPedido.classificacaoStatus = 1;
+              }
+
+              // Update the pedidos list with the updatedPedido
+              setState(() {
+                // Find the index of the pedido to be updated
+                int index = pedidos
+                    .indexWhere((p) => p.numPedido == updatedPedido.numPedido);
+                // Update the pedido at the found index
+                pedidos[index] = updatedPedido;
+              });
+            }
+          });
         } else {
           showDialog(
             context: context,
