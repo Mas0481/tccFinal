@@ -383,8 +383,17 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
   // Método atualizado para a barra de lavagem
   Widget buildProgressBar1(String label, double progress, Pedido pedido) {
     // Verifica se todos os lotes estão concluídos e ajusta o label
-    String displayLabel =
-        todosLotesConcluidos(pedido) ? "$label Concluído" : label;
+    String displayLabel = label;
+
+    if (label == 'Lavagem' &&
+        todosLotesConcluidos(pedido) &&
+        pedido.classificacaoStatus != 2.0) {
+      displayLabel = "Lavagem - Aguardando Classificação";
+    } else if (label == 'Classificação' &&
+        todosLotesConcluidos(pedido) &&
+        pedido.classificacaoStatus == 2.0) {
+      displayLabel = "Classificação Concluído";
+    }
 
     return InkWell(
       onTap: () {
@@ -431,23 +440,42 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
               );
             },
           );
-        } else if (todosLotesConcluidos(pedido)) {
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: const Text('Atenção'),
-                content:
-                    const Text('Todos os lotes de lavagem foram concluídos!'),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('OK'),
-                  ),
-                ],
-              );
-            },
-          );
+        } else if (todosLotesConcluidos(pedido) && label == 'Lavagem') {
+          if (pedido.pesoTotal == pedido.pesoTotalLotes) {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: const Text('Atenção'),
+                  content:
+                      const Text('Todos os lotes de lavagem foram concluídos!'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('OK'),
+                    ),
+                  ],
+                );
+              },
+            );
+          } else {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: const Text('Atenção'),
+                  content: const Text(
+                      'Existe material deste pedido pendente de Classificação!'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('OK'),
+                    ),
+                  ],
+                );
+              },
+            );
+          }
         } else if (label == 'Classificação' &&
             pedido.recebimentoStatus == 2.0 &&
             pedido.classificacaoStatus != 2.0) {
@@ -491,6 +519,24 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
               });
             }
           });
+        } else if (pedido.classificacaoStatus == 2.0 &&
+            label == 'Classificação') {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text('Atenção'),
+                content:
+                    const Text('Processo de Classificação já foi concluído.'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('OK'),
+                  ),
+                ],
+              );
+            },
+          );
         } else {
           showDialog(
             context: context,
@@ -539,13 +585,14 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
 
   Widget buildLoteButton(Lote lote, Pedido pedido) {
     PedidoDAO pedidoDAO = PedidoDAO();
-    Color loteColor = lote.loteStatus == 2.0 ? Colors.blue : Colors.grey[300]!;
+    Color loteColor =
+        lote.loteLavagemStatus == 2.0 ? Colors.blue : Colors.grey[300]!;
     String buttonText =
-        lote.loteStatus == 2.0 ? "Lote Concluído" : "Iniciar Lavagem";
+        lote.loteLavagemStatus == 2.0 ? "Lote Concluído" : "Iniciar Lavagem";
 
     return GestureDetector(
       onTap: () {
-        if (lote.loteStatus == 2.0) {
+        if (lote.loteLavagemStatus == 2.0) {
           showDialog(
             context: context,
             builder: (BuildContext context) {
@@ -575,7 +622,8 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
                     lote: lote, // Passa o lote específico
                     onSave: () async {
                       setState(() {
-                        lote.loteStatus = 2; // Atualiza o status do lote
+                        lote.loteLavagemStatus = 2; // Atualiza o status do lote
+                        lote.loteStatus = 1; // Atualiza o status do lote
                       });
                       int retorno = await pedidoDAO.update(pedido);
                       print("Atualizado com sucesso! Retorno: $retorno");
@@ -618,7 +666,8 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
 
   double calcularProgressoLavagem(List<Lote> lotes) {
     int totalLotes = lotes.length;
-    int lotesConcluidos = lotes.where((lote) => lote.loteStatus == 2).length;
+    int lotesConcluidos =
+        lotes.where((lote) => lote.loteLavagemStatus == 2).length;
 
     return totalLotes == 0 ? 0.0 : lotesConcluidos / totalLotes;
   }
@@ -630,7 +679,7 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
     }
 
     for (var lote in pedido.lotes) {
-      if (lote.loteStatus != 2) {
+      if (lote.loteLavagemStatus != 2) {
         // 1.0 indica que o lote ainda não está concluído
         return false;
       }

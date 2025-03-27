@@ -1,6 +1,6 @@
 class Lote {
   final int pedidoNum;
-  final int loteNum;
+  int loteNum;
   double peso;
   String processo;
 

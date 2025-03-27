@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+// import 'packagdart'; // Removed or replace with the correct import if needed
 import 'package:intl/intl.dart';
 import 'package:tcc/DAO/genericDAO.dart';
 import 'package:tcc/DAO/loteDAO.dart';
@@ -181,10 +182,25 @@ class PedidoDAO implements GenericDAO<Pedido> {
       ]);
       totalAffectedRows += pedidoResult.affectedRows!;
 
+      // Obter os lotes existentes no banco para o pedido
+      final existingLotesQuery = await conn.query(
+        'SELECT loteNum FROM lotes WHERE pedidoNum = ?',
+        [pedido.numPedido],
+      );
+      final existingLoteNums =
+          existingLotesQuery.map((row) => row['loteNum']).toSet();
+
+      // Identificar lotes a serem excluídos
+      final updatedLoteNums = pedido.lotes.map((lote) => lote.loteNum).toSet();
+      final lotesToDelete = existingLoteNums.difference(updatedLoteNums);
+
+      // Excluir lotes removidos
+      for (final loteNum in lotesToDelete) {
+        totalAffectedRows += await loteDAO.delete(loteNum);
+      }
+
       // Atualizar ou inserir lotes
       for (final lote in pedido.lotes) {
-        print(
-            'Verificando pedidoNum: ${pedido.numPedido}, loteNum: ${lote.loteNum}');
         final result = await conn.query(
           'SELECT COUNT(*) FROM lotes WHERE pedidoNum = ? AND loteNum = ?',
           [pedido.numPedido, lote.loteNum],
@@ -194,12 +210,14 @@ class PedidoDAO implements GenericDAO<Pedido> {
 
         if (exists) {
           // Se o lote já existe, atualiza usando o LoteDAO
-          print('entrou no update de lote');
           totalAffectedRows += await loteDAO.update(lote);
         } else {
           // Se o lote não existe, insere usando o LoteDAO
-          print('entrou no insert');
+          lote.loteNum =
+              existingLoteNums.length + 1; // Gerar novo número de lote
           totalAffectedRows += await loteDAO.insert(lote);
+          existingLoteNums
+              .add(lote.loteNum); // Atualizar o conjunto de lotes existentes
         }
       }
     } finally {

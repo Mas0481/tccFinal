@@ -165,8 +165,10 @@ class _ClassificacaoState extends State<Classificacao> {
       widget.pedido.classificacaoStatus = 0;
     } else if (pesoTotalLotes == pesoTotalPedido) {
       widget.pedido.classificacaoStatus = 2;
+      widget.pedido.pesoTotalLotes = pesoTotalLotes;
     } else {
       widget.pedido.classificacaoStatus = 1;
+      widget.pedido.pesoTotalLotes = pesoTotalLotes;
     }
 
     // Atualizar os lotes no pedido
