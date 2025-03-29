@@ -389,9 +389,16 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
         todosLotesConcluidos(pedido) &&
         pedido.classificacaoStatus != 2.0) {
       displayLabel = "Lavagem - Aguardando Classificação";
-    } else if (label == 'Classificação' &&
+    } else if (label == 'Lavagem' &&
         todosLotesConcluidos(pedido) &&
         pedido.classificacaoStatus == 2.0) {
+      displayLabel = "Lavagem Concluído";
+      pedido.lavagemStatus = 2.0;
+    } else if (label == 'Classificação' && pedido.classificacaoStatus != 2.0) {
+      displayLabel = "Classificação";
+    } else if (label == 'Classificação' && pedido.classificacaoStatus == 1.0) {
+      displayLabel = "Classificação";
+    } else if (label == 'Classificação' && pedido.classificacaoStatus == 2.0) {
       displayLabel = "Classificação Concluído";
     }
 
@@ -440,7 +447,9 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
               );
             },
           );
-        } else if (todosLotesConcluidos(pedido) && label == 'Lavagem') {
+        } else if (pedido.classificacaoStatus == 2.0 &&
+            pedido.lavagemStatus == 2.0 &&
+            todosLotesConcluidos(pedido)) {
           if (pedido.pesoTotal == pedido.pesoTotalLotes) {
             showDialog(
               context: context,
@@ -449,23 +458,6 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
                   title: const Text('Atenção'),
                   content:
                       const Text('Todos os lotes de lavagem foram concluídos!'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('OK'),
-                    ),
-                  ],
-                );
-              },
-            );
-          } else {
-            showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                  title: const Text('Atenção'),
-                  content: const Text(
-                      'Existe material deste pedido pendente de Classificação!'),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(),
@@ -528,6 +520,25 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
                 title: const Text('Atenção'),
                 content:
                     const Text('Processo de Classificação já foi concluído.'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('OK'),
+                  ),
+                ],
+              );
+            },
+          );
+        } else if (pedido.classificacaoStatus != 2.0 &&
+            pedido.pesoTotal != pedido.pesoTotalLotes &&
+            todosLotesConcluidos(pedido)) {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text('Atenção'),
+                content: const Text(
+                    'Existe material deste pedido pendente de Classificação!'),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
@@ -613,7 +624,7 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
           if (pedido.recebimentoStatus == 2.0 &&
               pedido.classificacaoStatus != 0.0) {
             // Aqui, você pode adicionar a lógica de iniciar a lavagem do lote
-            // Para fins de exemplo, estamos apenas exibindo um AlertDialog
+
             showDialog(
               context: context,
               builder: (BuildContext context) {
@@ -686,7 +697,12 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
     }
 
     // Se todos os lotes estão concluídos, atualize pedido.lavagem
-    pedido.lavagemStatus = 2.0;
+    if (pedido.pesoTotalLotes == pedido.pesoTotal) {
+      pedido.lavagemStatus = 2.0;
+    } else {
+      pedido.lavagemStatus = 1.0;
+    }
+
     return true;
   }
 }

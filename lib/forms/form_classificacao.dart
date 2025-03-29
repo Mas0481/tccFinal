@@ -21,11 +21,12 @@ class Classificacao extends StatefulWidget {
 
 class _ClassificacaoState extends State<Classificacao> {
   late TextEditingController clienteController;
+  late TextEditingController pesoController;
   late TextEditingController pedidoController;
   late TextEditingController pesoTotalController;
   late TextEditingController dataLimiteController;
   late TextEditingController dataColetaController;
-  final List<Processo> processos = [];
+  late List<TextEditingController> pesoControllers;
   ClienteRepository clienteRepository =
       ClienteRepository(MySqlConnectionService());
   List<String> processosDisponiveis = [];
@@ -34,9 +35,9 @@ class _ClassificacaoState extends State<Classificacao> {
   void initState() {
     super.initState();
     _initializeControllers();
+    _initializePesoControllers();
     _loadClienteName();
     _loadProcessosDisponiveis();
-    _initializeProcessos();
   }
 
   void _initializeControllers() {
@@ -50,17 +51,22 @@ class _ClassificacaoState extends State<Classificacao> {
         TextEditingController(text: widget.pedido.dataLimite.toString());
     dataColetaController =
         TextEditingController(text: widget.pedido.dataColeta.toString());
+    pesoController =
+        TextEditingController(text: widget.pedido.pesoTotal.toString());
   }
 
-  void _initializeProcessos() {
-    if (widget.pedido.lotes.isNotEmpty) {
-      for (var lote in widget.pedido.lotes) {
-        processos.add(Processo(
-          selectedProcesso: lote.processo,
-          pesoController: TextEditingController(text: lote.peso.toString()),
-        ));
-      }
+  void _initializePesoControllers() {
+    pesoControllers = widget.pedido.lotes
+        .map((lote) => TextEditingController(text: lote.peso.toString()))
+        .toList();
+  }
+
+  @override
+  void dispose() {
+    for (var controller in pesoControllers) {
+      controller.dispose();
     }
+    super.dispose();
   }
 
   Future<void> _loadClienteName() async {
@@ -81,9 +87,9 @@ class _ClassificacaoState extends State<Classificacao> {
               .map((processo) => processo['nomeProcesso'] ?? 'Desconhecido')
               .toList();
       setState(() {
-        for (var processo in processos) {
-          if (!processosDisponiveis.contains(processo.selectedProcesso)) {
-            processo.selectedProcesso = processosDisponiveis.isNotEmpty
+        for (var lote in widget.pedido.lotes) {
+          if (!processosDisponiveis.contains(lote.processo)) {
+            lote.processo = processosDisponiveis.isNotEmpty
                 ? processosDisponiveis.first
                 : 'Desconhecido';
           }
@@ -112,15 +118,30 @@ class _ClassificacaoState extends State<Classificacao> {
   }
 
   void _addProcesso() {
-    double pesoTotalLotes = processos.fold<double>(
-        0, (sum, p) => sum + (double.tryParse(p.pesoController.text) ?? 0));
+    double pesoTotalLotes =
+        widget.pedido.lotes.fold<double>(0, (sum, lote) => sum + lote.peso);
     double pesoTotalPedido = double.tryParse(pesoTotalController.text) ?? 0;
 
     if (pesoTotalLotes < pesoTotalPedido) {
       setState(() {
-        processos.add(Processo(
-          selectedProcesso: 'Selecione Processo',
+        int nextLoteNum = widget.pedido.lotes.isNotEmpty
+            ? widget.pedido.lotes
+                    .map((lote) => lote.loteNum)
+                    .reduce((a, b) => a > b ? a : b) +
+                1
+            : 1;
+
+        widget.pedido.lotes.add(Lote(
+          processo: 'Selecione Processo',
+          peso: 0, // No default value
+          pedidoNum: widget.pedido.numPedido ?? 0, // Provide a default value
+          loteNum: nextLoteNum,
         ));
+        pesoControllers.add(TextEditingController()); // No default value
+
+        // Update pesoTotalLotes in the pedido
+        //widget.pedido.pesoTotalLotes =
+        //    widget.pedido.lotes.fold<double>(0, (sum, lote) => sum + lote.peso);
       });
     } else {
       _showMessage(
@@ -130,8 +151,9 @@ class _ClassificacaoState extends State<Classificacao> {
 
   void _removeProcesso(int index) {
     setState(() {
-      if (processos.length > 1) {
-        processos.removeAt(index);
+      if (widget.pedido.lotes.length > 1) {
+        widget.pedido.lotes.removeAt(index);
+        pesoControllers.removeAt(index);
       }
     });
   }
@@ -156,34 +178,46 @@ class _ClassificacaoState extends State<Classificacao> {
     );
   }
 
+  void _updatePeso(int index, String value) {
+    setState(() {
+      double peso = double.tryParse(value) ?? 0;
+      double pesoTotalLotes = widget.pedido.lotes.fold<double>(
+          0,
+          (sum, lote) =>
+              sum + (lote == widget.pedido.lotes[index] ? peso : lote.peso));
+      double pesoTotalPedido = double.tryParse(pesoTotalController.text) ?? 0;
+
+      if (pesoTotalLotes <= pesoTotalPedido) {
+        widget.pedido.lotes[index].peso = peso;
+        widget.pedido.pesoTotalLotes = pesoTotalLotes;
+      } else {
+        _showMessage(
+            'A soma dos pesos dos lotes não pode ultrapassar o peso total do pedido.');
+        pesoControllers[index].text =
+            widget.pedido.lotes[index].peso.toString();
+      }
+    });
+  }
+
   void _onSave() async {
-    double pesoTotalLotes = processos.fold<double>(
-        0, (sum, p) => sum + (double.tryParse(p.pesoController.text) ?? 0));
+    double pesoTotalLotes =
+        widget.pedido.lotes.fold<double>(0, (sum, lote) => sum + lote.peso);
     double pesoTotalPedido = double.tryParse(pesoTotalController.text) ?? 0;
 
-    if (processos.isEmpty) {
+    if (widget.pedido.lotes.isEmpty) {
       widget.pedido.classificacaoStatus = 0;
     } else if (pesoTotalLotes == pesoTotalPedido) {
       widget.pedido.classificacaoStatus = 2;
-      widget.pedido.pesoTotalLotes = pesoTotalLotes;
     } else {
       widget.pedido.classificacaoStatus = 1;
-      widget.pedido.pesoTotalLotes = pesoTotalLotes;
     }
 
-    // Atualizar os lotes no pedido
-    widget.pedido.lotes = processos
-        .map((p) => Lote(
-              processo: p.selectedProcesso!,
-              peso: double.tryParse(p.pesoController.text) ?? 0,
-              pedidoNum: widget.pedido.numPedido ?? 0,
-              loteNum: widget.pedido.lotes.length + 1,
-            ))
-        .toList();
+    // Update pesoTotalLotes in the pedido
+    widget.pedido.pesoTotalLotes = pesoTotalLotes;
 
-    // Persistir o pedido atualizado no banco de dados
     PedidoDAO pedidoDAO = PedidoDAO();
-    await pedidoDAO.update(widget.pedido);
+    await pedidoDAO
+        .update(widget.pedido); // Save updated pedido to the database
 
     widget.onSave();
     setState(() {});
@@ -344,100 +378,99 @@ class _ClassificacaoState extends State<Classificacao> {
                 padding: const EdgeInsets.all(10.0),
                 child: Column(
                   children: [
-                    ...processos.asMap().entries.map((entry) {
+                    ...widget.pedido.lotes.asMap().entries.map((entry) {
                       int index = entry.key;
-                      Processo processo = entry.value;
+                      Lote lote = entry.value;
+                      bool isEditable = lote.loteLavagemStatus == 0;
                       return Padding(
-                        padding: const EdgeInsets.only(
-                            bottom:
-                                10.0), // Espaçamento entre linhas de processo
-                        child: Row(
+                        padding: const EdgeInsets.only(bottom: 10.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Largura do lote ajustada
-                            SizedBox(
-                              width: 30, // Largura fixa para o número do lote
-                              child: Center(
-                                child: Text(
-                                  '${index + 1}', // Identificação do lote
-                                  style: const TextStyle(fontSize: 16),
-                                ),
+                            if (!isEditable)
+                              Text(
+                                'Lote ${index + 1} já está em processo de lavagem.',
+                                style:
+                                    TextStyle(color: Colors.red, fontSize: 14),
                               ),
-                            ),
-                            const SizedBox(width: 10),
-                            // Largura do dropdown processo
-                            SizedBox(
-                              width: MediaQuery.of(context).size.width *
-                                  0.5 *
-                                  0.55, // 55% da largura do container
-                              child: DropdownButtonFormField<String>(
-                                value: processo.selectedProcesso,
-                                items: processosDisponiveis
-                                    .map((processo) => DropdownMenuItem(
-                                          value: processo,
-                                          child: Text(processo),
-                                        ))
-                                    .toList(),
-                                decoration: InputDecoration(
-                                  labelText: 'Processo',
-                                  border: OutlineInputBorder(
-                                    borderSide: BorderSide(
-                                        color: Colors.grey.withAlpha(80)),
-                                    borderRadius: const BorderRadius.all(
-                                        Radius.circular(8)),
+                            Row(
+                              children: [
+                                SizedBox(
+                                  width: 30,
+                                  child: Center(
+                                    child: Text(
+                                      '${index + 1}',
+                                      style: const TextStyle(fontSize: 16),
+                                    ),
                                   ),
                                 ),
-                                onChanged: (value) {
-                                  setState(() {
-                                    processo.selectedProcesso = value;
-                                    processo.lote = '${index + 1} - $value';
-                                  });
-                                },
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            // Largura do peso
-                            SizedBox(
-                              width: MediaQuery.of(context).size.width *
-                                  0.5 *
-                                  0.2, // 20% da largura do container
-                              child: TextField(
-                                controller: processo.pesoController,
-                                keyboardType: TextInputType.number,
-                                decoration: InputDecoration(
-                                  labelText: 'Peso',
-                                  border: OutlineInputBorder(
-                                    borderSide: BorderSide(
-                                        color: Colors.grey.withAlpha(80)),
-                                    borderRadius: const BorderRadius.all(
-                                        Radius.circular(8)),
+                                const SizedBox(width: 10),
+                                SizedBox(
+                                  width: MediaQuery.of(context).size.width *
+                                      0.5 *
+                                      0.55,
+                                  child: DropdownButtonFormField<String>(
+                                    value: lote.processo,
+                                    items: processosDisponiveis
+                                        .map((processo) => DropdownMenuItem(
+                                              value: processo,
+                                              child: Text(processo),
+                                            ))
+                                        .toList(),
+                                    decoration: InputDecoration(
+                                      labelText: 'Processo',
+                                      border: OutlineInputBorder(
+                                        borderSide: BorderSide(
+                                            color: Colors.grey.withAlpha(80)),
+                                        borderRadius: const BorderRadius.all(
+                                            Radius.circular(8)),
+                                      ),
+                                    ),
+                                    onChanged: isEditable
+                                        ? (value) {
+                                            setState(() {
+                                              lote.processo = value ?? '';
+                                            });
+                                          }
+                                        : null,
                                   ),
                                 ),
-                                onChanged: (value) {
-                                  setState(() {
-                                    double pesoTotalLotes =
-                                        processos.fold<double>(
-                                            0,
-                                            (sum, p) =>
-                                                sum +
-                                                (double.tryParse(p
-                                                        .pesoController.text) ??
-                                                    0));
-                                    double pesoTotalPedido = double.tryParse(
-                                            pesoTotalController.text) ??
-                                        0;
-                                    if (pesoTotalLotes > pesoTotalPedido) {
-                                      _showMessage(
-                                          'O peso total dos lotes não pode ultrapassar o peso total do pedido.');
-                                      processo.pesoController.text = '';
-                                    }
-                                  });
-                                },
-                              ),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.remove_circle,
-                                  color: Colors.blueAccent),
-                              onPressed: () => _removeProcesso(index),
+                                const SizedBox(width: 10),
+                                SizedBox(
+                                  width: MediaQuery.of(context).size.width *
+                                      0.5 *
+                                      0.2,
+                                  child: TextField(
+                                    controller: pesoControllers[index],
+                                    keyboardType: TextInputType.number,
+                                    decoration: InputDecoration(
+                                      labelText: 'Peso',
+                                      border: OutlineInputBorder(
+                                        borderSide: BorderSide(
+                                            color: Colors.grey.withAlpha(80)),
+                                        borderRadius: const BorderRadius.all(
+                                            Radius.circular(8)),
+                                      ),
+                                    ),
+                                    onChanged: isEditable
+                                        ? (value) => _updatePeso(index, value)
+                                        : null,
+                                    enabled: isEditable,
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.remove_circle,
+                                      color: Colors.blueAccent),
+                                  onPressed: isEditable
+                                      ? () {
+                                          setState(() {
+                                            widget.pedido.lotes.removeAt(index);
+                                            pesoControllers.removeAt(index);
+                                          });
+                                        }
+                                      : null,
+                                ),
+                              ],
                             ),
                           ],
                         ),
@@ -445,22 +478,20 @@ class _ClassificacaoState extends State<Classificacao> {
                     }),
                     const SizedBox(height: 10),
                     ElevatedButton(
-                      onPressed: _addProcesso, // Cor da fonte alterada
+                      onPressed: _addProcesso,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            Colors.blueAccent, // Cor azul para o botão
+                        backgroundColor: Colors.blueAccent,
                       ),
                       child: Text('+ Adicionar Lote',
                           style: TextStyle(color: Colors.white)),
                     ),
                     const SizedBox(height: 10),
-                    // Linha com quantidade de lotes e peso total
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Total de Lotes: ${processos.length}'),
+                        Text('Total de Lotes: ${widget.pedido.lotes.length}'),
                         Text(
-                          'Peso Total: ${processos.fold<double>(0, (sum, p) => sum + (double.tryParse(p.pesoController.text) ?? 0))} kg',
+                          'Peso Total: ${widget.pedido.lotes.fold<double>(0, (sum, lote) => sum + lote.peso)} kg',
                         ),
                       ],
                     ),
