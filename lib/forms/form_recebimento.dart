@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:tcc/DAO/pedidoDAO.dart';
 import 'package:tcc/models/pedido.dart'; // Para formatar datas
 import 'package:tcc/repository/clientes_repository.dart';
 import 'package:tcc/servicos/connection.dart'; // Importar o ClienteRepository
@@ -127,6 +128,7 @@ class _RecebimentoState extends State<Recebimento> {
                     child: TextField(
                       controller: clienteController,
                       style: const TextStyle(color: Colors.black),
+                      readOnly: true, // Campo somente leitura
                       decoration: InputDecoration(
                         labelText: 'Cliente',
                         border: OutlineInputBorder(
@@ -151,6 +153,7 @@ class _RecebimentoState extends State<Recebimento> {
                       controller: pedidoController,
                       keyboardType: TextInputType.number,
                       style: const TextStyle(color: Colors.black),
+                      readOnly: true, // Campo somente leitura
                       decoration: InputDecoration(
                         labelText: 'Pedido',
                         border: OutlineInputBorder(
@@ -164,23 +167,17 @@ class _RecebimentoState extends State<Recebimento> {
                   ),
                   const SizedBox(width: 10),
                   Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        _selectDate(context, dataColetaController);
-                      },
-                      child: AbsorbPointer(
-                        child: TextField(
-                          controller: dataColetaController,
-                          style: const TextStyle(color: Colors.black),
-                          decoration: InputDecoration(
-                            labelText: 'Data de Coleta',
-                            border: OutlineInputBorder(
-                              borderSide:
-                                  BorderSide(color: Colors.grey.withAlpha(80)),
-                              borderRadius:
-                                  const BorderRadius.all(Radius.circular(8)),
-                            ),
-                          ),
+                    child: TextField(
+                      controller: dataColetaController,
+                      style: const TextStyle(color: Colors.black),
+                      readOnly: true, // Campo somente leitura
+                      decoration: InputDecoration(
+                        labelText: 'Data de Coleta',
+                        border: OutlineInputBorder(
+                          borderSide:
+                              BorderSide(color: Colors.grey.withAlpha(80)),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(8)),
                         ),
                       ),
                     ),
@@ -194,23 +191,17 @@ class _RecebimentoState extends State<Recebimento> {
               Row(
                 children: [
                   Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        _selectDate(context, dataEntregaController);
-                      },
-                      child: AbsorbPointer(
-                        child: TextField(
-                          controller: dataEntregaController,
-                          style: const TextStyle(color: Colors.black),
-                          decoration: InputDecoration(
-                            labelText: 'Data de Entrega',
-                            border: OutlineInputBorder(
-                              borderSide:
-                                  BorderSide(color: Colors.grey.withAlpha(80)),
-                              borderRadius:
-                                  const BorderRadius.all(Radius.circular(8)),
-                            ),
-                          ),
+                    child: TextField(
+                      controller: dataEntregaController,
+                      style: const TextStyle(color: Colors.black),
+                      readOnly: true, // Campo somente leitura
+                      decoration: InputDecoration(
+                        labelText: 'Data de Entrega',
+                        border: OutlineInputBorder(
+                          borderSide:
+                              BorderSide(color: Colors.grey.withAlpha(80)),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(8)),
                         ),
                       ),
                     ),
@@ -221,6 +212,7 @@ class _RecebimentoState extends State<Recebimento> {
                       controller: pesoTotalController,
                       keyboardType: TextInputType.number,
                       style: const TextStyle(color: Colors.black),
+                      // Campo editável, sem alterações
                       decoration: InputDecoration(
                         labelText: 'Peso Total (kg)',
                         border: OutlineInputBorder(
@@ -246,6 +238,7 @@ class _RecebimentoState extends State<Recebimento> {
                       controller: observacoesController,
                       maxLines: 3,
                       style: const TextStyle(color: Colors.black),
+                      // Campo editável, sem alterações
                       decoration: InputDecoration(
                         labelText: 'Observações',
                         border: OutlineInputBorder(
@@ -261,8 +254,19 @@ class _RecebimentoState extends State<Recebimento> {
                   SizedBox(
                     width: 90,
                     child: ElevatedButton(
-                      onPressed: () {
-                        // Lógica de persistência no banco de dados aqui
+                      onPressed: () async {
+                        // Atualiza os dados do objeto Pedido
+                        widget.pedido.pesoTotal =
+                            double.tryParse(pesoTotalController.text) ??
+                                widget.pedido.pesoTotal;
+                        widget.pedido.recebimentoObs =
+                            observacoesController.text;
+
+                        // Consistir os dados no banco de dados
+                        final pedidoDAO = PedidoDAO();
+                        await pedidoDAO.update(widget.pedido);
+
+                        // Chama o callback onSave e fecha o diálogo
                         widget.onSave();
                         Navigator.pop(context);
                       },

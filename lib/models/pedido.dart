@@ -24,7 +24,7 @@ class Pedido {
   String? horaRecebimento;
   final String dataLimite;
   final String dataEntrega;
-  final double pesoTotal;
+  double pesoTotal;
   String? recebimentoObs;
   int totalLotes;
   String? classificacaoObs;

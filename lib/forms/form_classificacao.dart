@@ -27,6 +27,7 @@ class _ClassificacaoState extends State<Classificacao> {
   late TextEditingController dataLimiteController;
   late TextEditingController dataColetaController;
   late List<TextEditingController> pesoControllers;
+  late TextEditingController observacoesController;
   ClienteRepository clienteRepository =
       ClienteRepository(MySqlConnectionService());
   List<String> processosDisponiveis = [];
@@ -53,6 +54,9 @@ class _ClassificacaoState extends State<Classificacao> {
         TextEditingController(text: widget.pedido.dataColeta.toString());
     pesoController =
         TextEditingController(text: widget.pedido.pesoTotal.toString());
+    observacoesController = TextEditingController(
+      text: widget.pedido.classificacaoObs ?? '', // Default to existing value
+    );
   }
 
   void _initializePesoControllers() {
@@ -66,6 +70,7 @@ class _ClassificacaoState extends State<Classificacao> {
     for (var controller in pesoControllers) {
       controller.dispose();
     }
+    observacoesController.dispose();
     super.dispose();
   }
 
@@ -213,7 +218,10 @@ class _ClassificacaoState extends State<Classificacao> {
     }
 
     // Update pesoTotalLotes in the pedido
+    widget.pedido.totalLotes = widget.pedido.lotes.length;
     widget.pedido.pesoTotalLotes = pesoTotalLotes;
+    widget.pedido.classificacaoObs =
+        observacoesController.text; // Save "Observações"
 
     PedidoDAO pedidoDAO = PedidoDAO();
     await pedidoDAO
@@ -309,6 +317,7 @@ class _ClassificacaoState extends State<Classificacao> {
                     borderRadius: const BorderRadius.all(Radius.circular(8)),
                   ),
                 ),
+                readOnly: true, // Make read-only
               ),
               const SizedBox(height: 10),
               // Linha com Pedido e Peso Total
@@ -328,6 +337,7 @@ class _ClassificacaoState extends State<Classificacao> {
                               const BorderRadius.all(Radius.circular(8)),
                         ),
                       ),
+                      readOnly: true, // Make read-only
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -345,6 +355,7 @@ class _ClassificacaoState extends State<Classificacao> {
                               const BorderRadius.all(Radius.circular(8)),
                         ),
                       ),
+                      readOnly: true, // Make read-only
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -362,6 +373,7 @@ class _ClassificacaoState extends State<Classificacao> {
                               const BorderRadius.all(Radius.circular(8)),
                         ),
                       ),
+                      readOnly: true, // Make read-only
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -507,6 +519,7 @@ class _ClassificacaoState extends State<Classificacao> {
                   Expanded(
                     flex: 2,
                     child: TextField(
+                      controller: observacoesController,
                       maxLines: 3,
                       style: const TextStyle(color: Colors.black),
                       decoration: InputDecoration(
