@@ -12,6 +12,7 @@ class UserProvider with ChangeNotifier {
   String get username => _username;
   String get password => _password;
   bool get isAuthenticated => _isAuthenticated;
+  String get loggedInUser => _username;
 
   void setUsername(String username) {
     _username = username;

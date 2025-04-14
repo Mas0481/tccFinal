@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:tcc/DAO/pedidoDAO.dart';
 import 'package:tcc/forms/form_classificacao.dart';
 import 'package:tcc/forms/form_lavagem.dart';
 import 'package:tcc/forms/form_recebimento.dart';
 import 'package:tcc/models/lote.dart';
 import 'package:tcc/models/pedido.dart';
+import 'package:tcc/providers/user_provider.dart';
 import 'package:tcc/util/custom_appbar.dart';
 import 'dart:async';
 
@@ -633,6 +635,9 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
                     lote: lote, // Passa o lote específico
                     onSave: () async {
                       setState(() {
+                        lote.lavagemResponsavel =
+                            Provider.of<UserProvider>(context, listen: false)
+                                .loggedInUser;
                         lote.loteLavagemStatus = 2; // Atualiza o status do lote
                         lote.loteStatus = 1; // Atualiza o status do lote
                       });

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:tcc/models/pedido.dart';
 import 'package:tcc/models/lote.dart';
 import 'package:tcc/DAO/pedidoDAO.dart';
+import 'package:tcc/providers/user_provider.dart';
 import 'package:tcc/repository/clientes_repository.dart';
 import 'package:tcc/servicos/connection.dart';
 import 'package:tcc/repository/processos_repository.dart';
@@ -138,6 +140,8 @@ class _ClassificacaoState extends State<Classificacao> {
 
         widget.pedido.lotes.add(Lote(
           processo: 'Selecione Processo',
+          loteResponsavel:
+              Provider.of<UserProvider>(context, listen: false).loggedInUser,
           peso: 0, // No default value
           pedidoNum: widget.pedido.numPedido ?? 0, // Provide a default value
           loteNum: nextLoteNum,
@@ -208,6 +212,8 @@ class _ClassificacaoState extends State<Classificacao> {
     double pesoTotalLotes =
         widget.pedido.lotes.fold<double>(0, (sum, lote) => sum + lote.peso);
     double pesoTotalPedido = double.tryParse(pesoTotalController.text) ?? 0;
+    widget.pedido.recebimentoResponsavel =
+        Provider.of<UserProvider>(context, listen: false).loggedInUser;
 
     if (widget.pedido.lotes.isEmpty) {
       widget.pedido.classificacaoStatus = 0;
