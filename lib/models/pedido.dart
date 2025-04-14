@@ -1,5 +1,4 @@
 import 'package:tcc/models/lote.dart';
-import 'package:tcc/providers/user_provider.dart';
 
 class Pedido {
   int? numPedido;
