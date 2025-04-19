@@ -1,62 +1,45 @@
 import 'package:flutter/material.dart';
+import 'package:tcc/DAO/pedidoDAO.dart';
 import 'package:tcc/forms/form_centrifugacao';
 import 'package:tcc/forms/form_lavagem.dart';
 import 'package:tcc/forms/form_secagem.dart';
 import 'dart:async';
 import 'package:tcc/util/custom_appbar.dart';
-
 import '../models/lote.dart';
 import '../models/pedido.dart';
 
 class AreaPreparacao extends StatelessWidget {
-  const AreaPreparacao({super.key});
+  const AreaPreparacao({super.key}); // Removido o argumento pedidos
 
   @override
   Widget build(BuildContext context) {
-    List<Pedido> pedidos = [
-      Pedido(
-        codCliente: 001,
-        //nomeCliente: 'Cliente A',
-        numPedido: 001,
-        dataColeta: '05/10/2024',
-        dataRecebimento: '05/10/2024',
-        horaRecebimento: '08:00',
-        dataLimite: '09/10/2024',
-        dataEntrega: '10/10/2025',
-        pesoTotal: 150.0,
-        recebimentoStatus: 2,
-        classificacaoStatus: 2,
-        lavagemStatus: 2,
-        centrifugacaoStatus: 2,
-        secagemStatus: 2,
-        passadoriaStatus: 2,
-        finalizacaoStatus: 2,
-        retornoStatus: 0,
-        lotes: [
-          Lote(
-            pedidoNum: 001,
-            loteNum: 001,
-            peso: 1,
-            processo: 'Hospital Pesado',
-            loteCentrifugacaoStatus: 0,
-            loteSecagemStatus: 0,
-          ),
-          Lote(
-            pedidoNum: 001,
-            loteNum: 002,
-            peso: 15,
-            processo: 'Hospital Leve',
-            loteSecagemStatus: 0,
-            loteCentrifugacaoStatus: 0,
-          )
-        ],
-        nomCliente: '', qtdProduto: 1, valorProdutos: 1, pagamento: 1,
-        totalLotes: 1, pesoTotalLotes: 0.0,
-      ),
-    ];
+    PedidoDAO pedidoDAO = PedidoDAO();
 
     return MaterialApp(
-      home: AreaPreparacaoPage(pedidos: pedidos),
+      home: Scaffold(
+        body: FutureBuilder<List<Pedido>>(
+          future:
+              pedidoDAO.getAll(), // Chamada assíncrona para buscar os pedidos
+          builder: (context, snapshot) {
+            // Verifica o estado do Future
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(
+                  child: CircularProgressIndicator()); // Exibe carregamento
+            } else if (snapshot.hasError) {
+              return Center(
+                child: Text("Erro ao carregar pedidos: ${snapshot.error}"),
+              );
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return const Center(child: Text("Nenhum pedido aguardando."));
+            } else {
+              // Dados carregados com sucesso
+              List<Pedido> pedidos = snapshot.data!;
+              return AreaPreparacaoPage(
+                  pedidos: pedidos); // Ajustado para usar AreaPreparacaoPage
+            }
+          },
+        ),
+      ),
     );
   }
 }
@@ -324,6 +307,7 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
   }
 
   Widget buildLoteButton(Lote lote, Pedido pedido, String processo) {
+    PedidoDAO pedidoDAO = PedidoDAO();
     // Define o status necessário e o texto padrão com base no processo
     late Color buttonColor = Colors.grey[300]!;
     late String buttonText = 'Iniciar Lote';
@@ -405,14 +389,17 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
           showDialog(
             context: context,
             builder: (BuildContext context) {
-              return Centrifugacao(onSave: () {
-                setState(() {
-                  lote.loteCentrifugacaoStatus =
-                      2; // Atualiza o status para indicar conclusão do lote de Centrifugação
-                  pedido.centrifugacaoStatus =
-                      1; // Atualiza o status para indicar processode Secagem iniciado
-                });
-              });
+              return Centrifugacao(
+                  pedido: pedido,
+                  lote: lote, // Passa o lote específico
+                  onSave: () {
+                    setState(() {
+                      lote.loteCentrifugacaoStatus =
+                          2; // Atualiza o status para indicar conclusão do lote de Centrifugação
+                      pedido.centrifugacaoStatus =
+                          1; // Atualiza o status para indicar processode Secagem iniciado
+                    });
+                  });
             },
           );
         } else if (processo == "Secagem" &&

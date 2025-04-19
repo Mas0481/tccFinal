@@ -5,6 +5,7 @@ import 'genericDAO.dart';
 class LoteDAO implements GenericDAO<Lote> {
   @override
   Future<int> insert(Lote lote) async {
+    print('entrou no insert lote');
     final conn = await MySqlConnectionService().getConnection();
     try {
       final result = await conn.query('''
@@ -15,8 +16,8 @@ class LoteDAO implements GenericDAO<Lote> {
           centrifugacaoTempoProcesso, centrifugacaoDataInicio, centrifugacaoHoraInicio, 
           centrifugacaoDataFinal, centrifugacaoHoraFinal, centrifugacaoObs, loteSecagemStatus, 
           secagemEquipamento, secagemTempoProcesso, secagemTemperatura, secagemDataInicio, 
-          secagemHoraInicio, secagemDataFinal, secagemHoraFinal, secagemObs, peso, processo
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          secagemHoraInicio, secagemDataFinal, secagemHoraFinal, secagemObs, peso, processo, loteResponsavel, loteLavagemResponsavel, loteCentrifugacaoResponsavel, loteSecagemResponsavel
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', [
         lote.pedidoNum,
         lote.loteNum,
@@ -48,6 +49,10 @@ class LoteDAO implements GenericDAO<Lote> {
         lote.secagemObs,
         lote.peso,
         lote.processo,
+        lote.loteResponsavel,
+        lote.lavagemResponsavel,
+        lote.centrifugacaoResponsavel,
+        lote.secagemResponsavel,
       ]);
       return result.insertId!;
     } finally {
@@ -70,7 +75,7 @@ loteStatus = ?, loteLavagemStatus = ?, lavagemEquipamento = ?, lavagemProcesso =
           centrifugacaoDataFinal = ?, centrifugacaoHoraFinal = ?, centrifugacaoObs = ?, 
           loteSecagemStatus = ?, secagemEquipamento = ?, secagemTempoProcesso = ?, 
           secagemTemperatura = ?, secagemDataInicio = ?, secagemHoraInicio = ?, 
-          secagemDataFinal = ?, secagemHoraFinal = ?, secagemObs = ?, peso = ?, processo = ?
+          secagemDataFinal = ?, secagemHoraFinal = ?, secagemObs = ?, peso = ?, processo = ?, lotecentrifugacaoResponsavel = ?, lotelavagemResponsavel = ?, lotesecagemResponsavel = ?, loteResponsavel = ?
         WHERE pedidoNum = ? AND loteNum = ?
         ''',
         [
@@ -102,6 +107,10 @@ loteStatus = ?, loteLavagemStatus = ?, lavagemEquipamento = ?, lavagemProcesso =
           lote.secagemObs,
           lote.peso,
           lote.processo,
+          lote.centrifugacaoResponsavel,
+          lote.lavagemResponsavel,
+          lote.secagemResponsavel,
+          lote.loteResponsavel,
           lote.pedidoNum,
           lote.loteNum,
         ],

@@ -3,6 +3,7 @@ class Lote {
   int loteNum;
   double peso;
   String processo;
+  String loteResponsavel;
 
   // 0 representa aguardando, 1 representa iniciado, 2 representa concluído
   int loteStatus;
@@ -16,6 +17,7 @@ class Lote {
   String lavagemDataFinal;
   String lavagemHoraFinal;
   String lavagemObs;
+  String lavagemResponsavel;
 
   // Dados da centrifugação
   int loteCentrifugacaoStatus;
@@ -26,6 +28,7 @@ class Lote {
   String centrifugacaoDataFinal;
   String centrifugacaoHoraFinal;
   String centrifugacaoObs;
+  String centrifugacaoResponsavel;
 
   // Dados da secagem
   int loteSecagemStatus;
@@ -37,6 +40,7 @@ class Lote {
   String secagemDataFinal;
   String secagemHoraFinal;
   String secagemObs;
+  String secagemResponsavel;
 
   Lote({
     required this.pedidoNum,
@@ -69,6 +73,10 @@ class Lote {
     this.secagemDataFinal = '',
     this.secagemHoraFinal = '',
     this.secagemObs = '',
+    this.lavagemResponsavel = '',
+    this.centrifugacaoResponsavel = '',
+    this.secagemResponsavel = '',
+    this.loteResponsavel = '',
   });
 
   @override
@@ -86,6 +94,8 @@ class Lote {
         'secagemTempoProcesso: $secagemTempoProcesso, secagemTemperatura: $secagemTemperatura, '
         'secagemDataInicio: $secagemDataInicio, secagemHoraInicio: $secagemHoraInicio, '
         'secagemDataFinal: $secagemDataFinal, secagemHoraFinal: $secagemHoraFinal, '
-        'secagemObs: $secagemObs)';
+        'secagemObs: $secagemObs, lavagemResponsavel: $lavagemResponsavel, '
+        'centrifugacaoResponsavel: $centrifugacaoResponsavel, secagemResponsavel: $secagemResponsavel, '
+        'loteResponsavel: $loteResponsavel)';
   }
 }

@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:tcc/DAO/pedidoDAO.dart';
 import 'package:tcc/models/pedido.dart';
+import 'package:tcc/providers/user_provider.dart';
 import 'package:tcc/repository/clientes_repository.dart';
 import 'package:tcc/servicos/connection.dart';
+import 'package:provider/provider.dart';
 
 class NovoPedido extends StatefulWidget {
   final VoidCallback onSave;
@@ -78,6 +80,7 @@ class _NovoPedidoState extends State<NovoPedido> {
 
   @override
   Widget build(BuildContext context) {
+    final username = Provider.of<UserProvider>(context).username;
     return Dialog(
       backgroundColor:
           Colors.white.withOpacity(1), // Leve transparência no fundo
@@ -291,7 +294,9 @@ class _NovoPedidoState extends State<NovoPedido> {
 
                         // Criar um novo objeto Pedido
                         if (codigoClienteSelecionado == null) {
-                          print(codigoClienteSelecionado);
+                          print('Codigo cliente selecionado: ' +
+                              codigoClienteSelecionado.toString());
+
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                                 content: Text(
@@ -304,8 +309,8 @@ class _NovoPedidoState extends State<NovoPedido> {
                           codCliente:
                               codigoClienteSelecionado!, // Código do cliente, pode ser obtido com base no nome
                           qtdProduto: 1, // Defina conforme necessário
+                          pedidoResponsavel: username,
                           valorProdutos: 0.0,
-                          pagamento: 0,
                           recebimentoStatus: 0.0,
                           classificacaoStatus: 0.0,
                           lavagemStatus: 0.0,
@@ -315,32 +320,16 @@ class _NovoPedidoState extends State<NovoPedido> {
                           finalizacaoStatus: 0.0,
                           retornoStatus: 0.0,
                           dataColeta: dataColeta,
-                          dataRecebimento: null,
-                          horaRecebimento: null,
+                          pagamento: 0,
                           dataLimite: dataEntrega,
                           dataEntrega: dataEntrega,
                           pesoTotal: pesoTotal,
-                          recebimentoObs: null,
                           totalLotes: 0,
-                          classificacaoObs: null,
-                          passadoriaEquipamento: null,
-                          passadoriaTemperatura: null,
-                          passadoriaDataInicio: null,
-                          passadoriaHoraInicio: null,
-                          passadoriaDataFinal: null,
-                          passadoriaHoraFinal: null,
-                          passadoriaObs: null,
-                          finalizacaoReparo: null,
-                          finalizacaoEtiquetamento: null,
-                          finalizacaoTipoEmbalagem: null,
-                          finalizacaoVolumes: null,
-                          finalizacaoControleQualidade: null,
-                          finalizacaoDataFinal: null,
-                          finalizacaoHoraFinal: null,
-                          finalizacaoObs: null,
                           pesoTotalLotes: 0.0,
+
                           lotes: [],
                         );
+                        print('username: ' + username);
                         print(novoPedido);
                         try {
                           // Criar instância do PedidoDAO

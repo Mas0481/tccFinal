@@ -1,10 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:tcc/models/lote.dart';
+import 'package:tcc/models/pedido.dart';
+import 'package:tcc/repository/clientes_repository.dart';
+import 'package:tcc/repository/equipamentos_repository.dart';
+import 'package:tcc/servicos/connection.dart';
 
 class Centrifugacao extends StatefulWidget {
-    final VoidCallback onSave; // Adiciona um callback
+      final Pedido pedido; // Adiciona o pedido como , required Lote loteparâmetro
+  final Lote lote; // Adiciona , required Pedido pedidoo lote como parâmetro
+  final VoidCallback onSave; // Adiciona um callback
 
-  Centrifugacao({required this.onSave}); // Construtor
+
+  const Centrifugacao({super.key,
+      required this.pedido,
+      required this.lote,
+      required this.onSave});
   
   @override
   _CentrifugacaoState createState() => _CentrifugacaoState();
@@ -20,12 +31,47 @@ class _CentrifugacaoState extends State<Centrifugacao> {
   final TextEditingController horaInicioController = TextEditingController();
   final TextEditingController tempoProcessoController = TextEditingController();
   final TextEditingController observacoesController = TextEditingController();
+    ClienteRepository clienteRepository =
+      ClienteRepository(MySqlConnectionService());
+  List<Map<String, dynamic>> equipamentos = [];
+  String? equipamentoSelecionado;
+  EquipamentosRepository equipamentosRepository =
+      EquipamentosRepository(MySqlConnectionService());
 
   @override
   void initState() {
     super.initState();
+    _loadClienteName();
+    _loadEquipamentos();
+   
+    clienteController.text = widget.pedido.codCliente.toString();
+    pedidoController.text = widget.pedido.numPedido.toString();
     dataInicioController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
     horaInicioController.text = DateFormat('HH:mm').format(DateTime.now());
+    loteController.text = widget.lote.loteNum.toString();
+    equipamentoSelecionado = widget.lote.centrifugacaoEquipamento.toString();
+    dataLimiteController.text =
+        widget.pedido.dataLimite.toString(); // Adiciona dataLimiteController e atribui widget.pedido.dataLimite.toString());
+  }
+
+  Future<void> _loadClienteName() async {
+    final cliente = await clienteRepository.findById(widget.pedido.codCliente);
+    if (cliente != null) {
+      setState(() {
+        clienteController.text = cliente['nome']!;
+      });
+    }
+  }
+
+  Future<void> _loadDataLimite() async {
+    setState(() {
+      // Verifica se dataLimite é uma String e converte para DateTime
+      final dataLimite = widget.pedido.dataLimite is String
+          ? DateFormat('yyyy-MM-dd').parse(widget.pedido.dataLimite)
+          : widget.pedido.dataLimite as DateTime;
+
+      dataLimiteController.text = DateFormat('dd/MM/yyyy').format(dataLimite);
+    });
   }
 
   Future<void> _selectDate(
@@ -171,9 +217,23 @@ class _CentrifugacaoState extends State<Centrifugacao> {
                   ),
                   SizedBox(width: 10),
                   Expanded(
-                    child: TextField(
-                      controller: equipamentoController,
-                      style: const TextStyle(color: Colors.black),
+                    child: DropdownButtonFormField<String>(
+                      value: equipamentoSelecionado != null &&
+                              equipamentoSelecionado!.isNotEmpty
+                          ? equipamentoSelecionado
+                          : null,
+                      hint: const Text('Selecione'),
+                      items: equipamentos.map((equipamento) {
+                        return DropdownMenuItem<String>(
+                          value: equipamento['nome'],
+                          child: Text(equipamento['nome']),
+                        );
+                      }).toList(),
+                      onChanged: (newValue) {
+                        setState(() {
+                          equipamentoSelecionado = newValue ?? '';
+                        });
+                      },
                       decoration: InputDecoration(
                         labelText: 'Equipamento',
                         border: OutlineInputBorder(
@@ -319,5 +379,26 @@ class _CentrifugacaoState extends State<Centrifugacao> {
         ),
       ),
     );
+  }
+  Future<void> _loadEquipamentos() async {
+    try {
+      final listaEquipamentos = await equipamentosRepository.getEquipamentos();
+      setState(() {
+        equipamentos = listaEquipamentos
+            .map((e) => {
+                  'codigo': e['codigoEquipamento'],
+                  'nome': e['nomeEquipamento']
+                })
+            .toList();
+        if (equipamentos.isNotEmpty &&
+            (equipamentoSelecionado == null ||
+                equipamentoSelecionado!.isEmpty)) {
+          equipamentoSelecionado =
+              null; // Ensure the hint text "Selecione" is shown
+        }
+      });
+    } catch (e) {
+      print('Erro ao buscar os equipamentos: $e');
+    }
   }
 }
