@@ -23,9 +23,9 @@ class PedidoDAO implements GenericDAO<Pedido> {
           recebimentoStatus, classificacaoStatus, lavagemStatus, 
           centrifugacaoStatus, secagemStatus, passadoriaStatus, 
           finalizacaoStatus, retornoStatus, dataColeta, dataLimite, 
-          dataEntrega, pesoTotal, totalLotes, pesoTotalLotes
+          dataEntrega, pesoTotal, totalLotes, pesoTotalLotes, pedidoResponsavel
         ) VALUES (
-          ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+          ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
         )
       ''',
         [
@@ -47,6 +47,7 @@ class PedidoDAO implements GenericDAO<Pedido> {
           pedido.pesoTotal,
           pedido.totalLotes,
           pedido.pesoTotalLotes,
+          pedido.pedidoResponsavel,
         ],
       );
       totalAffectedRows += result.affectedRows!;
@@ -124,7 +125,11 @@ class PedidoDAO implements GenericDAO<Pedido> {
         retornoVeiculo = ?, 
         retornoPlaca = ?, 
         retornoObs = ?,
-        pesoTotalLotes = ?
+        pesoTotalLotes = ?, 
+        pedidoResponsavel = ?, 
+        finalizacaoResponsavel = ?, 
+        recebimentoResponsavel = ?, 
+        classificacaoResponsavel = ?
       WHERE codPedido = ?
     ''', [
         pedido.codCliente,
@@ -178,6 +183,10 @@ class PedidoDAO implements GenericDAO<Pedido> {
         pedido.retornoPlaca,
         pedido.retornoObs,
         pedido.pesoTotalLotes,
+        pedido.pedidoResponsavel,
+        pedido.finalizacaoResponsavel,
+        pedido.recebimentoResponsavel,
+        pedido.classificacaoResponsavel,
         pedido.numPedido,
       ]);
       totalAffectedRows += pedidoResult.affectedRows!;
@@ -350,6 +359,7 @@ class PedidoDAO implements GenericDAO<Pedido> {
         retornoObs: row['retornoObs'],
         nomCliente: row['nome_cliente'],
         pesoTotalLotes: row['pesoTotalLotes'],
+        pedidoResponsavel: row['pedidoResponsavel'],
         lotes: lotes,
       );
     } finally {
@@ -491,6 +501,7 @@ class PedidoDAO implements GenericDAO<Pedido> {
         retornoObs: getObs(row['retornoObs']),
         nomCliente: row['nome_cliente'],
         pesoTotalLotes: row['pesoTotalLotes'],
+        pedidoResponsavel: row['pedidoResponsavel'],
         lotes: lotes,
       ));
     }

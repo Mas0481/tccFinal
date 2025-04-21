@@ -1,4 +1,5 @@
 import 'package:tcc/models/lote.dart';
+import 'package:tcc/providers/user_provider.dart';
 
 class Pedido {
   int? numPedido;
@@ -8,16 +9,25 @@ class Pedido {
   int pagamento;
   double pesoTotalLotes = 0.0;
   String? dataPagamento;
+  String? pedidoResponsavel;
 
   //o status do processo tem três níveis 0 - não iniciado, 1 - processando, 2 - concluído
   double recebimentoStatus;
+  String? recebimentoResponsavel;
   double classificacaoStatus;
+  String? classificacaoResponsavel;
   double lavagemStatus;
+  String? lavagemResponsavel;
   double centrifugacaoStatus;
+  String? centrifugacaoResponsavel;
   double secagemStatus;
+  String? secagemResponsavel;
   double passadoriaStatus;
+  String? passadoriaResponsavel;
   double finalizacaoStatus;
+  String? finalizacaoResponsavel;
   double retornoStatus;
+  String retornoResponsavel = '';
 
   final String dataColeta;
   String? dataRecebimento;
@@ -114,6 +124,15 @@ class Pedido {
     this.nomCliente,
     required this.lotes,
     required pesoTotalLotes,
+    this.recebimentoResponsavel = '',
+    this.classificacaoResponsavel = '',
+    this.lavagemResponsavel = '',
+    this.centrifugacaoResponsavel = '',
+    this.secagemResponsavel = '',
+    this.passadoriaResponsavel = '',
+    this.pedidoResponsavel = '',
+    this.finalizacaoResponsavel = '',
+    this.retornoResponsavel = '',
   });
 
   @override
@@ -122,6 +141,7 @@ class Pedido {
 Pedido {
   numPedido: $numPedido,
   codCliente: $codCliente,
+  pedidoResponsavel: $pedidoResponsavel,
   qtdProduto: $qtdProduto,
   valorProdutos: $valorProdutos,
   pagamento: $pagamento,
@@ -139,7 +159,52 @@ Pedido {
   pesoTotal: $pesoTotal,
   totalLotes: $totalLotes,
   totalPesoLotes: $pesoTotalLotes,
-  lotes: $lotes,
+  recebimentoObs: $recebimentoObs,
+  classificacaoObs: $classificacaoObs,
+  recebimentoResponsavel: $recebimentoResponsavel,
+  classificacaoResponsavel: $classificacaoResponsavel,
+  lavagemResponsavel: $lavagemResponsavel,
+  finalizacaoObs: $finalizacaoObs,
+  finalizacaoReparo: $finalizacaoReparo,
+  finalizacaoEtiquetamento: $finalizacaoEtiquetamento,
+  finalizacaoTipoEmbalagem: $finalizacaoTipoEmbalagem,
+  finalizacaoVolumes: $finalizacaoVolumes,
+  finalizacaoControleQualidade: $finalizacaoControleQualidade,
+  finalizacaoDataInicio: $finalizacaoDataInicio,
+  finalizacaoHoraInicio: $finalizacaoHoraInicio,
+  finalizacaoDataFinal: $finalizacaoDataFinal,
+  finalizacaoHoraFinal: $finalizacaoHoraFinal,
+  finalizacaoObs: $finalizacaoObs,
+  retornoData: $retornoData,
+  retornoHoraCarregamento: $retornoHoraCarregamento,
+  retornoVolumes: $retornoVolumes,
+  retornoNomeMotorista: $retornoNomeMotorista,
+  retornoVeiculo: $retornoVeiculo,
+  retornoPlaca: $retornoPlaca,
+  retornoObs: $retornoObs,
+  nomCliente: $nomCliente,
+  dataRecebimento: $dataRecebimento,
+  horaRecebimento: $horaRecebimento,
+  dataPagamento: $dataPagamento,
+  dataLimite: $dataLimite,
+  dataEntrega: $dataEntrega,
+  pesoTotal: $pesoTotal,
+  recebimentoObs: $recebimentoObs,
+  totalLotes: $totalLotes,
+  classificacaoObs: $classificacaoObs,
+  classificacaoDataInicio: $classificacaoDataInicio,
+  classificacaoHoraInicio: $classificacaoHoraInicio,
+  classificacaoDataFinal: $classificacaoDataFinal,
+  classificacaoHoraFinal: $classificacaoHoraFinal,
+  passadoriaEquipamento: $passadoriaEquipamento,
+  passadoriaTemperatura: $passadoriaTemperatura,
+  passadoriaDataInicio: $passadoriaDataInicio,
+  passadoriaHoraInicio: $passadoriaHoraInicio,
+  passadoriaDataFinal: $passadoriaDataFinal,
+  passadoriaHoraFinal: $passadoriaHoraFinal,
+  passadoriaObs: $passadoriaObs,
+  
+     lotes: $lotes,
 }''';
   }
 }

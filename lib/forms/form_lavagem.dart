@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:tcc/models/lote.dart';
 import 'package:tcc/models/pedido.dart';
 import 'package:tcc/repository/clientes_repository.dart';
+import 'package:tcc/repository/processos_repository.dart';
 import 'package:tcc/servicos/connection.dart';
 import 'package:tcc/repository/equipamentos_repository.dart';
 
@@ -31,18 +32,23 @@ class _LavagemState extends State<Lavagem> {
   TextEditingController processoController = TextEditingController();
   TextEditingController observacoesController = TextEditingController();
   TextEditingController pesoController = TextEditingController();
+  TextEditingController equipamentoController = TextEditingController();
   ClienteRepository clienteRepository =
       ClienteRepository(MySqlConnectionService());
   List<Map<String, dynamic>> equipamentos = [];
   String? equipamentoSelecionado;
   EquipamentosRepository equipamentosRepository =
       EquipamentosRepository(MySqlConnectionService());
+  List<Map<String, String>> processos = [];
+  ProcessosRepository processosRepository =
+      ProcessosRepository(MySqlConnectionService());
 
   @override
   void initState() {
     super.initState();
     _loadClienteName();
     _loadEquipamentos();
+    _loadProcessos(); // Load processes dynamically
     clienteController =
         TextEditingController(text: widget.pedido.codCliente.toString());
     pedidoController =
@@ -92,6 +98,17 @@ class _LavagemState extends State<Lavagem> {
       });
     } catch (e) {
       print('Erro ao buscar os equipamentos: $e');
+    }
+  }
+
+  Future<void> _loadProcessos() async {
+    try {
+      final listaProcessos = await processosRepository.getProcessos();
+      setState(() {
+        processos = listaProcessos;
+      });
+    } catch (e) {
+      print('Erro ao buscar os processos: $e');
     }
   }
 
@@ -168,6 +185,7 @@ class _LavagemState extends State<Lavagem> {
                       child: AbsorbPointer(
                         child: TextField(
                           controller: dataLimiteController,
+                          readOnly: true, // Make read-only
                           style: const TextStyle(
                             color: Colors.red, // Cor da fonte vermelha
                             fontWeight: FontWeight.bold, // Fonte em destaque
@@ -195,6 +213,7 @@ class _LavagemState extends State<Lavagem> {
                   Expanded(
                     child: TextField(
                       controller: clienteController,
+                      readOnly: true, // Make read-only
                       style: const TextStyle(color: Colors.black),
                       decoration: InputDecoration(
                         labelText: 'Cliente',
@@ -218,6 +237,7 @@ class _LavagemState extends State<Lavagem> {
                     flex: 17,
                     child: TextField(
                       controller: pedidoController,
+                      readOnly: true, // Make read-only
                       keyboardType: TextInputType.number,
                       style: const TextStyle(color: Colors.black),
                       decoration: InputDecoration(
@@ -236,6 +256,7 @@ class _LavagemState extends State<Lavagem> {
                     flex: 17,
                     child: TextField(
                       controller: loteController,
+                      readOnly: true, // Make read-only
                       style: const TextStyle(color: Colors.black),
                       decoration: InputDecoration(
                         labelText: 'Lote',
@@ -251,9 +272,22 @@ class _LavagemState extends State<Lavagem> {
                   const SizedBox(width: 10),
                   Expanded(
                     flex: 66,
-                    child: TextField(
-                      controller: processoController,
-                      style: const TextStyle(color: Colors.black),
+                    child: DropdownButtonFormField<String>(
+                      value: widget.lote.lavagemProcesso.isNotEmpty
+                          ? widget.lote.lavagemProcesso
+                          : null, // Set initial value from lote.lavagemProcesso
+                      hint: const Text('Selecione'), // Placeholder text
+                      items: processos.map((processo) {
+                        return DropdownMenuItem<String>(
+                          value: processo['nomeProcesso'],
+                          child: Text(processo['nomeProcesso'] ?? ''),
+                        );
+                      }).toList(),
+                      onChanged: (newValue) {
+                        setState(() {
+                          processoController.text = newValue ?? '';
+                        });
+                      },
                       decoration: InputDecoration(
                         labelText: 'Processo',
                         border: OutlineInputBorder(
@@ -393,11 +427,20 @@ class _LavagemState extends State<Lavagem> {
                     width: 90, // Largura fixa para o botão OK
                     child: ElevatedButton(
                       onPressed: () {
-                        // Aqui você pode adicionar a lógica para salvar os dados
+                        setState(() {
+                          widget.lote.lavagemEquipamento =
+                              equipamentoSelecionado ?? '';
+                          widget.lote.lavagemProcesso = processoController.text;
+                          widget.lote.lavagemDataInicio =
+                              dataInicioController.text;
+                          widget.lote.lavagemHoraInicio =
+                              horaInicioController.text;
+                          widget.lote.lavagemObs = observacoesController.text;
+                        });
                         widget
                             .onSave(); // Chama o callback para atualizar o status do lote
                         Navigator.pop(
-                            context); // Fechando o popup ao clicar no botão OK
+                            context, widget.lote); // Retorna o lote atualizado
                       },
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 40),

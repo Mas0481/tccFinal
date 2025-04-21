@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:tcc/DAO/pedidoDAO.dart';
 import 'package:tcc/models/pedido.dart'; // Para formatar datas
+import 'package:tcc/providers/user_provider.dart';
 import 'package:tcc/repository/clientes_repository.dart';
 import 'package:tcc/servicos/connection.dart'; // Importar o ClienteRepository
 
@@ -73,6 +75,7 @@ class _RecebimentoState extends State<Recebimento> {
 
   @override
   Widget build(BuildContext context) {
+    final username = Provider.of<UserProvider>(context).username;
     return Dialog(
       backgroundColor: Colors.white.withOpacity(0.95),
       shadowColor: const Color.fromARGB(70, 10, 10, 10),
@@ -261,6 +264,7 @@ class _RecebimentoState extends State<Recebimento> {
                                 widget.pedido.pesoTotal;
                         widget.pedido.recebimentoObs =
                             observacoesController.text;
+                        widget.pedido.recebimentoResponsavel = username;
 
                         // Consistir os dados no banco de dados
                         final pedidoDAO = PedidoDAO();
