@@ -5,7 +5,6 @@ import 'package:tcc/forms/form_passadoria.dart';
 import 'package:tcc/forms/form_retorno.dart'; // Novo import
 import 'dart:async';
 import 'package:tcc/util/custom_appbar.dart';
-import '../models/lote.dart';
 import '../models/pedido.dart';
 
 class AreaFinalizacao extends StatelessWidget {
