@@ -307,7 +307,6 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
   }
 
   Widget buildLoteButton(Lote lote, Pedido pedido, String processo) {
-    PedidoDAO pedidoDAO = PedidoDAO();
     // Define o status necessário e o texto padrão com base no processo
     late Color buttonColor = Colors.grey[300]!;
     late String buttonText = 'Iniciar Lote';
