@@ -31,7 +31,7 @@ class Pedido {
   final String dataColeta;
   String? dataRecebimento;
   String? horaRecebimento;
-  final String dataLimite;
+  String dataLimite;
   final String dataEntrega;
   double pesoTotal;
   String? recebimentoObs;

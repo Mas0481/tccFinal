@@ -9,13 +9,43 @@ class OptionsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        // Retorna para a tela de login e limpa a pilha de navegação
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          '/', // Rota para a tela de login
-          (route) => false, // Remove todas as rotas da pilha
-        );
-        return false; // Impede o comportamento padrão do botão voltar
+        bool shouldLogout = await showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: const Text('Confirmar Logout'),
+                  content:
+                      const Text('Você gostaria de fazer logout do sistema?'),
+                  actions: [
+                    TextButton(
+                      child: const Text('Não'),
+                      onPressed: () {
+                        Navigator.of(context).pop(false); // Stay on the page
+                      },
+                    ),
+                    TextButton(
+                      child: const Text('Sim'),
+                      onPressed: () {
+                        Navigator.of(context).pop(true); // Proceed with logout
+                      },
+                    ),
+                  ],
+                );
+              },
+            ) ??
+            false;
+
+        if (shouldLogout) {
+          // Clear login data (e.g., user and password)
+          // Add your logic to clear login data here, if necessary
+
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/', // Navigate to the login screen
+            (route) => false, // Remove all routes from the stack
+          );
+        }
+        return false; // Prevent default back button behavior
       },
       child: Scaffold(
         appBar: CustomAppBar(
@@ -29,27 +59,70 @@ class OptionsPage extends StatelessWidget {
             children: [
               Image.asset(
                 'lib/images/logo.png',
-                width: 400,
-                height: 250,
+                width: MediaQuery.of(context).size.width *
+                    0.8, // 80% da largura da tela
+                height: MediaQuery.of(context).size.height *
+                    0.3, // 30% da altura da tela
               ),
               buildOptionButton(context, 'Área Suja', AppRoutes.areaSuja),
-              SizedBox(height: 20),
+              SizedBox(
+                  height: MediaQuery.of(context).size.height *
+                      0.02), // 2% da altura
               buildOptionButton(
                   context, 'Área Preparação', AppRoutes.preparacao),
-              SizedBox(height: 20),
+              SizedBox(
+                  height: MediaQuery.of(context).size.height *
+                      0.02), // 2% da altura
               buildOptionButton(
                   context, 'Área Finalização', AppRoutes.finalizacao),
-              SizedBox(height: 20), // Espaçamento antes do botão "Sair"
               SizedBox(
-                width: MediaQuery.of(context).size.width * 0.3,
-                height: 50,
+                  height: MediaQuery.of(context).size.height *
+                      0.02), // 2% da altura
+              SizedBox(
+                width:
+                    MediaQuery.of(context).size.width * 0.3, // 30% da largura
+                height:
+                    MediaQuery.of(context).size.height * 0.06, // 6% da altura
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushNamedAndRemoveUntil(
-                      context,
-                      '/', // Volta para a tela de login
-                      (route) => false, // Remove todas as telas da pilha
-                    );
+                  onPressed: () async {
+                    bool shouldLogout = await showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: const Text('Confirmar Logout'),
+                              content: const Text(
+                                  'Você gostaria de fazer logout do sistema?'),
+                              actions: [
+                                TextButton(
+                                  child: const Text('Não'),
+                                  onPressed: () {
+                                    Navigator.of(context)
+                                        .pop(false); // Stay on the page
+                                  },
+                                ),
+                                TextButton(
+                                  child: const Text('Sim'),
+                                  onPressed: () {
+                                    Navigator.of(context)
+                                        .pop(true); // Proceed with logout
+                                  },
+                                ),
+                              ],
+                            );
+                          },
+                        ) ??
+                        false;
+
+                    if (shouldLogout) {
+                      // Clear login data (e.g., user and password)
+                      // Add your logic to clear login data here, if necessary
+
+                      Navigator.pushNamedAndRemoveUntil(
+                        context,
+                        '/', // Navigate to the login screen
+                        (route) => false, // Remove all routes from the stack
+                      );
+                    }
                   },
                   child: Text('Sair'),
                 ),
@@ -77,7 +150,10 @@ class OptionsPage extends StatelessWidget {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  padding: EdgeInsets.symmetric(
+                    vertical: MediaQuery.of(context).size.height *
+                        0.03, // 3% da altura
+                  ),
                   backgroundColor:
                       const Color.fromARGB(255, 238, 233, 237), // Cor do botão
                   foregroundColor: const Color.fromARGB(255, 119, 90, 113),
@@ -87,7 +163,9 @@ class OptionsPage extends StatelessWidget {
                 child: Text(
                   '+',
                   style: TextStyle(
-                      color: Color.fromARGB(255, 119, 90, 113), fontSize: 30),
+                      color: Color.fromARGB(255, 119, 90, 113),
+                      fontSize: MediaQuery.of(context).size.height *
+                          0.07), // 10% da altura
                 ),
               ),
             ),
@@ -105,7 +183,10 @@ class OptionsPage extends StatelessWidget {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  padding: EdgeInsets.symmetric(
+                    vertical: MediaQuery.of(context).size.height *
+                        0.03, // 3% da altura
+                  ),
                   backgroundColor:
                       const Color.fromARGB(255, 238, 233, 237), // Cor do botão
                   foregroundColor: const Color.fromARGB(255, 119, 90, 113),
@@ -115,7 +196,9 @@ class OptionsPage extends StatelessWidget {
                 child: Text(
                   'i',
                   style: TextStyle(
-                      color: Color.fromARGB(255, 119, 90, 113), fontSize: 30),
+                      color: Color.fromARGB(255, 119, 90, 113),
+                      fontSize: MediaQuery.of(context).size.height *
+                          0.07), // 4% da altura
                 ),
               ),
             ),

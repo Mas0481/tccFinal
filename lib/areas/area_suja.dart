@@ -93,13 +93,15 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
           Center(
             child: Container(
               margin: const EdgeInsets.only(left: 25),
-              height: MediaQuery.of(context).size.height * 0.807,
+              height:
+                  MediaQuery.of(context).size.height * 0.807, // 80.7% da altura
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: pedidos.length,
                 itemBuilder: (context, index) {
                   return SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.24,
+                    width: MediaQuery.of(context).size.width *
+                        0.24, // 24% da largura
                     child: buildPedidoCard(pedidos[index]),
                   );
                 },
@@ -115,8 +117,9 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
     double progressoLavagem = calcularProgressoLavagem(pedido.lotes);
     //print(pedido);
     return Container(
-      width: MediaQuery.of(context).size.width * 0.25,
-      margin: const EdgeInsets.all(10),
+      width: MediaQuery.of(context).size.width * 0.25, // 25% da largura
+      margin: EdgeInsets.all(MediaQuery.of(context).size.width *
+          0.0025), // 0.25% da largura do card
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -124,7 +127,8 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
       ),
       child: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(10),
+          padding: EdgeInsets.all(
+              MediaQuery.of(context).size.width * 0.01), // 1% da largura
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -163,7 +167,8 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
               ),
               // Lotes
               SizedBox(
-                height: 320,
+                height:
+                    MediaQuery.of(context).size.height * 0.4, // 40% da altura
                 child: GridView.builder(
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
@@ -255,17 +260,20 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
             context: context,
             builder: (BuildContext context) {
               return Recebimento(
-                  pedido: pedido,
-                  onSave: () async {
-                    setState(() {
-                      pedido.recebimentoStatus = 2;
-                    });
-
-                    // Verifique se o pedidoDAO está acessível aqui
-
-                    int retorno = await pedidoDAO.update(pedido);
-                    print("Atualizado com sucesso! Retorno: $retorno");
+                pedido: pedido,
+                onSave: () async {
+                  // Update the pedido in the list and refresh the card visualization
+                  setState(() {
+                    int index = pedidos
+                        .indexWhere((p) => p.numPedido == pedido.numPedido);
+                    if (index != -1) {
+                      pedidos[index] = pedido;
+                      pedidos[index].recebimentoStatus =
+                          2.0; // Update progress to 2.0
+                    }
                   });
+                },
+              );
             },
           );
         } else if (label == 'Classificação' &&
@@ -308,6 +316,7 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
                     .indexWhere((p) => p.numPedido == updatedPedido.numPedido);
                 // Update the pedido at the found index
                 pedidos[index] = updatedPedido;
+                progress = 2.0; // Atualiza o progresso para 2.0
               });
             }
           });
@@ -374,9 +383,16 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: Colors.grey[300]!, width: 1),
         ),
-        padding: const EdgeInsets.symmetric(vertical: 20),
+        padding: EdgeInsets.symmetric(
+          vertical:
+              MediaQuery.of(context).size.height * 0.025, // 2.5% da altura
+        ),
         child: Center(
-          child: Text(buttonText, style: const TextStyle(color: Colors.black)),
+          child: Text(
+            buttonText,
+            textAlign: TextAlign.center, // Centraliza o texto
+            style: const TextStyle(color: Colors.black),
+          ),
         ),
       ),
     );
@@ -569,7 +585,6 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
           );
         }
       },
-      borderRadius: BorderRadius.circular(8),
       child: Stack(
         children: [
           // Barra de progresso
@@ -578,13 +593,15 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
             backgroundColor: Colors.grey[200],
             borderRadius: BorderRadius.circular(8),
             valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
-            minHeight: 67,
+            minHeight:
+                MediaQuery.of(context).size.height * 0.08, // 8% da altura
           ),
           // Texto sobreposto
           Positioned.fill(
             child: Center(
               child: Text(
                 displayLabel,
+                textAlign: TextAlign.center, // Centraliza o texto
                 style: const TextStyle(
                   color: Colors.black,
                 ),
@@ -638,6 +655,7 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
                                 .loggedInUser;
                         lote.loteLavagemStatus = 2; // Atualiza o status do lote
                         lote.loteStatus = 1; // Atualiza o status do lote
+                        lote.loteResponsavel = lote.loteResponsavel;
                       });
                       int retorno = await pedidoDAO.update(pedido);
                       print("Atualizado com sucesso! Retorno: $retorno");
@@ -670,9 +688,19 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: Colors.grey[300]!, width: 1),
         ),
-        padding: const EdgeInsets.symmetric(vertical: 20),
         child: Center(
-          child: Text(buttonText, style: const TextStyle(color: Colors.black)),
+          child: FittedBox(
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                  horizontal: MediaQuery.of(context).size.width *
+                      0.005), // 0.5% da largura
+              child: Text(
+                buttonText,
+                textAlign: TextAlign.center, // Centraliza o texto
+                style: const TextStyle(color: Colors.black),
+              ),
+            ),
+          ),
         ),
       ),
     );

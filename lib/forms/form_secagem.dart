@@ -44,6 +44,70 @@ class _SecagemState extends State<Secagem> {
     }
   }
 
+  void _validateAndSave() {
+    if (clienteController.text.isEmpty) {
+      _showMessage('O campo "Cliente" é obrigatório.');
+      return;
+    }
+    if (pedidoController.text.isEmpty) {
+      _showMessage('O campo "Pedido" é obrigatório.');
+      return;
+    }
+    if (loteController.text.isEmpty) {
+      _showMessage('O campo "Lote" é obrigatório.');
+      return;
+    }
+    if (dataLimiteController.text.isEmpty) {
+      _showMessage('O campo "Data Limite" é obrigatório.');
+      return;
+    }
+    if (dataInicioController.text.isEmpty) {
+      _showMessage('O campo "Data de Início" é obrigatório.');
+      return;
+    }
+    if (equipamentoController.text.isEmpty) {
+      _showMessage('O campo "Equipamento" é obrigatório.');
+      return;
+    }
+    if (tempoProcessoController.text.isEmpty ||
+        int.tryParse(tempoProcessoController.text) == null) {
+      _showMessage(
+          'O campo "Tempo do Processo" é obrigatório e deve ser numérico.');
+      return;
+    }
+    if (temperaturaController.text.isEmpty ||
+        double.tryParse(temperaturaController.text) == null) {
+      _showMessage('O campo "Temperatura" é obrigatório e deve ser numérico.');
+      return;
+    }
+    if (horaInicioController.text.isEmpty) {
+      _showMessage('O campo "Hora de Início" é obrigatório.');
+      return;
+    }
+
+    //_onSave();
+  }
+
+  void _showMessage(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Aviso'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -304,12 +368,7 @@ class _SecagemState extends State<Secagem> {
                   SizedBox(
                     width: 90,
                     child: ElevatedButton(
-                      onPressed: () {
-                        // Lógica do botão OK
-                        Navigator.pop(context);
-                        widget
-                            .onSave(); // Chama o callback para atualizar o status do lote
-                      },
+                      onPressed: _validateAndSave, // Use the validation method
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 40),
                         backgroundColor: Colors.blueAccent,

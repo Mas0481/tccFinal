@@ -16,6 +16,15 @@ class _LoginPageState extends State<LoginPage> {
   DateTime? lastBackPressTime;
 
   void _performLogin(BuildContext context) async {
+    if (_userController.text.isEmpty) {
+      _showMessage('O campo "Usuário" é obrigatório.');
+      return;
+    }
+    if (_passwordController.text.isEmpty) {
+      _showMessage('O campo "Senha" é obrigatório.');
+      return;
+    }
+
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     userProvider.setUsername(_userController.text);
     userProvider.setPassword(_passwordController.text);
@@ -36,10 +45,18 @@ class _LoginPageState extends State<LoginPage> {
       Navigator.pushNamed(context, AppRoutes.options);
     } else {
       // Exibe mensagem de erro
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
-      );
+      _showMessage(message);
     }
+  }
+
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: const Color.fromARGB(
+            255, 12, 68, 114), // Set background color to blue
+      ),
+    );
   }
 
   void _exitApp() {
@@ -58,6 +75,8 @@ class _LoginPageState extends State<LoginPage> {
         SnackBar(
           content: Text('Pressione novamente para sair'),
           duration: Duration(seconds: 2),
+          backgroundColor: const Color.fromARGB(
+              255, 12, 68, 114), // Set background color to blue
         ),
       );
 

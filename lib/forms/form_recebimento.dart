@@ -75,7 +75,6 @@ class _RecebimentoState extends State<Recebimento> {
 
   @override
   Widget build(BuildContext context) {
-    final username = Provider.of<UserProvider>(context).username;
     return Dialog(
       backgroundColor: Colors.white.withOpacity(0.95),
       shadowColor: const Color.fromARGB(70, 10, 10, 10),
@@ -257,23 +256,7 @@ class _RecebimentoState extends State<Recebimento> {
                   SizedBox(
                     width: 90,
                     child: ElevatedButton(
-                      onPressed: () async {
-                        // Atualiza os dados do objeto Pedido
-                        widget.pedido.pesoTotal =
-                            double.tryParse(pesoTotalController.text) ??
-                                widget.pedido.pesoTotal;
-                        widget.pedido.recebimentoObs =
-                            observacoesController.text;
-                        widget.pedido.recebimentoResponsavel = username;
-
-                        // Consistir os dados no banco de dados
-                        final pedidoDAO = PedidoDAO();
-                        await pedidoDAO.update(widget.pedido);
-
-                        // Chama o callback onSave e fecha o diálogo
-                        widget.onSave();
-                        Navigator.pop(context);
-                      },
+                      onPressed: _validateAndSave, // Use the validation method
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 40),
                         backgroundColor: Colors.blueAccent,
@@ -314,5 +297,80 @@ class _RecebimentoState extends State<Recebimento> {
         ),
       ),
     );
+  }
+
+  void _validateAndSave() {
+    if (clienteController.text.isEmpty) {
+      _showMessage('O campo "Cliente" é obrigatório.');
+      return;
+    }
+    if (pedidoController.text.isEmpty) {
+      _showMessage('O campo "Pedido" é obrigatório.');
+      return;
+    }
+    if (dataColetaController.text.isEmpty) {
+      _showMessage('O campo "Data de Coleta" é obrigatório.');
+      return;
+    }
+    if (dataEntregaController.text.isEmpty) {
+      _showMessage('O campo "Data de Entrega" é obrigatório.');
+      return;
+    }
+    if (pesoTotalController.text.isEmpty ||
+        double.tryParse(pesoTotalController.text) == null) {
+      _showMessage('O campo "Peso Total" é obrigatório e deve ser numérico.');
+      return;
+    }
+
+    _onSave();
+  }
+
+  void _showMessage(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Aviso'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _onSave() async {
+    // Atualiza os dados do objeto Pedido
+    widget.pedido.recebimentoStatus = 2.0;
+    widget.pedido.dataRecebimento =
+        DateFormat('dd/MM/yyyy').format(DateTime.now());
+    widget.pedido.horaRecebimento =
+        DateFormat('HH:mm:ss').format(DateTime.now());
+    widget.pedido.dataLimite = DateFormat('dd/MM/yyyy').format(
+        DateFormat('dd/MM/yyyy')
+            .parse(widget.pedido.dataEntrega)
+            .subtract(const Duration(days: 1)));
+    widget.pedido.pesoTotal =
+        double.tryParse(pesoTotalController.text) ?? widget.pedido.pesoTotal;
+    widget.pedido.recebimentoObs = observacoesController.text;
+    widget.pedido.recebimentoResponsavel =
+        Provider.of<UserProvider>(context, listen: false).loggedInUser;
+
+    // Consistir os dados no banco de dados
+    final pedidoDAO = PedidoDAO();
+    await pedidoDAO.update(widget.pedido);
+
+    // Chama o callback onSave e fecha o diálogo
+    widget.onSave();
+    setState(() {
+      widget.pedido.recebimentoStatus = 2.0;
+    });
+    Navigator.pop(context);
   }
 }

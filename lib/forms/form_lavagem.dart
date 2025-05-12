@@ -64,7 +64,8 @@ class _LavagemState extends State<Lavagem> {
     equipamentoSelecionado = lote.lavagemEquipamento.toString();
     horaInicioController =
         TextEditingController(text: DateFormat('HH:mm').format(DateTime.now()));
-    processoController = TextEditingController(text: lote.processo.toString());
+    processoController =
+        TextEditingController(text: lote.lavagemProcesso.toString());
     observacoesController =
         TextEditingController(text: lote.lavagemObs.toString());
     pesoController = TextEditingController(text: lote.peso.toString());
@@ -126,6 +127,59 @@ class _LavagemState extends State<Lavagem> {
         controller.text = DateFormat('dd/MM/yyyy').format(picked);
       });
     }
+  }
+
+  void _validateAndSave() {
+    if (equipamentoSelecionado == null || equipamentoSelecionado!.isEmpty) {
+      _showMessage('O campo "Equipamento" é obrigatório.');
+      return;
+    }
+    if (processoController.text.isEmpty) {
+      _showMessage('O campo "Processo" é obrigatório.');
+      return;
+    }
+    if (pesoController.text.isEmpty) {
+      _showMessage('O campo "Peso" é obrigatório.');
+      return;
+    }
+    if (dataInicioController.text.isEmpty) {
+      _showMessage('O campo "Data de Início" é obrigatório.');
+      return;
+    }
+    if (horaInicioController.text.isEmpty) {
+      _showMessage('O campo "Hora de Início" é obrigatório.');
+      return;
+    }
+
+    setState(() {
+      widget.lote.lavagemEquipamento = equipamentoSelecionado ?? '';
+      widget.lote.lavagemProcesso = processoController.text;
+      widget.lote.lavagemDataInicio = dataInicioController.text;
+      widget.lote.lavagemHoraInicio = horaInicioController.text;
+      widget.lote.lavagemObs = observacoesController.text;
+    });
+    widget.onSave();
+    Navigator.pop(context, widget.lote);
+  }
+
+  void _showMessage(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Aviso'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -273,10 +327,11 @@ class _LavagemState extends State<Lavagem> {
                   Expanded(
                     flex: 66,
                     child: DropdownButtonFormField<String>(
-                      value: widget.lote.lavagemProcesso.isNotEmpty
-                          ? widget.lote.lavagemProcesso
+                      value: widget.lote.processo.isNotEmpty
+                          ? widget.lote.processo
                           : null, // Set initial value from lote.lavagemProcesso
-                      hint: const Text('Selecione'), // Placeholder text
+                      hint:
+                          Text(widget.lote.lavagemProcesso), // Placeholder text
                       items: processos.map((processo) {
                         return DropdownMenuItem<String>(
                           value: processo['nomeProcesso'],
@@ -426,22 +481,7 @@ class _LavagemState extends State<Lavagem> {
                   SizedBox(
                     width: 90, // Largura fixa para o botão OK
                     child: ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          widget.lote.lavagemEquipamento =
-                              equipamentoSelecionado ?? '';
-                          widget.lote.lavagemProcesso = processoController.text;
-                          widget.lote.lavagemDataInicio =
-                              dataInicioController.text;
-                          widget.lote.lavagemHoraInicio =
-                              horaInicioController.text;
-                          widget.lote.lavagemObs = observacoesController.text;
-                        });
-                        widget
-                            .onSave(); // Chama o callback para atualizar o status do lote
-                        Navigator.pop(
-                            context, widget.lote); // Retorna o lote atualizado
-                      },
+                      onPressed: _validateAndSave, // Use the validation method
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 40),
                         backgroundColor: Colors.blueAccent,

@@ -47,6 +47,69 @@ class _FinalizacaoState extends State<Finalizacao> {
     }
   }
 
+  void _validateAndSave() {
+    if (clienteController.text.isEmpty) {
+      _showMessage('O campo "Cliente" é obrigatório.');
+      return;
+    }
+    if (pedidoController.text.isEmpty) {
+      _showMessage('O campo "Pedido" é obrigatório.');
+      return;
+    }
+    if (reparoController.text.isEmpty) {
+      _showMessage('O campo "Reparo" é obrigatório.');
+      return;
+    }
+    if (etiquetamentoController.text.isEmpty) {
+      _showMessage('O campo "Etiquetamento" é obrigatório.');
+      return;
+    }
+    if (dataInicioController.text.isEmpty) {
+      _showMessage('O campo "Data de Início" é obrigatório.');
+      return;
+    }
+    if (embalagemController.text.isEmpty) {
+      _showMessage('O campo "Tipo de Embalagem" é obrigatório.');
+      return;
+    }
+    if (volumesController.text.isEmpty ||
+        int.tryParse(volumesController.text) == null) {
+      _showMessage('O campo "Volumes" é obrigatório e deve ser numérico.');
+      return;
+    }
+    if (qualidadeController.text.isEmpty) {
+      _showMessage('O campo "Controle de Qualidade" é obrigatório.');
+      return;
+    }
+    if (horaInicioController.text.isEmpty) {
+      _showMessage('O campo "Hora de Início" é obrigatório.');
+      return;
+    }
+
+    widget.onSave();
+    Navigator.pop(context);
+  }
+
+  void _showMessage(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Aviso'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -252,10 +315,7 @@ class _FinalizacaoState extends State<Finalizacao> {
                   SizedBox(
                     width: 90,
                     child: ElevatedButton(
-                      onPressed: () {
-                        widget.onSave();
-                        Navigator.pop(context);
-                      },
+                      onPressed: _validateAndSave, // Use the validation method
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 40),
                         backgroundColor: Colors.blueAccent,

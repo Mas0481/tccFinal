@@ -47,6 +47,65 @@ class _RetornoState extends State<Retorno> {
     }
   }
 
+  void _validateAndSave() {
+    if (clienteController.text.isEmpty) {
+      _showMessage('O campo "Cliente" é obrigatório.');
+      return;
+    }
+    if (enderecoEntregaController.text.isEmpty) {
+      _showMessage('O campo "Endereço de Entrega" é obrigatório.');
+      return;
+    }
+    if (pedidoController.text.isEmpty) {
+      _showMessage('O campo "Pedido" é obrigatório.');
+      return;
+    }
+    if (volumesController.text.isEmpty ||
+        int.tryParse(volumesController.text) == null) {
+      _showMessage('O campo "Volumes" é obrigatório e deve ser numérico.');
+      return;
+    }
+    if (horaCarregamentoController.text.isEmpty) {
+      _showMessage('O campo "Hora do Carregamento" é obrigatório.');
+      return;
+    }
+    if (motoristaController.text.isEmpty) {
+      _showMessage('O campo "Nome do Motorista" é obrigatório.');
+      return;
+    }
+    if (veiculoController.text.isEmpty) {
+      _showMessage('O campo "Veículo" é obrigatório.');
+      return;
+    }
+    if (placaController.text.isEmpty) {
+      _showMessage('O campo "Placa" é obrigatório.');
+      return;
+    }
+
+    widget.onSave();
+    Navigator.pop(context);
+  }
+
+  void _showMessage(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Aviso'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -235,10 +294,7 @@ class _RetornoState extends State<Retorno> {
                   SizedBox(
                     width: 90,
                     child: ElevatedButton(
-                      onPressed: () {
-                        widget.onSave();
-                        Navigator.pop(context);
-                      },
+                      onPressed: _validateAndSave, // Use the validation method
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 40),
                         backgroundColor: Colors.blueAccent,

@@ -91,12 +91,13 @@ class _ClassificacaoState extends State<Classificacao> {
     try {
       processosDisponiveis = ['Selecione Processo'] +
           (await processosRepository.getProcessos())
-              .map((processo) => processo['nomeProcesso'] ?? 'Desconhecido')
+              .map((lavagemProcesso) =>
+                  lavagemProcesso['nomeProcesso'] ?? 'Desconhecido')
               .toList();
       setState(() {
         for (var lote in widget.pedido.lotes) {
-          if (!processosDisponiveis.contains(lote.processo)) {
-            lote.processo = processosDisponiveis.isNotEmpty
+          if (!processosDisponiveis.contains(lote.lavagemProcesso)) {
+            lote.lavagemProcesso = processosDisponiveis.isNotEmpty
                 ? processosDisponiveis.first
                 : 'Desconhecido';
           }
@@ -208,24 +209,72 @@ class _ClassificacaoState extends State<Classificacao> {
     });
   }
 
+  void _validateAndSave() {
+    if (clienteController.text.isEmpty) {
+      _showMessage('O campo "Cliente" é obrigatório.');
+      return;
+    }
+    if (pedidoController.text.isEmpty) {
+      _showMessage('O campo "Pedido" é obrigatório.');
+      return;
+    }
+    if (pesoTotalController.text.isEmpty) {
+      _showMessage('O campo "Peso Total" é obrigatório.');
+      return;
+    }
+    if (dataLimiteController.text.isEmpty) {
+      _showMessage('O campo "Data Limite" é obrigatório.');
+      return;
+    }
+    if (dataColetaController.text.isEmpty) {
+      _showMessage('O campo "Data da Coleta" é obrigatório.');
+      return;
+    }
+    for (int i = 0; i < widget.pedido.lotes.length; i++) {
+      if (widget.pedido.lotes[i].lavagemProcesso.isEmpty ||
+          widget.pedido.lotes[i].lavagemProcesso == 'Selecione Processo') {
+        _showMessage('O campo "Processo" do lote ${i + 1} é obrigatório.');
+        return;
+      }
+      if (pesoControllers[i].text.isEmpty ||
+          double.tryParse(pesoControllers[i].text) == null) {
+        _showMessage('O campo "Peso" do lote ${i + 1} é obrigatório.');
+        return;
+      }
+    }
+
+    _onSave();
+  }
+
   void _onSave() async {
     double pesoTotalLotes =
         widget.pedido.lotes.fold<double>(0, (sum, lote) => sum + lote.peso);
     double pesoTotalPedido = double.tryParse(pesoTotalController.text) ?? 0;
-    widget.pedido.recebimentoResponsavel =
+    widget.pedido.classificacaoResponsavel =
         Provider.of<UserProvider>(context, listen: false).loggedInUser;
 
-    if (widget.pedido.lotes.isEmpty) {
-      widget.pedido.classificacaoStatus = 0;
+    if (widget.pedido.classificacaoDataInicio == null) {
+      widget.pedido.classificacaoDataInicio =
+          DateFormat('dd/MM/yyyy').format(DateTime.now());
+      widget.pedido.classificacaoHoraInicio =
+          DateFormat('HH:mm').format(DateTime.now());
+      widget.pedido.pesoTotalLotes = pesoTotalLotes;
+      widget.pedido.classificacaoStatus = 1;
     } else if (pesoTotalLotes == pesoTotalPedido) {
+      widget.pedido.pesoTotalLotes = pesoTotalLotes;
       widget.pedido.classificacaoStatus = 2;
+      widget.pedido.classificacaoDataFinal =
+          DateFormat('dd/MM/yyyy').format(DateTime.now());
+      widget.pedido.classificacaoHoraFinal =
+          DateFormat('HH:mm').format(DateTime.now());
     } else {
+      widget.pedido.pesoTotalLotes = pesoTotalLotes;
       widget.pedido.classificacaoStatus = 1;
     }
 
     // Update pesoTotalLotes in the pedido
     widget.pedido.totalLotes = widget.pedido.lotes.length;
-    widget.pedido.pesoTotalLotes = pesoTotalLotes;
+
     widget.pedido.classificacaoObs =
         observacoesController.text; // Save "Observações"
 
@@ -428,11 +477,14 @@ class _ClassificacaoState extends State<Classificacao> {
                                       0.5 *
                                       0.55,
                                   child: DropdownButtonFormField<String>(
-                                    value: lote.processo,
+                                    value: lote.lavagemProcesso.isNotEmpty
+                                        ? lote.lavagemProcesso
+                                        : 'Selecione Processo',
                                     items: processosDisponiveis
-                                        .map((processo) => DropdownMenuItem(
-                                              value: processo,
-                                              child: Text(processo),
+                                        .map((lavagemProcesso) =>
+                                            DropdownMenuItem(
+                                              value: lavagemProcesso,
+                                              child: Text(lavagemProcesso),
                                             ))
                                         .toList(),
                                     decoration: InputDecoration(
@@ -447,7 +499,8 @@ class _ClassificacaoState extends State<Classificacao> {
                                     onChanged: isEditable
                                         ? (value) {
                                             setState(() {
-                                              lote.processo = value ?? '';
+                                              lote.lavagemProcesso =
+                                                  value ?? 'Selecione Processo';
                                             });
                                           }
                                         : null,
@@ -543,7 +596,7 @@ class _ClassificacaoState extends State<Classificacao> {
                   SizedBox(
                     width: 90,
                     child: ElevatedButton(
-                      onPressed: _onSave,
+                      onPressed: _validateAndSave, // Use the validation method
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 40),
                         backgroundColor: Colors.blueAccent,
