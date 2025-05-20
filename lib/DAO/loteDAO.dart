@@ -63,6 +63,7 @@ class LoteDAO implements GenericDAO<Lote> {
   @override
   Future<int> update(Lote lote) async {
     print('entrou no update lote');
+    print(lote);
     final conn = await MySqlConnectionService().getConnection();
     try {
       final result = await conn.query(
@@ -75,7 +76,7 @@ loteStatus = ?, loteLavagemStatus = ?, lavagemEquipamento = ?, lavagemProcesso =
           centrifugacaoDataFinal = ?, centrifugacaoHoraFinal = ?, centrifugacaoObs = ?, 
           loteSecagemStatus = ?, secagemEquipamento = ?, secagemTempoProcesso = ?, 
           secagemTemperatura = ?, secagemDataInicio = ?, secagemHoraInicio = ?, 
-          secagemDataFinal = ?, secagemHoraFinal = ?, secagemObs = ?, peso = ?, lotecentrifugacaoResponsavel = ?, lotelavagemResponsavel = ?, lotesecagemResponsavel = ?, loteResponsavel = ?
+          secagemDataFinal = ?, secagemHoraFinal = ?, secagemObs = ?, peso = ?, lotecentrifugacaoResponsavel = ?, lotelavagemResponsavel = ?, lotesecagemResponsavel = ?
         WHERE pedidoNum = ? AND loteNum = ?
         ''',
         [
@@ -109,7 +110,7 @@ loteStatus = ?, loteLavagemStatus = ?, lavagemEquipamento = ?, lavagemProcesso =
           lote.centrifugacaoResponsavel,
           lote.lavagemResponsavel,
           lote.secagemResponsavel,
-          lote.loteResponsavel,
+          //lote.loteResponsavel,
           lote.pedidoNum,
           lote.loteNum,
         ],

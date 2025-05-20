@@ -1,35 +1,135 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import 'package:tcc/models/pedido.dart';
+import 'package:tcc/providers/user_provider.dart';
+import 'package:tcc/repository/clientes_repository.dart';
+import 'package:tcc/repository/util_repository.dart';
+import 'package:tcc/servicos/connection.dart';
 
 class Retorno extends StatefulWidget {
+  final Pedido pedido; // Recebe o pedido
   final VoidCallback onSave;
 
-  const Retorno({super.key, required this.onSave});
+  const Retorno({super.key, required this.pedido, required this.onSave});
 
   @override
   _RetornoState createState() => _RetornoState();
 }
 
 class _RetornoState extends State<Retorno> {
-  final TextEditingController clienteController = TextEditingController();
-  final TextEditingController pedidoController = TextEditingController();
-  final TextEditingController volumesController = TextEditingController();
-  final TextEditingController dataLimiteController = TextEditingController();
-  final TextEditingController horaCarregamentoController =
-      TextEditingController();
-  final TextEditingController enderecoEntregaController =
-      TextEditingController();
-  final TextEditingController motoristaController = TextEditingController();
-  final TextEditingController veiculoController = TextEditingController();
-  final TextEditingController placaController = TextEditingController();
-  final TextEditingController observacoesController = TextEditingController();
+  late TextEditingController clienteController;
+  late TextEditingController pedidoController;
+  late TextEditingController volumesController;
+  late TextEditingController dataLimiteController;
+  late TextEditingController horaCarregamentoController;
+  late TextEditingController enderecoEntregaController;
+  late TextEditingController motoristaController;
+  late TextEditingController veiculoController;
+  late TextEditingController placaController;
+  late TextEditingController observacoesController;
+  late String dataRetorno = DateFormat('dd/MM/yyyy').format(DateTime.now());
+
+  ClienteRepository clienteRepository =
+      ClienteRepository(MySqlConnectionService());
+  UtilRepository utilRepository = UtilRepository(MySqlConnectionService());
+  List<Map<String, String>> veiculos = [];
+  String? veiculoSelecionado;
+  List<Map<String, String>> motoristas = [];
+  String? motoristaSelecionado;
 
   @override
   void initState() {
     super.initState();
-    // Data Limite predefinida em vermelho
-    dataLimiteController.text = DateFormat('dd/MM/yyyy').format(DateTime.now()
-        .add(const Duration(days: 5))); // Exemplo de data limite fixa
+    clienteController = TextEditingController();
+    pedidoController =
+        TextEditingController(text: widget.pedido.numPedido?.toString() ?? '');
+    volumesController = TextEditingController(
+        text: widget.pedido.finalizacaoVolumes?.toString() ?? '');
+    dataLimiteController =
+        TextEditingController(text: widget.pedido.dataLimite ?? '');
+    horaCarregamentoController =
+        TextEditingController(text: DateFormat('HH:mm').format(DateTime.now()));
+    enderecoEntregaController = TextEditingController();
+    motoristaController =
+        TextEditingController(text: widget.pedido.retornoNomeMotorista ?? '');
+    veiculoController =
+        TextEditingController(text: widget.pedido.retornoVeiculo ?? '');
+    placaController =
+        TextEditingController(text: widget.pedido.retornoPlaca ?? '');
+    observacoesController =
+        TextEditingController(text: widget.pedido.retornoObs ?? '');
+
+    _loadClienteName();
+    _loadEnderecoEntrega();
+    _carregarVeiculos();
+    _carregarMotoristas();
+  }
+
+  Future<void> _loadClienteName() async {
+    final cliente = await clienteRepository.findById(widget.pedido.codCliente);
+    if (cliente != null) {
+      setState(() {
+        clienteController.text = cliente['nome']!;
+      });
+    }
+  }
+
+  Future<void> _loadEnderecoEntrega() async {
+    final endereco = await clienteRepository
+        .getEnderecoCompletoCliente(widget.pedido.codCliente);
+    if (endereco != null) {
+      setState(() {
+        enderecoEntregaController.text = endereco;
+      });
+    }
+  }
+
+  Future<void> _carregarVeiculos() async {
+    final listaVeiculos = await utilRepository.getVeiculos();
+    String? veiculoInicial;
+    final veiculoEncontrado = listaVeiculos.firstWhere(
+      (v) => v['placa'] == widget.pedido.retornoPlaca,
+      orElse: () => {},
+    );
+    if (veiculoEncontrado.isNotEmpty) {
+      veiculoInicial = veiculoEncontrado['modelo'];
+    }
+    setState(() {
+      veiculos = listaVeiculos;
+      veiculoSelecionado = veiculoInicial;
+      if (veiculoSelecionado != null) {
+        final veiculo = veiculos.firstWhere(
+          (v) => v['modelo'] == veiculoSelecionado,
+          orElse: () => {},
+        );
+        veiculoController.text = veiculo['modelo'] ?? '';
+        placaController.text = veiculo['placa'] ?? '';
+      }
+    });
+  }
+
+  Future<void> _carregarMotoristas() async {
+    final listaMotoristas = await utilRepository.getMotoristas();
+    String? motoristaInicial;
+    final motoristaEncontrado = listaMotoristas.firstWhere(
+      (m) => m['nome'] == widget.pedido.retornoNomeMotorista,
+      orElse: () => {},
+    );
+    if (motoristaEncontrado.isNotEmpty) {
+      motoristaInicial = motoristaEncontrado['codMotorista'];
+    }
+    setState(() {
+      motoristas = listaMotoristas;
+      motoristaSelecionado = motoristaInicial;
+      if (motoristaSelecionado != null) {
+        final motorista = motoristas.firstWhere(
+          (m) => m['codMotorista'] == motoristaSelecionado,
+          orElse: () => {},
+        );
+        motoristaController.text = motorista['nome'] ?? '';
+      }
+    });
   }
 
   Future<void> _selectDate(
@@ -60,9 +160,8 @@ class _RetornoState extends State<Retorno> {
       _showMessage('O campo "Pedido" é obrigatório.');
       return;
     }
-    if (volumesController.text.isEmpty ||
-        int.tryParse(volumesController.text) == null) {
-      _showMessage('O campo "Volumes" é obrigatório e deve ser numérico.');
+    if (volumesController.text.isEmpty) {
+      _showMessage('O campo "Volumes" é obrigatório.');
       return;
     }
     if (horaCarregamentoController.text.isEmpty) {
@@ -82,8 +181,26 @@ class _RetornoState extends State<Retorno> {
       return;
     }
 
+    setState(() {
+      // Aqui você pode atualizar os campos do pedido, se necessário
+      widget.pedido.numPedido = int.tryParse(pedidoController.text);
+      widget.pedido.retornoVolumes =
+          volumesController.text; // Corrigido para String
+      widget.pedido.dataLimite = dataLimiteController.text;
+      widget.pedido.retornoHoraCarregamento = horaCarregamentoController.text;
+      widget.pedido.retornoNomeMotorista = motoristaController.text;
+      widget.pedido.retornoVeiculo = veiculoController.text;
+      widget.pedido.retornoPlaca = placaController.text;
+      widget.pedido.retornoObs = observacoesController.text;
+      widget.pedido.enderecoEntrega = enderecoEntregaController.text;
+      widget.pedido.retornoData = dataRetorno.toString();
+      widget.pedido.retornoResponsavel =
+          Provider.of<UserProvider>(context, listen: false).loggedInUser;
+      // Adicione outros campos se necessário
+    });
+
     widget.onSave();
-    Navigator.pop(context);
+    Navigator.pop(context, widget.pedido);
   }
 
   void _showMessage(String message) {
@@ -167,6 +284,7 @@ class _RetornoState extends State<Retorno> {
               // Linha Cliente
               TextField(
                 controller: clienteController,
+                readOnly: true, // Cliente não editável
                 decoration: InputDecoration(
                   labelText: 'Cliente',
                   border: OutlineInputBorder(
@@ -194,6 +312,7 @@ class _RetornoState extends State<Retorno> {
                   Expanded(
                     child: TextField(
                       controller: pedidoController,
+                      readOnly: true, // Pedido não editável
                       decoration: InputDecoration(
                         labelText: 'Pedido',
                         border: OutlineInputBorder(
@@ -206,6 +325,7 @@ class _RetornoState extends State<Retorno> {
                   Expanded(
                     child: TextField(
                       controller: volumesController,
+                      keyboardType: TextInputType.number, // Apenas números
                       decoration: InputDecoration(
                         labelText: 'Volumes',
                         border: OutlineInputBorder(
@@ -216,13 +336,30 @@ class _RetornoState extends State<Retorno> {
                   ),
                   const SizedBox(width: 10),
                   Expanded(
-                    child: TextField(
-                      controller: horaCarregamentoController,
-                      keyboardType: TextInputType.number, // Teclado numérico
-                      decoration: InputDecoration(
-                        labelText: 'Hora do Carregamento',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
+                    child: GestureDetector(
+                      onTap: () async {
+                        TimeOfDay? picked = await showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay.now(),
+                        );
+                        if (picked != null) {
+                          setState(() {
+                            horaCarregamentoController.text =
+                                picked.format(context);
+                          });
+                        }
+                      },
+                      child: AbsorbPointer(
+                        child: TextField(
+                          controller: horaCarregamentoController,
+                          keyboardType:
+                              TextInputType.number, // Teclado numérico
+                          decoration: InputDecoration(
+                            labelText: 'Hora do Carregamento',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -235,9 +372,30 @@ class _RetornoState extends State<Retorno> {
               Row(
                 children: [
                   Expanded(
-                    flex: 2, // Motorista com o dobro do tamanho
-                    child: TextField(
-                      controller: motoristaController,
+                    flex: 2,
+                    child: DropdownButtonFormField<String>(
+                      isExpanded: true,
+                      value: motoristas.any(
+                              (m) => m['codMotorista'] == motoristaSelecionado)
+                          ? motoristaSelecionado
+                          : null,
+                      hint: const Text('Selecionar'),
+                      items: motoristas.map((motorista) {
+                        return DropdownMenuItem<String>(
+                          value: motorista['codMotorista'],
+                          child: Text(motorista['nome'] ?? ''),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          motoristaSelecionado = value;
+                          final motorista = motoristas.firstWhere(
+                            (m) => m['codMotorista'] == value,
+                            orElse: () => {},
+                          );
+                          motoristaController.text = motorista['nome'] ?? '';
+                        });
+                      },
                       decoration: InputDecoration(
                         labelText: 'Nome do Motorista',
                         border: OutlineInputBorder(
@@ -248,8 +406,32 @@ class _RetornoState extends State<Retorno> {
                   ),
                   const SizedBox(width: 10),
                   Expanded(
-                    child: TextField(
-                      controller: veiculoController,
+                    child: DropdownButtonFormField<String>(
+                      isExpanded: true,
+                      value:
+                          veiculos.any((v) => v['placa'] == veiculoSelecionado)
+                              ? veiculoSelecionado
+                              : null,
+                      hint: const Text('Selecionar'),
+                      items: veiculos.map((veiculo) {
+                        return DropdownMenuItem<String>(
+                          value: veiculo['placa'],
+                          child: Text(
+                            '${veiculo['modelo'] ?? ''}',
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          veiculoSelecionado = value;
+                          final veiculo = veiculos.firstWhere(
+                            (v) => v['placa'] == value,
+                            orElse: () => {},
+                          );
+                          veiculoController.text = veiculo['modelo'] ?? '';
+                          placaController.text = veiculo['placa'] ?? '';
+                        });
+                      },
                       decoration: InputDecoration(
                         labelText: 'Veículo',
                         border: OutlineInputBorder(
@@ -262,6 +444,7 @@ class _RetornoState extends State<Retorno> {
                   Expanded(
                     child: TextField(
                       controller: placaController,
+                      readOnly: true,
                       decoration: InputDecoration(
                         labelText: 'Placa',
                         border: OutlineInputBorder(

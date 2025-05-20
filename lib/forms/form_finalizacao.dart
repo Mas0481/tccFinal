@@ -1,35 +1,61 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:tcc/models/pedido.dart';
+import 'package:tcc/repository/clientes_repository.dart';
+import 'package:tcc/servicos/connection.dart';
 
 class Finalizacao extends StatefulWidget {
+  final Pedido pedido; // Adicione este parâmetro
   final VoidCallback onSave;
 
-  const Finalizacao({super.key, required this.onSave});
+  const Finalizacao({
+    super.key,
+    required this.pedido,
+    required this.onSave,
+  });
 
   @override
   _FinalizacaoState createState() => _FinalizacaoState();
 }
 
 class _FinalizacaoState extends State<Finalizacao> {
-  final TextEditingController clienteController = TextEditingController();
-  final TextEditingController pedidoController = TextEditingController();
-  final TextEditingController reparoController = TextEditingController();
-  final TextEditingController etiquetamentoController = TextEditingController();
-  final TextEditingController dataLimiteController = TextEditingController();
-  final TextEditingController dataInicioController = TextEditingController();
-  final TextEditingController embalagemController = TextEditingController();
-  final TextEditingController volumesController = TextEditingController();
-  final TextEditingController qualidadeController = TextEditingController();
-  final TextEditingController horaInicioController = TextEditingController();
-  final TextEditingController observacoesController = TextEditingController();
+  late TextEditingController clienteController;
+  late TextEditingController pedidoController;
+  late TextEditingController dataLimiteController;
+  late TextEditingController dataInicioController;
+  late TextEditingController embalagemController;
+  late TextEditingController volumesController;
+  late TextEditingController horaInicioController;
+  late TextEditingController observacoesController;
+  String? reparoSelecionado;
+  String? etiquetamentoSelecionado;
+  String? qualidadeSelecionada;
+  ClienteRepository clienteRepository =
+      ClienteRepository(MySqlConnectionService());
 
   @override
   void initState() {
     super.initState();
-    dataLimiteController.text = DateFormat('dd/MM/yyyy').format(DateTime.now()
-        .add(const Duration(days: 5))); // Data limite fixa como exemplo
-    dataInicioController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
-    horaInicioController.text = DateFormat('HH:mm').format(DateTime.now());
+    _loadClienteName();
+    clienteController = TextEditingController(
+        text:
+            widget.pedido.codCliente.toString()); // ajuste conforme seu modelo
+    pedidoController =
+        TextEditingController(text: widget.pedido.numPedido.toString());
+    dataLimiteController =
+        TextEditingController(text: widget.pedido.dataLimite.toString());
+    embalagemController = TextEditingController();
+    volumesController = TextEditingController();
+    observacoesController = TextEditingController();
+    dataInicioController = TextEditingController(
+      text: DateFormat('dd/MM/yyyy').format(DateTime.now()),
+    );
+    horaInicioController = TextEditingController(
+      text: DateFormat('HH:mm').format(DateTime.now()),
+    );
+    reparoSelecionado = null;
+    etiquetamentoSelecionado = null;
+    qualidadeSelecionada = null;
   }
 
   Future<void> _selectDate(
@@ -47,6 +73,15 @@ class _FinalizacaoState extends State<Finalizacao> {
     }
   }
 
+  Future<void> _loadClienteName() async {
+    final cliente = await clienteRepository.findById(widget.pedido.codCliente);
+    if (cliente != null) {
+      setState(() {
+        clienteController.text = cliente['nome']!;
+      });
+    }
+  }
+
   void _validateAndSave() {
     if (clienteController.text.isEmpty) {
       _showMessage('O campo "Cliente" é obrigatório.');
@@ -56,11 +91,12 @@ class _FinalizacaoState extends State<Finalizacao> {
       _showMessage('O campo "Pedido" é obrigatório.');
       return;
     }
-    if (reparoController.text.isEmpty) {
+    if (reparoSelecionado == null || reparoSelecionado == 'Selecione') {
       _showMessage('O campo "Reparo" é obrigatório.');
       return;
     }
-    if (etiquetamentoController.text.isEmpty) {
+    if (etiquetamentoSelecionado == null ||
+        etiquetamentoSelecionado == 'Selecione') {
       _showMessage('O campo "Etiquetamento" é obrigatório.');
       return;
     }
@@ -77,7 +113,7 @@ class _FinalizacaoState extends State<Finalizacao> {
       _showMessage('O campo "Volumes" é obrigatório e deve ser numérico.');
       return;
     }
-    if (qualidadeController.text.isEmpty) {
+    if (qualidadeSelecionada == null || qualidadeSelecionada == 'Selecione') {
       _showMessage('O campo "Controle de Qualidade" é obrigatório.');
       return;
     }
@@ -85,7 +121,16 @@ class _FinalizacaoState extends State<Finalizacao> {
       _showMessage('O campo "Hora de Início" é obrigatório.');
       return;
     }
-
+    setState(() {
+      widget.pedido.finalizacaoReparo = reparoSelecionado;
+      widget.pedido.finalizacaoEtiquetamento = etiquetamentoSelecionado;
+      widget.pedido.finalizacaoTipoEmbalagem = embalagemController.text;
+      widget.pedido.finalizacaoVolumes = volumesController.text;
+      widget.pedido.finalizacaoControleQualidade = qualidadeSelecionada;
+      widget.pedido.finalizacaoDataInicio = dataInicioController.text;
+      widget.pedido.finalizacaoHoraInicio = horaInicioController.text;
+      widget.pedido.finalizacaoObs = observacoesController.text;
+    });
     widget.onSave();
     Navigator.pop(context);
   }
@@ -196,8 +241,21 @@ class _FinalizacaoState extends State<Finalizacao> {
                   ),
                   const SizedBox(width: 10),
                   Expanded(
-                    child: TextField(
-                      controller: reparoController,
+                    child: DropdownButtonFormField<String>(
+                      value: reparoSelecionado != null &&
+                              reparoSelecionado!.isNotEmpty
+                          ? reparoSelecionado
+                          : null,
+                      hint: const Text('Selecione'),
+                      items: const [
+                        DropdownMenuItem(value: 'Sim', child: Text('Sim')),
+                        DropdownMenuItem(value: 'Não', child: Text('Não')),
+                      ],
+                      onChanged: (newValue) {
+                        setState(() {
+                          reparoSelecionado = newValue ?? '';
+                        });
+                      },
                       decoration: InputDecoration(
                         labelText: 'Reparo',
                         border: OutlineInputBorder(
@@ -208,8 +266,21 @@ class _FinalizacaoState extends State<Finalizacao> {
                   ),
                   const SizedBox(width: 10),
                   Expanded(
-                    child: TextField(
-                      controller: etiquetamentoController,
+                    child: DropdownButtonFormField<String>(
+                      value: etiquetamentoSelecionado != null &&
+                              etiquetamentoSelecionado!.isNotEmpty
+                          ? etiquetamentoSelecionado
+                          : null,
+                      hint: const Text('Selecione'),
+                      items: const [
+                        DropdownMenuItem(value: 'Sim', child: Text('Sim')),
+                        DropdownMenuItem(value: 'Não', child: Text('Não')),
+                      ],
+                      onChanged: (newValue) {
+                        setState(() {
+                          etiquetamentoSelecionado = newValue ?? '';
+                        });
+                      },
                       decoration: InputDecoration(
                         labelText: 'Etiquetamento',
                         border: OutlineInputBorder(
@@ -243,8 +314,26 @@ class _FinalizacaoState extends State<Finalizacao> {
               Row(
                 children: [
                   Expanded(
-                    child: TextField(
-                      controller: embalagemController,
+                    child: DropdownButtonFormField<String>(
+                      value: embalagemController.text.isNotEmpty
+                          ? embalagemController.text
+                          : null,
+                      hint: const Text('Selecione'),
+                      items: const [
+                        DropdownMenuItem(
+                            value: 'Saco Plástico',
+                            child: Text('Saco Plástico')),
+                        DropdownMenuItem(
+                            value: 'Sacola Plástica',
+                            child: Text('Sacola Plástica')),
+                        DropdownMenuItem(
+                            value: 'Retornável', child: Text('Retornável')),
+                      ],
+                      onChanged: (newValue) {
+                        setState(() {
+                          embalagemController.text = newValue ?? '';
+                        });
+                      },
                       decoration: InputDecoration(
                         labelText: 'Tipo de Embalagem',
                         border: OutlineInputBorder(
@@ -253,8 +342,9 @@ class _FinalizacaoState extends State<Finalizacao> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(
+                  const SizedBox(width: 8),
+                  SizedBox(
+                    width: 100, // sacola/volumes um pouco menor
                     child: TextField(
                       controller: volumesController,
                       keyboardType: TextInputType.number,
@@ -266,20 +356,35 @@ class _FinalizacaoState extends State<Finalizacao> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: TextField(
-                      controller: qualidadeController,
+                  const SizedBox(width: 8),
+                  SizedBox(
+                    width: 150, // CQ um pouco maior
+                    child: DropdownButtonFormField<String>(
+                      value: qualidadeSelecionada != null &&
+                              qualidadeSelecionada!.isNotEmpty
+                          ? qualidadeSelecionada
+                          : null,
+                      hint: const Text('Selecione'),
+                      items: const [
+                        DropdownMenuItem(value: 'Sim', child: Text('Sim')),
+                        DropdownMenuItem(value: 'Não', child: Text('Não')),
+                      ],
+                      onChanged: (newValue) {
+                        setState(() {
+                          qualidadeSelecionada = newValue ?? '';
+                        });
+                      },
                       decoration: InputDecoration(
-                        labelText: 'Controle de Qualidade',
+                        labelText: 'Controle Qualidade',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(
+                  const SizedBox(width: 8),
+                  SizedBox(
+                    width: 120,
                     child: TextField(
                       controller: horaInicioController,
                       keyboardType: TextInputType.number, // Teclado numérico
@@ -293,7 +398,22 @@ class _FinalizacaoState extends State<Finalizacao> {
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
+              // Texto informativo abaixo da linha do tipo de embalagem
+              const Padding(
+                padding: EdgeInsets.only(top: 4, bottom: 8),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Todas as particularidades da Finalização devem ser registradas nas observações.',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.black87,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 3),
 
               // Observações e botões
               Row(

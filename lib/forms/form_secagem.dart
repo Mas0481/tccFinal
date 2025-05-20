@@ -1,10 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import 'package:tcc/models/lote.dart';
+import 'package:tcc/models/pedido.dart';
+import 'package:tcc/providers/user_provider.dart';
+import 'package:tcc/repository/clientes_repository.dart';
+import 'package:tcc/repository/equipamentos_repository.dart';
+import 'package:tcc/servicos/connection.dart';
 
 class Secagem extends StatefulWidget {
+  final Pedido pedido; // Adiciona o pedido como parâmetro
+  final Lote lote; // Adiciona o lote como parâmetro
   final VoidCallback onSave; // Adiciona um callback
 
-  const Secagem({super.key, required this.onSave}); // Construtor
+  const Secagem({
+    super.key,
+    required this.pedido,
+    required this.lote,
+    required this.onSave,
+  });
 
   @override
   _SecagemState createState() => _SecagemState();
@@ -22,11 +36,26 @@ class _SecagemState extends State<Secagem> {
   final TextEditingController horaInicioController = TextEditingController();
   final TextEditingController observacoesController = TextEditingController();
 
+  ClienteRepository clienteRepository =
+      ClienteRepository(MySqlConnectionService());
+  List<Map<String, dynamic>> equipamentos = [];
+  String? equipamentoSelecionado;
+  EquipamentosRepository equipamentosRepository =
+      EquipamentosRepository(MySqlConnectionService());
+
   @override
   void initState() {
     super.initState();
+    _loadClienteName();
+    _loadEquipamentos();
+
+    clienteController.text = widget.pedido.codCliente.toString();
+    pedidoController.text = widget.pedido.numPedido.toString();
     dataInicioController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
     horaInicioController.text = DateFormat('HH:mm').format(DateTime.now());
+    loteController.text = widget.lote.loteNum.toString();
+    equipamentoSelecionado = widget.lote.secagemEquipamento.toString();
+    dataLimiteController.text = widget.pedido.dataLimite.toString();
   }
 
   Future<void> _selectDate(
@@ -41,6 +70,37 @@ class _SecagemState extends State<Secagem> {
       setState(() {
         controller.text = DateFormat('dd/MM/yyyy').format(picked);
       });
+    }
+  }
+
+  Future<void> _loadClienteName() async {
+    final cliente = await clienteRepository.findById(widget.pedido.codCliente);
+    if (cliente != null) {
+      setState(() {
+        clienteController.text = cliente['nome']!;
+      });
+    }
+  }
+
+  Future<void> _loadEquipamentos() async {
+    try {
+      final listaEquipamentos = await equipamentosRepository.getEquipamentos();
+      setState(() {
+        equipamentos = listaEquipamentos
+            .map((e) => {
+                  'codigo': e['codigoEquipamento'],
+                  'nome': e['nomeEquipamento']
+                })
+            .toList();
+        if (equipamentos.isNotEmpty &&
+            (equipamentoSelecionado == null ||
+                equipamentoSelecionado!.isEmpty)) {
+          equipamentoSelecionado =
+              null; // Ensure the hint text "Selecione" is shown
+        }
+      });
+    } catch (e) {
+      print('Erro ao buscar os equipamentos: $e');
     }
   }
 
@@ -65,7 +125,7 @@ class _SecagemState extends State<Secagem> {
       _showMessage('O campo "Data de Início" é obrigatório.');
       return;
     }
-    if (equipamentoController.text.isEmpty) {
+    if (equipamentoSelecionado == null || equipamentoSelecionado!.isEmpty) {
       _showMessage('O campo "Equipamento" é obrigatório.');
       return;
     }
@@ -85,7 +145,43 @@ class _SecagemState extends State<Secagem> {
       return;
     }
 
-    //_onSave();
+    setState(() {
+      widget.lote.secagemEquipamento = equipamentoSelecionado ?? '';
+      widget.lote.secagemDataInicio = dataInicioController.text;
+      widget.lote.secagemHoraInicio = horaInicioController.text;
+      widget.lote.secagemTempoProcesso = tempoProcessoController.text;
+      widget.lote.secagemTemperatura = temperaturaController.text;
+      widget.lote.secagemObs = observacoesController.text;
+      widget.lote.secagemResponsavel =
+          Provider.of<UserProvider>(context, listen: false).loggedInUser;
+
+      // Calculo da secagemHoraFinal e data final
+      final horaInicio = DateFormat('HH:mm').parse(horaInicioController.text);
+      final dataInicio =
+          DateFormat('dd/MM/yyyy').parse(dataInicioController.text);
+      final tempoProcesso = int.tryParse(tempoProcessoController.text) ?? 0;
+      final horaFinal = horaInicio.add(Duration(minutes: tempoProcesso));
+      final dataFinal = horaFinal.day > horaInicio.day
+          ? dataInicio.add(Duration(days: 1))
+          : dataInicio;
+
+      widget.lote.secagemHoraFinal = DateFormat('HH:mm').format(horaFinal);
+      widget.lote.secagemDataFinal = DateFormat('dd/MM/yyyy').format(dataFinal);
+      widget.lote.loteSecagemStatus = 2;
+      widget.lote.loteStatus = 2;
+
+      if (widget.pedido.lotes
+              .where((lote) => lote.loteSecagemStatus == 2)
+              .fold<double>(0, (sum, lote) => sum + lote.peso) ==
+          widget.pedido.pesoTotal) {
+        widget.pedido.secagemStatus = 2;
+      } else {
+        widget.pedido.secagemStatus = 1;
+      }
+    });
+
+    widget.onSave();
+    Navigator.pop(context, widget.lote);
   }
 
   void _showMessage(String message) {
@@ -262,9 +358,23 @@ class _SecagemState extends State<Secagem> {
               Row(
                 children: [
                   Expanded(
-                    child: TextField(
-                      controller: equipamentoController,
-                      style: const TextStyle(color: Colors.black),
+                    child: DropdownButtonFormField<String>(
+                      value: equipamentoSelecionado != null &&
+                              equipamentoSelecionado!.isNotEmpty
+                          ? equipamentoSelecionado
+                          : null,
+                      hint: const Text('Selecione'),
+                      items: equipamentos.map((equipamento) {
+                        return DropdownMenuItem<String>(
+                          value: equipamento['nome'],
+                          child: Text(equipamento['nome']),
+                        );
+                      }).toList(),
+                      onChanged: (newValue) {
+                        setState(() {
+                          equipamentoSelecionado = newValue ?? '';
+                        });
+                      },
                       decoration: InputDecoration(
                         labelText: 'Equipamento',
                         border: OutlineInputBorder(

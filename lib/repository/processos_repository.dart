@@ -68,4 +68,36 @@ class ProcessosRepository {
       await conn.close();
     }
   }
+
+  Future<Map<String, String>?> findProcessoByName(String nomeProcesso) async {
+    // Obtendo a conexão
+    final conn = await MySqlConnectionService().getConnection();
+
+    try {
+      // Executando a query
+      final results = await conn.query('''
+      SELECT e.codProcesso, e.nomeProcesso, e.tempoProcesso
+      FROM processos AS e
+      WHERE e.nomeProcesso = ?
+    ''', [nomeProcesso]);
+
+      if (results.isNotEmpty) {
+        final row = results.first;
+        return {
+          'codProcesso': (row['codProcesso'] as int).toString(),
+          'nomeProcesso': row['nomeProcesso'] as String,
+          'tempoProcesso':
+              row['tempoProcesso'] as String, // Incluindo tempoProcesso
+        };
+      } else {
+        return null;
+      }
+    } catch (e) {
+      print('Erro ao buscar o processo: $e');
+      throw e;
+    } finally {
+      // Fechando a conexão
+      await conn.close();
+    }
+  }
 }

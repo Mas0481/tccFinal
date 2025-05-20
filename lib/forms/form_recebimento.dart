@@ -46,6 +46,26 @@ class _RecebimentoState extends State<Recebimento> {
         TextEditingController(text: widget.pedido.pesoTotal.toString());
     observacoesController =
         TextEditingController(text: widget.pedido.recebimentoObs.toString());
+
+    // Verifica se pedidoObs não está vazio e exibe mensagem
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final obs = widget.pedido.pedidoObs ?? "";
+      if (obs.trim().isNotEmpty) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Observação do Pedido'),
+            content: Text(obs),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+      }
+    });
   }
 
   Future<void> _loadClienteName() async {
@@ -368,9 +388,7 @@ class _RecebimentoState extends State<Recebimento> {
 
     // Chama o callback onSave e fecha o diálogo
     widget.onSave();
-    setState(() {
-      widget.pedido.recebimentoStatus = 2.0;
-    });
+    setState(() {});
     Navigator.pop(context);
   }
 }

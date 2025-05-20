@@ -193,7 +193,7 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
   }
 
   Widget buildProgressBar(String label, Pedido pedido) {
-    PedidoDAO pedidoDAO = PedidoDAO();
+    //PedidoDAO pedidoDAO = PedidoDAO();
     double progress = 0.0;
     Color barColor = Colors.red[300]!;
     String buttonText = label;
@@ -402,6 +402,7 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
   Widget buildProgressBar1(String label, double progress, Pedido pedido) {
     // Verifica se todos os lotes estão concluídos e ajusta o label
     String displayLabel = label;
+    double progresso = 0.0;
 
     if (label == 'Lavagem' &&
         todosLotesConcluidos(pedido) &&
@@ -495,8 +496,18 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
               return Classificacao(
                 pedido: pedido, // Passa o pedido
                 onSave: () async {
-                  //PedidoDAO pedidoDAO = PedidoDAO();
-                  //int retorno = await pedidoDAO.update(pedido);
+                  PedidoDAO pedidoDAO = PedidoDAO();
+                  double pesoTotalLotes = pedido.lotes
+                      .fold<double>(0, (sum, lote) => sum + lote.peso);
+
+                  double pesoTotalPedido = pedido.pesoTotal;
+
+                  if (pesoTotalLotes == pesoTotalPedido) {
+                    pedido.classificacaoStatus = 2;
+                  } else {
+                    pedido.classificacaoStatus = 1;
+                  }
+                  int retorno = await pedidoDAO.update(pedido);
                   // print("Atualizado com sucesso! Retorno: $retorno");
                   // setState(() {
                   //pedido.classificacaoStatus = 2;
@@ -505,30 +516,7 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
                 },
               );
             },
-          ).then((updatedPedido) async {
-            // This block is executed after the dialog is dismissed
-            print("entrou no then");
-            if (updatedPedido != null) {
-              double pesoTotalLotes = updatedPedido.lotes
-                  .fold<double>(0, (sum, lote) => sum + lote.peso);
-              double pesoTotalPedido = updatedPedido.pesoTotal;
-
-              if (pesoTotalLotes == pesoTotalPedido) {
-                updatedPedido.classificacaoStatus = 2;
-              } else {
-                updatedPedido.classificacaoStatus = 1;
-              }
-
-              // Update the pedidos list with the updatedPedido
-              setState(() {
-                // Find the index of the pedido to be updated
-                int index = pedidos
-                    .indexWhere((p) => p.numPedido == updatedPedido.numPedido);
-                // Update the pedido at the found index
-                pedidos[index] = updatedPedido;
-              });
-            }
-          });
+          );
         } else if (pedido.classificacaoStatus == 2.0 &&
             label == 'Classificação') {
           showDialog(
@@ -650,12 +638,13 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
                     lote: lote, // Passa o lote específico
                     onSave: () async {
                       setState(() {
-                        lote.lavagemResponsavel =
-                            Provider.of<UserProvider>(context, listen: false)
-                                .loggedInUser;
-                        lote.loteLavagemStatus = 2; // Atualiza o status do lote
-                        lote.loteStatus = 1; // Atualiza o status do lote
-                        lote.loteResponsavel = lote.loteResponsavel;
+                        //passei essas atualizações para dentro do formulário de lavagem
+                        //  lote.lavagemResponsavel =
+                        //     Provider.of<UserProvider>(context, listen: false)
+                        //            .loggedInUser;
+                        //    lote.loteLavagemStatus = 2; // Atualiza o status do lote
+                        //     lote.loteStatus = 1; // Atualiza o status do lote
+                        //lote.loteResponsavel = lote.loteResponsavel;
                       });
                       int retorno = await pedidoDAO.update(pedido);
                       print("Atualizado com sucesso! Retorno: $retorno");

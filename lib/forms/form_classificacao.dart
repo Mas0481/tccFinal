@@ -277,6 +277,8 @@ class _ClassificacaoState extends State<Classificacao> {
 
     widget.pedido.classificacaoObs =
         observacoesController.text; // Save "Observações"
+    widget.pedido.classificacaoResponsavel =
+        Provider.of<UserProvider>(context, listen: false).loggedInUser;
 
     PedidoDAO pedidoDAO = PedidoDAO();
     await pedidoDAO

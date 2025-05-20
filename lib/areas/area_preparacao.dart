@@ -221,8 +221,24 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
     if (label == 'Centrifugação') {
       displayLabel =
           pedido.centrifugacaoStatus == 2 ? "$label Concluído" : label;
+
+      displayLabel = (pedido.centrifugacaoStatus != 2 &&
+              pedido.totalLotes ==
+                  pedido.lotes
+                      .where((lote) => lote.loteCentrifugacaoStatus == 2)
+                      .length)
+          ? "$label-Aguardando Lavagem"
+          : label;
     } else {
       displayLabel = pedido.secagemStatus == 2 ? "$label Concluído" : label;
+
+      displayLabel = (pedido.secagemStatus != 2 &&
+              pedido.totalLotes ==
+                  pedido.lotes
+                      .where((lote) => lote.loteSecagemStatus == 2)
+                      .length)
+          ? "$label-Aguardando Centrifugação"
+          : label;
     }
     return InkWell(
       onTap: () {
@@ -307,13 +323,10 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
   }
 
   Widget buildLoteButton(Lote lote, Pedido pedido, String processo) {
+    PedidoDAO pedidoDAO = PedidoDAO();
     // Define o status necessário e o texto padrão com base no processo
     late Color buttonColor = Colors.grey[300]!;
     late String buttonText = 'Iniciar Lote';
-    print('status do lote secagem: ${lote.loteSecagemStatus}');
-    print('status do lote centrifugação: ${lote.loteCentrifugacaoStatus}');
-    print('status do processo secagem: ${pedido.secagemStatus}');
-    print('status do processo centrifugação: ${pedido.centrifugacaoStatus}');
 
     if (processo == "Centrifugação" && lote.loteCentrifugacaoStatus == 2) {
       buttonColor = Colors.blue;
@@ -363,23 +376,6 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
               );
             },
           );
-        } else if (processo == "Lavagem" && lote.loteSecagemStatus == 0) {
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return Lavagem(
-                pedido: pedido,
-                onSave: () {
-                  setState(() {
-                    print("entrou no setstate da lavagem");
-                    pedido.lavagemStatus =
-                        1; // Atualiza o status para indicar conclusão de Lavagem
-                  });
-                },
-                lote: lote,
-              );
-            },
-          );
         } else if (processo == "Centrifugação" &&
             lote.loteCentrifugacaoStatus == 0 &&
             pedido.recebimentoStatus != 0 &&
@@ -391,13 +387,15 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
               return Centrifugacao(
                   pedido: pedido,
                   lote: lote, // Passa o lote específico
-                  onSave: () {
+                  onSave: () async {
                     setState(() {
-                      lote.loteCentrifugacaoStatus =
-                          2; // Atualiza o status para indicar conclusão do lote de Centrifugação
-                      pedido.centrifugacaoStatus =
-                          1; // Atualiza o status para indicar processode Secagem iniciado
+                      // movido para dentro do formulario de centrifugação
+                      // lote.loteCentrifugacaoStatus =
+                      // 2; // Atualiza o status para indicar conclusão do lote de Centrifugação
+                      //pedido.centrifugacaoStatus =
+                      //  1; // Atualiza o status para indicar processode Secagem iniciado
                     });
+                    int retorno = await pedidoDAO.update(pedido);
                   });
             },
           );
@@ -410,14 +408,20 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
           showDialog(
             context: context,
             builder: (BuildContext context) {
-              return Secagem(onSave: () {
-                setState(() {
-                  lote.loteSecagemStatus =
-                      2; // Atualiza o status para indicar conclusão do lote de Secagem
-                  pedido.secagemStatus =
-                      1; // Atualiza o status para indicar processode Secagem iniciado
-                });
-              });
+              return Secagem(
+                pedido: pedido, // Pass the pedido object
+                lote: lote, // Pass the lote object
+                onSave: () async {
+                  setState(() {
+                    // movido para dentro do formulario de secagem
+                    // lote.loteSecagemStatus =
+                    //   2; // Atualiza o status para indicar conclusão do lote de Secagem
+                    //pedido.secagemStatus =
+                    //  1; // Atualiza o status para indicar processo de Secagem iniciado
+                  });
+                  int retorno = await pedidoDAO.update(pedido);
+                },
+              );
             },
           );
         } else {
@@ -454,19 +458,19 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
   }
 
   double calcularProgresso(Pedido pedido, String processo) {
-    int totalLotes = pedido.lotes.length;
-    print("Total de lotes no pedido: $totalLotes");
+    double pesoTotalPedido = pedido.pesoTotal;
+    print("Peso total do pedido: $pesoTotalPedido");
 
-    if (totalLotes == 0) {
+    if (pesoTotalPedido == 0) {
       return 0.0; // Evita divisão por zero
     }
 
     if (processo == "Centrifugação") {
-      int lotesCentrifugacaoConcluidos = pedido.lotes
+      double pesoLotesCentrifugacaoConcluidos = pedido.lotes
           .where((lote) => lote.loteCentrifugacaoStatus == 2)
-          .length;
+          .fold(0.0, (soma, lote) => soma + lote.peso);
 
-      double progresso = lotesCentrifugacaoConcluidos / totalLotes;
+      double progresso = pesoLotesCentrifugacaoConcluidos / pesoTotalPedido;
 
       if (progresso == 1.0) {
         pedido.centrifugacaoStatus =
@@ -475,10 +479,11 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
 
       return progresso;
     } else if (processo == "Secagem") {
-      int lotesSecagemConcluidos =
-          pedido.lotes.where((lote) => lote.loteSecagemStatus == 2).length;
+      double pesoLotesSecagemConcluidos = pedido.lotes
+          .where((lote) => lote.loteSecagemStatus == 2)
+          .fold(0.0, (soma, lote) => soma + lote.peso);
 
-      double progresso = lotesSecagemConcluidos / totalLotes;
+      double progresso = pesoLotesSecagemConcluidos / pesoTotalPedido;
 
       if (progresso == 1.0) {
         pedido.secagemStatus = 2; // Atualiza o status do pedido para concluído

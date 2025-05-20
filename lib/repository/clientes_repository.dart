@@ -76,4 +76,39 @@ class ClienteRepository {
       await conn.close();
     }
   }
+
+  /// Busca o endereço completo do cliente pelo codCliente.
+  /// Retorna uma string com o endereço concatenado ou null se não encontrado.
+  Future<String?> getEnderecoCompletoCliente(int codCliente) async {
+    final conn = await MySqlConnectionService().getConnection();
+
+    try {
+      final results = await conn.query('''
+        SELECT 
+          CONCAT_WS(', ',
+            p.endereco,
+            CONCAT('Nº ', p.numero),
+            IFNULL(CONCAT('Apto ', p.apto), NULL),
+            p.bairro,
+            p.cidade,
+            p.estado
+          ) AS enderecoCompleto
+        FROM clientes AS c
+        INNER JOIN pessoas AS p ON c.fk_Cpf = p.cpf
+        WHERE c.codCliente = ?
+      ''', [codCliente]);
+
+      if (results.isNotEmpty) {
+        final row = results.first;
+        return row['enderecoCompleto'] as String?;
+      } else {
+        return null;
+      }
+    } catch (e) {
+      print('Erro ao buscar o endereço do cliente: $e');
+      throw e;
+    } finally {
+      await conn.close();
+    }
+  }
 }

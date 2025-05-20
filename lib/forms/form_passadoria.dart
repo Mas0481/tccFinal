@@ -1,34 +1,103 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:tcc/models/lote.dart';
+import 'package:tcc/models/pedido.dart';
+import 'package:tcc/repository/clientes_repository.dart';
+import 'package:tcc/repository/equipamentos_repository.dart';
+import 'package:tcc/repository/processos_repository.dart';
+import 'package:tcc/servicos/connection.dart';
 
 class Passadoria extends StatefulWidget {
   final VoidCallback onSave;
+  final Pedido pedido; // Adiciona o pedido como parâmetro
 
-  const Passadoria({super.key, required this.onSave});
+  const Passadoria({super.key, required this.onSave, required this.pedido});
 
   @override
   _PassadoriaState createState() => _PassadoriaState();
 }
 
 class _PassadoriaState extends State<Passadoria> {
-  final TextEditingController clienteController = TextEditingController();
-  final TextEditingController pedidoController = TextEditingController();
-  final TextEditingController dataLimiteController = TextEditingController();
-  final TextEditingController dataInicioController = TextEditingController();
-  final TextEditingController equipamentoController = TextEditingController();
-  final TextEditingController temperaturaController = TextEditingController();
-  final TextEditingController horaInicioController = TextEditingController();
-  final TextEditingController observacoesController = TextEditingController();
+  TextEditingController clienteController = TextEditingController();
+  TextEditingController pedidoController = TextEditingController();
+  TextEditingController dataLimiteController = TextEditingController();
+  TextEditingController dataInicioController = TextEditingController();
+  TextEditingController loteController = TextEditingController();
+  TextEditingController horaInicioController = TextEditingController();
+  TextEditingController equipamentoController = TextEditingController();
+  TextEditingController temperaturaController = TextEditingController();
+  TextEditingController observacoesController = TextEditingController();
   bool _pecasPassadasCheckbox =
       false; // Variável para armazenar o estado da checkbox
+
+  final ClienteRepository clienteRepository =
+      ClienteRepository(MySqlConnectionService());
+  final EquipamentosRepository equipamentosRepository =
+      EquipamentosRepository(MySqlConnectionService());
+  final ProcessosRepository processosRepository =
+      ProcessosRepository(MySqlConnectionService());
+  List<Map<String, dynamic>> equipamentos = [];
+  String? equipamentoSelecionado;
+  List<Map<String, String>> processos = [];
 
   @override
   void initState() {
     super.initState();
-    dataLimiteController.text = DateFormat('dd/MM/yyyy').format(DateTime.now()
-        .add(const Duration(days: 5))); // Data limite fixa como exemplo
-    dataInicioController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
-    horaInicioController.text = DateFormat('HH:mm').format(DateTime.now());
+    _loadClienteName();
+    _loadEquipamentos();
+    _loadProcessos(); // Load processes dynamically
+    clienteController =
+        TextEditingController(text: widget.pedido.codCliente.toString());
+    pedidoController =
+        TextEditingController(text: widget.pedido.numPedido.toString());
+    dataLimiteController =
+        TextEditingController(text: widget.pedido.dataLimite.toString());
+
+    dataInicioController = TextEditingController(
+        text: DateFormat('dd/MM/yyyy').format(DateTime.now()));
+  }
+
+  Future<void> _loadClienteName() async {
+    // Replace with appropriate logic to fetch client data
+    final cliente = await clienteRepository.findById(1); // Example ID
+    if (cliente != null) {
+      setState(() {
+        clienteController.text = cliente['nome']!;
+      });
+    }
+  }
+
+  Future<void> _loadEquipamentos() async {
+    try {
+      final listaEquipamentos = await equipamentosRepository.getEquipamentos();
+      setState(() {
+        equipamentos = listaEquipamentos
+            .map((e) => {
+                  'codigo': e['codigoEquipamento'],
+                  'nome': e['nomeEquipamento']
+                })
+            .toList();
+        if (equipamentos.isNotEmpty &&
+            (equipamentoSelecionado == null ||
+                equipamentoSelecionado!.isEmpty)) {
+          equipamentoSelecionado =
+              null; // Ensure the hint text "Selecione" is shown
+        }
+      });
+    } catch (e) {
+      print('Erro ao buscar os equipamentos: $e');
+    }
+  }
+
+  Future<void> _loadProcessos() async {
+    try {
+      final listaProcessos = await processosRepository.getProcessos();
+      setState(() {
+        processos = listaProcessos;
+      });
+    } catch (e) {
+      print('Erro ao buscar os processos: $e');
+    }
   }
 
   Future<void> _selectDate(
@@ -44,6 +113,57 @@ class _PassadoriaState extends State<Passadoria> {
         controller.text = DateFormat('dd/MM/yyyy').format(picked);
       });
     }
+  }
+
+  void _validateAndSave() {
+    if (equipamentoSelecionado == null || equipamentoSelecionado!.isEmpty) {
+      _showMessage('O campo "Equipamento" é obrigatório.');
+      return;
+    }
+    if (temperaturaController.text.isEmpty) {
+      _showMessage('O campo "Temperatura" é obrigatório.');
+      return;
+    }
+    if (dataInicioController.text.isEmpty) {
+      _showMessage('O campo "Data de Início" é obrigatório.');
+      return;
+    }
+    if (horaInicioController.text.isEmpty) {
+      _showMessage('O campo "Hora de Início" é obrigatório.');
+      return;
+    }
+
+    setState(() {
+      widget.pedido.passadoriaEquipamento = equipamentoSelecionado ?? '';
+      widget.pedido.passadoriaTemperatura = temperaturaController.text;
+      widget.pedido.passadoriaDataInicio = dataInicioController.text;
+      widget.pedido.passadoriaHoraInicio = horaInicioController.text;
+      widget.pedido.passadoriaObs = observacoesController.text;
+      widget.pedido.passadoriaStatus = 1; // Atualiza o status do pedido
+    });
+
+    widget.onSave();
+    Navigator.pop(context, widget.pedido);
+  }
+
+  void _showMessage(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Aviso'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -64,8 +184,8 @@ class _PassadoriaState extends State<Passadoria> {
                 children: [
                   Image.asset(
                     'lib/images/logo.png',
-                    width: 200,
-                    height: 130,
+                    width: 200, // Fixed width as in form_lavagem
+                    height: 130, // Fixed height as in form_lavagem
                     errorBuilder: (context, error, stackTrace) {
                       return const Icon(Icons.error, size: 150);
                     },
@@ -82,15 +202,15 @@ class _PassadoriaState extends State<Passadoria> {
                     ),
                   ),
                   SizedBox(
-                    width: 150,
+                    width: 150, // Fixed width as in form_lavagem
                     child: TextField(
                       controller: dataLimiteController,
+                      readOnly: true, // Set to read-only
                       style: const TextStyle(
                         color: Colors.red,
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
                       ),
-                      readOnly: true, // Data Limite não editável
                       decoration: InputDecoration(
                         labelText: 'Data Limite',
                         border: OutlineInputBorder(
@@ -106,6 +226,7 @@ class _PassadoriaState extends State<Passadoria> {
               // Cliente
               TextField(
                 controller: clienteController,
+                readOnly: true, // Set to read-only
                 decoration: InputDecoration(
                   labelText: 'Cliente',
                   border: OutlineInputBorder(
@@ -121,6 +242,7 @@ class _PassadoriaState extends State<Passadoria> {
                   Expanded(
                     child: TextField(
                       controller: pedidoController,
+                      readOnly: true, // Set to read-only
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
                         labelText: 'Pedido',
@@ -155,8 +277,24 @@ class _PassadoriaState extends State<Passadoria> {
               Row(
                 children: [
                   Expanded(
-                    child: TextField(
-                      controller: equipamentoController,
+                    flex: 2,
+                    child: DropdownButtonFormField<String>(
+                      value: equipamentoSelecionado != null &&
+                              equipamentoSelecionado!.isNotEmpty
+                          ? equipamentoSelecionado
+                          : null,
+                      hint: const Text('Selecione'),
+                      items: equipamentos.map((equipamento) {
+                        return DropdownMenuItem<String>(
+                          value: equipamento['nome'],
+                          child: Text(equipamento['nome']),
+                        );
+                      }).toList(),
+                      onChanged: (newValue) {
+                        setState(() {
+                          equipamentoSelecionado = newValue ?? '';
+                        });
+                      },
                       decoration: InputDecoration(
                         labelText: 'Equipamento',
                         border: OutlineInputBorder(
@@ -167,9 +305,10 @@ class _PassadoriaState extends State<Passadoria> {
                   ),
                   const SizedBox(width: 10),
                   Expanded(
+                    flex: 2,
                     child: TextField(
                       controller: temperaturaController,
-                      keyboardType: TextInputType.number, // Teclado numérico
+                      keyboardType: TextInputType.number,
                       decoration: InputDecoration(
                         labelText: 'Temperatura',
                         border: OutlineInputBorder(
@@ -180,9 +319,10 @@ class _PassadoriaState extends State<Passadoria> {
                   ),
                   const SizedBox(width: 10),
                   Expanded(
+                    flex: 2,
                     child: TextField(
                       controller: horaInicioController,
-                      keyboardType: TextInputType.number, // Teclado numérico
+                      keyboardType: TextInputType.number,
                       decoration: InputDecoration(
                         labelText: 'Hora de Início',
                         border: OutlineInputBorder(
@@ -232,8 +372,7 @@ class _PassadoriaState extends State<Passadoria> {
                     width: 90,
                     child: ElevatedButton(
                       onPressed: () {
-                        widget.onSave();
-                        Navigator.pop(context);
+                        _validateAndSave();
                       },
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 40),

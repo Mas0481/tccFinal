@@ -5,6 +5,8 @@ import 'package:tcc/models/pedido.dart';
 import 'package:tcc/repository/clientes_repository.dart';
 import 'package:tcc/repository/equipamentos_repository.dart';
 import 'package:tcc/servicos/connection.dart';
+import 'package:provider/provider.dart';
+import 'package:tcc/providers/user_provider.dart';
 
 class Centrifugacao extends StatefulWidget {
       final Pedido pedido; // Adiciona o pedido como , required Lote loteparâmetro
@@ -87,6 +89,92 @@ class _CentrifugacaoState extends State<Centrifugacao> {
         controller.text = DateFormat('dd/MM/yyyy').format(picked);
       });
     }
+  }
+
+  void _validateAndSave() {
+    if (clienteController.text.isEmpty) {
+      _showMessage('O campo "Cliente" é obrigatório.');
+      return;
+    }
+    if (pedidoController.text.isEmpty) {
+      _showMessage('O campo "Pedido" é obrigatório.');
+      return;
+    }
+    if (dataInicioController.text.isEmpty) {
+      _showMessage('O campo "Data de Início" é obrigatório.');
+      return;
+    }
+    if (horaInicioController.text.isEmpty) {
+      _showMessage('O campo "Hora de Início" é obrigatório.');
+      return;
+    }
+    if (loteController.text.isEmpty) {
+      _showMessage('O campo "Lote" é obrigatório.');
+      return;
+    }
+    if (equipamentoSelecionado == null || equipamentoSelecionado!.isEmpty) {
+      _showMessage('O campo "Equipamento" é obrigatório.');
+      return;
+    }
+    if (tempoProcessoController.text.isEmpty) {
+      _showMessage('O campo "Tempo do Processo" é obrigatório.');
+      return;
+    }
+
+    setState(() {
+      widget.lote.centrifugacaoEquipamento = equipamentoSelecionado ?? '';
+      widget.lote.centrifugacaoDataInicio = dataInicioController.text;
+      widget.lote.centrifugacaoHoraInicio = horaInicioController.text;
+      widget.lote.centrifugacaoTempoProcesso = tempoProcessoController.text;
+      widget.lote.centrifugacaoObs = observacoesController.text;
+      widget.lote.centrifugacaoResponsavel =
+          Provider.of<UserProvider>(context, listen: false).loggedInUser;
+
+      // Calculo da centrifugacaoHoraFinal e data final
+      final horaInicio = DateFormat('HH:mm').parse(horaInicioController.text);
+      final dataInicio = DateFormat('dd/MM/yyyy').parse(dataInicioController.text);
+      final tempoProcesso = int.tryParse(tempoProcessoController.text) ?? 0;
+      final horaFinal = horaInicio.add(Duration(minutes: tempoProcesso));
+      final dataFinal = horaFinal.day > horaInicio.day
+          ? dataInicio.add(Duration(days: 1))
+          : dataInicio;
+
+      widget.lote.centrifugacaoHoraFinal = DateFormat('HH:mm').format(horaFinal);
+      widget.lote.centrifugacaoDataFinal = DateFormat('dd/MM/yyyy').format(dataFinal);
+      widget.lote.loteCentrifugacaoStatus = 2;
+
+      if (widget.pedido.lotes
+              .where((lote) => lote.loteCentrifugacaoStatus == 2)
+              .fold<double>(0, (sum, lote) => sum + lote.peso) ==
+          widget.pedido.pesoTotal) {
+        widget.pedido.centrifugacaoStatus = 2;
+      } else {
+        widget.pedido.centrifugacaoStatus = 1;
+      }
+    });
+
+    widget.onSave();
+    Navigator.pop(context, widget.lote);
+  }
+
+  void _showMessage(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Aviso'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -337,21 +425,7 @@ class _CentrifugacaoState extends State<Centrifugacao> {
                     width: 90, // Largura fixa para o botão OK
                     child: ElevatedButton(
                       onPressed: () {
-                        setState(() {
-                          widget.lote.centrifugacaoEquipamento = equipamentoSelecionado ?? '';
-                          widget.lote.centrifugacaoDataInicio = dataInicioController.text;
-                          widget.lote.centrifugacaoHoraInicio = horaInicioController.text;
-                          widget.lote.centrifugacaoTempoProcesso = tempoProcessoController.text;
-                          widget.lote.centrifugacaoObs = observacoesController.text;
-
-                          // Calculate centrifugacaoHoraFinal
-                          final horaInicio = DateFormat('HH:mm').parse(horaInicioController.text);
-                          final tempoProcesso = int.tryParse(tempoProcessoController.text) ?? 0;
-                          final horaFinal = horaInicio.add(Duration(minutes: tempoProcesso));
-                          widget.lote.centrifugacaoHoraFinal = DateFormat('HH:mm').format(horaFinal);
-                        });
-                        widget.onSave(); // Chama o callback para atualizar o status do lote
-                        Navigator.pop(context, widget.lote); // Retorna o lote atualizado
+                        _validateAndSave();
                       },
                       style: ElevatedButton.styleFrom(
                         padding: EdgeInsets.symmetric(vertical: 40),

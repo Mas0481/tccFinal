@@ -26,6 +26,8 @@ class _NovoPedidoState extends State<NovoPedido> {
   final TextEditingController responsavelEntregaController =
       TextEditingController();
   final TextEditingController observacoesController = TextEditingController();
+  final TextEditingController enderecoEntregaController =
+      TextEditingController();
 
   List<Map<String, dynamic>> clientes = []; // Armazena código e nome
   String? clienteSelecionado;
@@ -35,6 +37,12 @@ class _NovoPedidoState extends State<NovoPedido> {
     super.initState();
     dataColetaController.text =
         DateFormat('dd/MM/yyyy').format(DateTime.now()); // Data do dia
+    // Preenche o responsável pela coleta com o usuário logado assim que possível
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final username =
+          Provider.of<UserProvider>(context, listen: false).username;
+      responsavelColetaController.text = username;
+    });
     _loadClientes();
   }
 
@@ -47,9 +55,10 @@ class _NovoPedidoState extends State<NovoPedido> {
       setState(() {
         clientes = resultado
             .map((row) => {
-                  'codigo':
-                      row['codCliente'], // Ajustado para usar a chave correta
+                  'codigo': row['codCliente'],
                   'nome': row['nome'],
+                  'endereco':
+                      row['endereco'] ?? "", // Adicione o campo endereco
                 })
             .toList();
       });
@@ -133,18 +142,29 @@ class _NovoPedidoState extends State<NovoPedido> {
                               Text('${cliente['nome']}'), // Exibe código e nome
                         );
                       }).toList(),
-                      onChanged: (value) {
+                      onChanged: (value) async {
                         setState(() {
                           clienteSelecionado = value;
-                          // Obtém o código do cliente correspondente ao nome selecionado
                           final clienteMap = clientes.firstWhere(
                               (cliente) => cliente['nome'] == value);
                           codigoClienteSelecionado =
                               int.tryParse(clienteMap['codigo']!);
-
-                          print(
-                              'Codigo selecionado: $codigoClienteSelecionado');
                         });
+
+                        // Busca o endereço completo do cliente selecionado
+                        if (codigoClienteSelecionado != null) {
+                          final connectionService = MySqlConnectionService();
+                          final clienteRepository =
+                              ClienteRepository(connectionService);
+                          final enderecoCompleto = await clienteRepository
+                              .getEnderecoCompletoCliente(
+                                  codigoClienteSelecionado!);
+                          setState(() {
+                            enderecoEntregaController.text =
+                                enderecoCompleto ?? "";
+                          });
+                        }
+                        print('Codigo selecionado: $codigoClienteSelecionado');
                       },
                       decoration: InputDecoration(
                         labelText: 'Selecione um Cliente',
@@ -227,6 +247,7 @@ class _NovoPedidoState extends State<NovoPedido> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
+                      readOnly: true, // Torna o campo somente leitura
                     ),
                   ),
                   SizedBox(width: 10),
@@ -242,6 +263,18 @@ class _NovoPedidoState extends State<NovoPedido> {
                     ),
                   ),
                 ],
+              ),
+              SizedBox(height: 10),
+
+              // Linha: Endereço de Entrega (agora acima das observações)
+              TextField(
+                controller: enderecoEntregaController,
+                decoration: InputDecoration(
+                  labelText: 'Endereço de Entrega',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
               ),
               SizedBox(height: 10),
 
@@ -310,6 +343,7 @@ class _NovoPedidoState extends State<NovoPedido> {
                               codigoClienteSelecionado!, // Código do cliente, pode ser obtido com base no nome
                           qtdProduto: 1, // Defina conforme necessário
                           pedidoResponsavel: username,
+                          pedidoObs: observacoesController.text,
                           valorProdutos: 0.0,
                           recebimentoStatus: 0.0,
                           classificacaoStatus: 0.0,
@@ -326,11 +360,15 @@ class _NovoPedidoState extends State<NovoPedido> {
                           pesoTotal: pesoTotal,
                           totalLotes: 0,
                           pesoTotalLotes: 0.0,
+                          respContratadaNaColeta:
+                              username, // Nome do usuário logado
+                          respContratanteNaColeta:
+                              responsavelEntregaController.text,
+                          enderecoEntrega: enderecoEntregaController.text,
 
                           lotes: [],
                         );
-                        print('username: ' + username);
-                        print(novoPedido);
+
                         try {
                           // Criar instância do PedidoDAO
                           final pedidoDAO = PedidoDAO();

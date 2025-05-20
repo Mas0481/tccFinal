@@ -3,9 +3,13 @@ import 'package:tcc/DAO/pedidoDAO.dart';
 import 'package:tcc/forms/form_finalizacao.dart';
 import 'package:tcc/forms/form_passadoria.dart';
 import 'package:tcc/forms/form_retorno.dart'; // Novo import
+import 'package:tcc/models/lote.dart';
 import 'dart:async';
 import 'package:tcc/util/custom_appbar.dart';
 import '../models/pedido.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import 'package:tcc/providers/user_provider.dart';
 
 class AreaFinalizacao extends StatelessWidget {
   const AreaFinalizacao({super.key}); // Removido o argumento pedidos
@@ -64,9 +68,9 @@ class _AreaFinalizacaoPageState extends State<AreaFinalizacaoPage> {
   }
 
   void startTimer() {
-    timer = Timer.periodic(const Duration(seconds: 01), (timer) {
+    timer = Timer.periodic(const Duration(seconds: 30), (timer) {
       setState(() {
-        // Aqui você pode implementar a lógica para atualizar os pedidos
+        // Atualize os pedidos conforme necessário
       });
     });
   }
@@ -158,7 +162,11 @@ class _AreaFinalizacaoPageState extends State<AreaFinalizacaoPage> {
     String displayLabel = label;
     // Verifica se todos os lotes estão concluídos e ajusta o label
     if (label == 'Passadoria') {
-      displayLabel = pedido.passadoriaStatus == 2 ? "$label Concluído" : label;
+      displayLabel = pedido.passadoriaStatus == 2
+          ? "$label Concluído"
+          : pedido.passadoriaStatus == 1
+              ? "$label Processando"
+              : label;
     } else if (label == 'Finalização') {
       displayLabel = pedido.finalizacaoStatus == 2 ? "$label Concluído" : label;
     } else if (label == 'Retorno') {
@@ -273,6 +281,7 @@ class _AreaFinalizacaoPageState extends State<AreaFinalizacaoPage> {
   Widget buildLoteButtonIniciar(Pedido pedido, String processo) {
     Color? loteColor = Colors.grey[300];
     String buttonText = 'Registrar Início';
+    PedidoDAO pedidoDAO = PedidoDAO();
 
     return StatefulBuilder(
       builder: (context, setState) {
@@ -300,12 +309,13 @@ class _AreaFinalizacaoPageState extends State<AreaFinalizacaoPage> {
               showDialog(
                   context: context,
                   builder: (BuildContext context) => Passadoria(
-                        onSave: () {
+                        pedido: pedido,
+                        onSave: () async {
                           setState(() {
                             loteColor = Colors.red;
-                            pedido.passadoriaStatus = 1;
                             buttonText = 'Processando';
                           });
+                          await pedidoDAO.update(pedido);
                         },
                       ));
             } else if (processo == 'Finalização' &&
@@ -319,12 +329,14 @@ class _AreaFinalizacaoPageState extends State<AreaFinalizacaoPage> {
               showDialog(
                   context: context,
                   builder: (BuildContext context) => Finalizacao(
-                        onSave: () {
+                        pedido: pedido,
+                        onSave: () async {
                           setState(() {
                             loteColor = Colors.red;
                             pedido.finalizacaoStatus = 1;
                             buttonText = 'Processando';
                           });
+                          await pedidoDAO.update(pedido);
                         },
                       ));
             } else if (processo == 'Retorno' &&
@@ -339,12 +351,18 @@ class _AreaFinalizacaoPageState extends State<AreaFinalizacaoPage> {
               showDialog(
                   context: context,
                   builder: (BuildContext context) => Retorno(
-                        onSave: () {
+                        pedido: pedido,
+                        onSave: () async {
                           setState(() {
                             loteColor = Colors.red;
                             pedido.retornoStatus = 1;
-                            buttonText = 'Processando';
+                            pedido.retornoResponsavel =
+                                Provider.of<UserProvider>(context,
+                                        listen: false)
+                                    .username;
+                            buttonText = 'Em transito';
                           });
+                          int retorno = await pedidoDAO.update(pedido);
                         },
                       ));
             } else {
@@ -402,6 +420,7 @@ class _AreaFinalizacaoPageState extends State<AreaFinalizacaoPage> {
   Widget buildLoteButtonFinalizar(Pedido pedido, String processo) {
     Color? loteColor = Colors.grey[300];
     String buttonText = 'Finalizar Processo';
+    PedidoDAO pedidoDAO = PedidoDAO();
 
     return StatefulBuilder(
       builder: (context, setState) {
@@ -432,12 +451,32 @@ class _AreaFinalizacaoPageState extends State<AreaFinalizacaoPage> {
                   loteColor = Colors.blue;
                   if (processo == 'Passadoria') {
                     pedido.passadoriaStatus = 2;
+                    pedido.passadoriaHoraFinal =
+                        DateFormat('HH:mm').format(DateTime.now());
+                    pedido.passadoriaDataFinal =
+                        DateFormat('yyyy-MM-dd').format(DateTime.now());
                   } else if (processo == 'Finalização') {
                     pedido.finalizacaoStatus = 2;
+                    pedido.finalizacaoHoraFinal =
+                        DateFormat('HH:mm').format(DateTime.now());
+                    pedido.finalizacaoDataFinal =
+                        DateFormat('yyyy-MM-dd').format(DateTime.now());
                   } else if (processo == 'Retorno') {
                     pedido.retornoStatus = 2;
+                    pedido.pedidoStatus = 2;
+
+                    // Insira o username ativo do provider abaixo:
+                    pedido.respContratadaNaEntrega =
+                        Provider.of<UserProvider>(context, listen: false)
+                            .username;
+                    pedido.retornoHoraEntrega =
+                        DateFormat('HH:mm').format(DateTime.now());
+                    pedido.retornoDataEntrega =
+                        DateFormat('yyyy-MM-dd').format(DateTime.now());
                   }
-                  buttonText = 'Concluído';
+                  pedidoDAO.update(pedido); // Reflect changes in PedidoCard
+                  // Atualiza o estado do botão
+                  buttonText = 'Entregue';
                 });
               });
             } else {

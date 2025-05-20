@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:tcc/models/lote.dart';
 import 'package:tcc/models/pedido.dart';
+import 'package:tcc/providers/user_provider.dart';
 import 'package:tcc/repository/clientes_repository.dart';
 import 'package:tcc/repository/processos_repository.dart';
 import 'package:tcc/servicos/connection.dart';
@@ -156,8 +158,30 @@ class _LavagemState extends State<Lavagem> {
       widget.lote.lavagemProcesso = processoController.text;
       widget.lote.lavagemDataInicio = dataInicioController.text;
       widget.lote.lavagemHoraInicio = horaInicioController.text;
+
+      widget.lote.lavagemDataFinal = dataInicioController.text;
+      widget.lote.lavagemHoraFinal = horaInicioController.text;
+
       widget.lote.lavagemObs = observacoesController.text;
+      widget.lote.lavagemResponsavel =
+          Provider.of<UserProvider>(context, listen: false).loggedInUser;
+      widget.lote.loteLavagemStatus = 2; // Atualiza o status do lote
+      widget.lote.loteStatus = 1; // Atualiza o status do lote
+      widget.lote.loteResponsavel = widget.lote.loteResponsavel;
+
+      //aqui calcula se o total dos lotes com a lavagem concluida é igual ao total do peso do lote, se for marca o statua da lavagem no pedido como 2, senao marca como 1
+      if (widget.pedido.lotes
+              .where((lote) => lote.loteLavagemStatus == 2)
+              .fold<double>(0, (sum, lote) => sum + lote.peso) ==
+          widget.pedido.pesoTotal) {
+        widget.pedido.lavagemStatus =
+            2; // Atualiza o status do pedido para concluído
+      } else {
+        widget.pedido.lavagemStatus =
+            1; // Atualiza o status do pedido para pendente
+      }
     });
+    print('lote saido do formulario: ' + widget.lote.toString());
     widget.onSave();
     Navigator.pop(context, widget.lote);
   }
@@ -180,6 +204,37 @@ class _LavagemState extends State<Lavagem> {
         );
       },
     );
+  }
+
+  Future<void> _calculateHoraFinal() async {
+    try {
+      // Consulta o processo pelo nome para obter o tempoProcesso
+      final processo = await processosRepository
+          .findProcessoByName(widget.lote.lavagemProcesso);
+
+      if (processo != null && processo['tempoProcesso'] != null) {
+        // Obtém o tempoProcesso em minutos (ou ajuste conforme o formato do banco)
+        final tempoProcesso = int.parse(processo['tempoProcesso']!);
+
+        // Converte a hora inicial para DateTime
+        final horaInicio = DateFormat('HH:mm').parse(horaInicioController.text);
+
+        // Soma o tempoProcesso à hora inicial
+        final horaFinal = horaInicio.add(Duration(minutes: tempoProcesso));
+
+        // Atualiza o valor de lavagemHoraFinal no lote
+        setState(() {
+          widget.lote.lavagemHoraFinal = DateFormat('HH:mm').format(horaFinal);
+        });
+
+        print('Hora Final Calculada: ${widget.lote.lavagemHoraFinal}');
+      } else {
+        _showMessage('Tempo do processo não encontrado.');
+      }
+    } catch (e) {
+      print('Erro ao calcular a hora final: $e');
+      _showMessage('Erro ao calcular a hora final.');
+    }
   }
 
   @override
@@ -327,11 +382,11 @@ class _LavagemState extends State<Lavagem> {
                   Expanded(
                     flex: 66,
                     child: DropdownButtonFormField<String>(
-                      value: widget.lote.processo.isNotEmpty
-                          ? widget.lote.processo
+                      value: widget.lote.lavagemProcesso.isNotEmpty
+                          ? widget.lote.lavagemProcesso
                           : null, // Set initial value from lote.lavagemProcesso
-                      hint:
-                          Text(widget.lote.lavagemProcesso), // Placeholder text
+                      hint: const Text(
+                          'Selecione o Processo'), // Placeholder text
                       items: processos.map((processo) {
                         return DropdownMenuItem<String>(
                           value: processo['nomeProcesso'],

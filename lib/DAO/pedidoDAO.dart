@@ -14,7 +14,7 @@ class PedidoDAO implements GenericDAO<Pedido> {
   Future<int> insert(Pedido pedido) async {
     final conn = await MySqlConnectionService().getConnection();
     int totalAffectedRows = 0;
-
+    print('Entrou no insert');
     try {
       final result = await conn.query(
         '''
@@ -23,9 +23,9 @@ class PedidoDAO implements GenericDAO<Pedido> {
           recebimentoStatus, classificacaoStatus, lavagemStatus, 
           centrifugacaoStatus, secagemStatus, passadoriaStatus, 
           finalizacaoStatus, retornoStatus, dataColeta, dataLimite, 
-          dataEntrega, pesoTotal, totalLotes, pesoTotalLotes, pedidoResponsavel
+          dataEntrega, pesoTotal, totalLotes, pesoTotalLotes, pedidoResponsavel, enderecoEntrega, respContratadaNaColeta, respContratanteNaColeta, pedidoObs
         ) VALUES (
-          ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+          ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
         )
       ''',
         [
@@ -48,6 +48,10 @@ class PedidoDAO implements GenericDAO<Pedido> {
           pedido.totalLotes,
           pedido.pesoTotalLotes,
           pedido.pedidoResponsavel,
+          pedido.enderecoEntrega,
+          pedido.respContratadaNaColeta,
+          pedido.respContratanteNaColeta,
+          pedido.pedidoObs,
         ],
       );
       totalAffectedRows += result.affectedRows!;
@@ -70,6 +74,7 @@ class PedidoDAO implements GenericDAO<Pedido> {
     final conn = await MySqlConnectionService().getConnection();
     final loteDAO = LoteDAO();
     int totalAffectedRows = 0;
+    print('Entrou no update');
 
     try {
       // Atualizar dados do pedido
@@ -129,7 +134,15 @@ class PedidoDAO implements GenericDAO<Pedido> {
         pedidoResponsavel = ?, 
         finalizacaoResponsavel = ?, 
         recebimentoResponsavel = ?, 
-        classificacaoResponsavel = ?
+        classificacaoResponsavel = ?,
+        enderecoEntrega = ?,
+        respContratadaNaColeta = ?,
+        respContratanteNaColeta = ?,
+        pedidoObs = ?,
+        retornoHoraEntrega = ?,
+        retornoDataEntrega = ?,
+        respContratadaNaEntrega = ?,
+        respContratanteNaEntrega = ?
       WHERE codPedido = ?
     ''', [
         pedido.codCliente,
@@ -187,6 +200,14 @@ class PedidoDAO implements GenericDAO<Pedido> {
         pedido.finalizacaoResponsavel,
         pedido.recebimentoResponsavel,
         pedido.classificacaoResponsavel,
+        pedido.enderecoEntrega,
+        pedido.respContratadaNaColeta,
+        pedido.respContratanteNaColeta,
+        pedido.pedidoObs,
+        pedido.retornoHoraEntrega,
+        pedido.retornoDataEntrega,
+        pedido.respContratadaNaEntrega,
+        pedido.respContratanteNaEntrega,
         pedido.numPedido,
       ]);
       totalAffectedRows += pedidoResult.affectedRows!;
@@ -360,6 +381,10 @@ class PedidoDAO implements GenericDAO<Pedido> {
         nomCliente: row['nome_cliente'],
         pesoTotalLotes: row['pesoTotalLotes'],
         pedidoResponsavel: row['pedidoResponsavel'],
+        enderecoEntrega: row['enderecoEntrega'],
+        respContratadaNaColeta: row['respContratadaNaColeta'],
+        respContratanteNaColeta: row['respContratanteNaColeta'],
+        pedidoObs: row['pedidoObs'],
         lotes: lotes,
       );
     } finally {
@@ -502,6 +527,12 @@ class PedidoDAO implements GenericDAO<Pedido> {
         nomCliente: row['nome_cliente'],
         pesoTotalLotes: row['pesoTotalLotes'],
         pedidoResponsavel: row['pedidoResponsavel'],
+        enderecoEntrega: row['enderecoEntrega'],
+        respContratadaNaColeta: row['respContratadaNaColeta'],
+        respContratanteNaColeta: row['respContratanteNaColeta'],
+        pedidoObs: row['pedidoObs'],
+        retornoHoraEntrega: row['retornoHoraEntrega'],
+        retornoDataEntrega: row['retornoDataEntrega'],
         lotes: lotes,
       ));
     }
