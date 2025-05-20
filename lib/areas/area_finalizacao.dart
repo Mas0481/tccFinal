@@ -3,7 +3,6 @@ import 'package:tcc/DAO/pedidoDAO.dart';
 import 'package:tcc/forms/form_finalizacao.dart';
 import 'package:tcc/forms/form_passadoria.dart';
 import 'package:tcc/forms/form_retorno.dart'; // Novo import
-import 'package:tcc/models/lote.dart';
 import 'dart:async';
 import 'package:tcc/util/custom_appbar.dart';
 import '../models/pedido.dart';
@@ -362,7 +361,7 @@ class _AreaFinalizacaoPageState extends State<AreaFinalizacaoPage> {
                                     .username;
                             buttonText = 'Em transito';
                           });
-                          int retorno = await pedidoDAO.update(pedido);
+                          await pedidoDAO.update(pedido);
                         },
                       ));
             } else {

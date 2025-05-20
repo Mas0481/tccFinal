@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:tcc/DAO/pedidoDAO.dart';
 import 'package:tcc/forms/form_classificacao.dart';
 import 'package:tcc/forms/form_lavagem.dart';
 import 'package:tcc/forms/form_recebimento.dart';
 import 'package:tcc/models/lote.dart';
 import 'package:tcc/models/pedido.dart';
-import 'package:tcc/providers/user_provider.dart';
 import 'package:tcc/util/custom_appbar.dart';
 import 'dart:async';
 
@@ -402,7 +400,7 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
   Widget buildProgressBar1(String label, double progress, Pedido pedido) {
     // Verifica se todos os lotes estão concluídos e ajusta o label
     String displayLabel = label;
-    double progresso = 0.0;
+    //double progresso = 0.0;
 
     if (label == 'Lavagem' &&
         todosLotesConcluidos(pedido) &&
@@ -507,7 +505,7 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
                   } else {
                     pedido.classificacaoStatus = 1;
                   }
-                  int retorno = await pedidoDAO.update(pedido);
+                  await pedidoDAO.update(pedido);
                   // print("Atualizado com sucesso! Retorno: $retorno");
                   // setState(() {
                   //pedido.classificacaoStatus = 2;

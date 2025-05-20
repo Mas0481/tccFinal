@@ -47,7 +47,7 @@ class _RetornoState extends State<Retorno> {
     volumesController = TextEditingController(
         text: widget.pedido.finalizacaoVolumes?.toString() ?? '');
     dataLimiteController =
-        TextEditingController(text: widget.pedido.dataLimite ?? '');
+        TextEditingController(text: widget.pedido.dataLimite);
     horaCarregamentoController =
         TextEditingController(text: DateFormat('HH:mm').format(DateTime.now()));
     enderecoEntregaController = TextEditingController();

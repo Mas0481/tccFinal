@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tcc/DAO/pedidoDAO.dart';
 import 'package:tcc/forms/form_centrifugacao';
-import 'package:tcc/forms/form_lavagem.dart';
 import 'package:tcc/forms/form_secagem.dart';
 import 'dart:async';
 import 'package:tcc/util/custom_appbar.dart';
@@ -395,7 +394,7 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
                       //pedido.centrifugacaoStatus =
                       //  1; // Atualiza o status para indicar processode Secagem iniciado
                     });
-                    int retorno = await pedidoDAO.update(pedido);
+                    await pedidoDAO.update(pedido);
                   });
             },
           );
@@ -419,7 +418,7 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
                     //pedido.secagemStatus =
                     //  1; // Atualiza o status para indicar processo de Secagem iniciado
                   });
-                  int retorno = await pedidoDAO.update(pedido);
+                  await pedidoDAO.update(pedido);
                 },
               );
             },

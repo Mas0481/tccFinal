@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:tcc/models/lote.dart';
 import 'package:tcc/models/pedido.dart';
 import 'package:tcc/repository/clientes_repository.dart';
 import 'package:tcc/repository/equipamentos_repository.dart';
