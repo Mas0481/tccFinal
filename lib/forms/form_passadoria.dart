@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:tcc/models/pedido.dart';
+import 'package:tcc/providers/user_provider.dart';
 import 'package:tcc/repository/clientes_repository.dart';
 import 'package:tcc/repository/equipamentos_repository.dart';
 import 'package:tcc/repository/processos_repository.dart';
 import 'package:tcc/servicos/connection.dart';
+import 'package:provider/provider.dart';
 
 class Passadoria extends StatefulWidget {
   final VoidCallback onSave;
@@ -54,6 +56,8 @@ class _PassadoriaState extends State<Passadoria> {
 
     dataInicioController = TextEditingController(
         text: DateFormat('dd/MM/yyyy').format(DateTime.now()));
+    horaInicioController =
+        TextEditingController(text: DateFormat('HH:mm').format(DateTime.now()));
   }
 
   Future<void> _loadClienteName() async {
@@ -138,6 +142,8 @@ class _PassadoriaState extends State<Passadoria> {
       widget.pedido.passadoriaDataInicio = dataInicioController.text;
       widget.pedido.passadoriaHoraInicio = horaInicioController.text;
       widget.pedido.passadoriaObs = observacoesController.text;
+      widget.pedido.passadoriaResponsavel =
+          Provider.of<UserProvider>(context, listen: false).username;
       widget.pedido.passadoriaStatus = 1; // Atualiza o status do pedido
     });
 
@@ -310,6 +316,8 @@ class _PassadoriaState extends State<Passadoria> {
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
                         labelText: 'Temperatura',
+                        hintText: '°C',
+                        suffixText: '°C',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -319,13 +327,29 @@ class _PassadoriaState extends State<Passadoria> {
                   const SizedBox(width: 10),
                   Expanded(
                     flex: 2,
-                    child: TextField(
-                      controller: horaInicioController,
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        labelText: 'Hora de Início',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
+                    child: GestureDetector(
+                      onTap: () async {
+                        TimeOfDay? picked = await showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay.now(),
+                        );
+                        if (picked != null) {
+                          setState(() {
+                            horaInicioController.text = picked
+                                .format(context); // Exibe no formato local
+                          });
+                        }
+                      },
+                      child: AbsorbPointer(
+                        child: TextField(
+                          controller: horaInicioController,
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            labelText: 'Hora de Início',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -341,10 +365,57 @@ class _PassadoriaState extends State<Passadoria> {
                   style: TextStyle(fontSize: 16),
                 ),
                 value: _pecasPassadasCheckbox,
-                onChanged: (bool? value) {
+                onChanged: (bool? value) async {
                   setState(() {
                     _pecasPassadasCheckbox = value ?? false;
                   });
+                  if (value == true) {
+                    String textoFerro = '';
+                    await showDialog(
+                      context: context,
+                      builder: (context) {
+                        TextEditingController ferroController =
+                            TextEditingController();
+                        return AlertDialog(
+                          title: const Text('Registrar peças passadas a ferro'),
+                          content: TextField(
+                            controller: ferroController,
+                            maxLines: 3,
+                            decoration: const InputDecoration(
+                              labelText: 'Descreva as peças passadas a ferro',
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text('Cancelar'),
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                textoFerro = ferroController.text.trim();
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text('OK'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                    if (textoFerro.isNotEmpty) {
+                      setState(() {
+                        if (observacoesController.text.trim().isEmpty) {
+                          observacoesController.text =
+                              'Peças passadas a ferro: $textoFerro';
+                        } else {
+                          observacoesController.text =
+                              '${observacoesController.text.trim()}\nPeças passadas a ferro: $textoFerro';
+                        }
+                      });
+                    }
+                  }
                 },
                 controlAffinity: ListTileControlAffinity.leading,
               ),

@@ -113,7 +113,6 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
 
   Widget buildPedidoCard(Pedido pedido) {
     double progressoLavagem = calcularProgressoLavagem(pedido.lotes);
-    //print(pedido);
     return Container(
       width: MediaQuery.of(context).size.width * 0.25, // 25% da largura
       margin: EdgeInsets.all(MediaQuery.of(context).size.width *
@@ -177,8 +176,6 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
                   shrinkWrap: true,
                   itemCount: pedido.lotes.length,
                   itemBuilder: (context, index) {
-                    // print(pedido);
-                    // print('enviou o lote para o botão');
                     return buildLoteButton(pedido.lotes[index], pedido);
                   },
                 ),
@@ -199,22 +196,6 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
     if (label == 'Recebimento') {
       progress = pedido.recebimentoStatus.toDouble();
       barColor = (progress == 2.0) ? Colors.blue : Colors.grey[300]!;
-      buttonText = (progress == 2.0) ? "$label Concluído" : label;
-    } else if (label == 'Classificação') {
-      double pesoProcessado =
-          pedido.lotes.fold(0, (sum, lote) => sum + lote.peso);
-      double pesoTotalPedido = pedido.pesoTotal.toDouble();
-      progress = pesoProcessado / pesoTotalPedido;
-      print('Este é o peso processado: $progress');
-      if (pesoProcessado == pesoTotalPedido) {
-        pedido.classificacaoStatus = 2.0;
-      }
-      barColor =
-          (pedido.classificacaoStatus == 2.0) ? Colors.blue : Colors.grey[300]!;
-      buttonText =
-          (pedido.classificacaoStatus == 2.0) ? "$label Concluído" : label;
-    } else if (label == 'Lavagem') {
-      progress = pedido.lavagemStatus.toDouble();
       buttonText = (progress == 2.0) ? "$label Concluído" : label;
     }
 
@@ -259,103 +240,10 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
             builder: (BuildContext context) {
               return Recebimento(
                 pedido: pedido,
-                onSave: () async {
-                  // Update the pedido in the list and refresh the card visualization
-                  setState(() {
-                    int index = pedidos
-                        .indexWhere((p) => p.numPedido == pedido.numPedido);
-                    if (index != -1) {
-                      pedidos[index] = pedido;
-                      pedidos[index].recebimentoStatus =
-                          2.0; // Update progress to 2.0
-                    }
-                  });
-                },
+                onSave: () async {},
               );
             },
           );
-        } else if (label == 'Classificação' &&
-            pedido.recebimentoStatus == 2.0 &&
-            pedido.classificacaoStatus != 2.0) {
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return Classificacao(
-                pedido: pedido, // Passa o pedido
-                onSave: () async {
-                  //PedidoDAO pedidoDAO = PedidoDAO();
-                  //int retorno = await pedidoDAO.update(pedido);
-                  // print("Atualizado com sucesso! Retorno: $retorno");
-                  // setState(() {
-                  //pedido.classificacaoStatus = 2;
-                  //});
-                  // Navigator.pop(context, pedido);
-                },
-              );
-            },
-          ).then((updatedPedido) async {
-            // This block is executed after the dialog is dismissed
-            print("entrou no then");
-            if (updatedPedido != null) {
-              double pesoTotalLotes = updatedPedido.lotes
-                  .fold<double>(0, (sum, lote) => sum + lote.peso);
-              double pesoTotalPedido = updatedPedido.pesoTotal;
-
-              if (pesoTotalLotes == pesoTotalPedido) {
-                updatedPedido.classificacaoStatus = 2;
-              } else {
-                updatedPedido.classificacaoStatus = 1;
-              }
-
-              // Update the pedidos list with the updatedPedido
-              setState(() {
-                // Find the index of the pedido to be updated
-                int index = pedidos
-                    .indexWhere((p) => p.numPedido == updatedPedido.numPedido);
-                // Update the pedido at the found index
-                pedidos[index] = updatedPedido;
-                progress = 2.0; // Atualiza o progresso para 2.0
-              });
-            }
-          });
-        } else if (label == 'Lavagem' &&
-            pedido.recebimentoStatus == 2.0 &&
-            pedido.classificacaoStatus == 2.0) {
-          if (todosLotesConcluidos(pedido)) {
-            showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                  title: const Text('Sucesso'),
-                  content:
-                      const Text('Todos os lotes de lavagem foram concluídos!'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('OK'),
-                    ),
-                  ],
-                );
-              },
-            );
-          } else {
-            showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                  title: const Text('Atenção'),
-                  content: const Text(
-                      'Para dar início nos processos de lavagem, utilize os botões de lote.'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('OK'),
-                    ),
-                  ],
-                );
-              },
-            );
-          }
         } else {
           showDialog(
             context: context,
@@ -421,7 +309,6 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
 
     return InkWell(
       onTap: () {
-        print(pedido);
         if (pedido.recebimentoStatus != 2.0 &&
             pedido.classificacaoStatus != 2.0) {
           showDialog(
@@ -464,7 +351,7 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
               );
             },
           );
-        } else if (pedido.classificacaoStatus == 2.0 &&
+        } else if (label == 'Lavagem' &&
             pedido.lavagemStatus == 2.0 &&
             todosLotesConcluidos(pedido)) {
           if (pedido.pesoTotal == pedido.pesoTotalLotes) {
@@ -473,8 +360,7 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
               builder: (BuildContext context) {
                 return AlertDialog(
                   title: const Text('Atenção'),
-                  content:
-                      const Text('Todos os lotes de lavagem foram concluídos!'),
+                  content: Text('Todos os lotes de $label foram concluídos!'),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(),
@@ -495,22 +381,7 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
                 pedido: pedido, // Passa o pedido
                 onSave: () async {
                   PedidoDAO pedidoDAO = PedidoDAO();
-                  double pesoTotalLotes = pedido.lotes
-                      .fold<double>(0, (sum, lote) => sum + lote.peso);
-
-                  double pesoTotalPedido = pedido.pesoTotal;
-
-                  if (pesoTotalLotes == pesoTotalPedido) {
-                    pedido.classificacaoStatus = 2;
-                  } else {
-                    pedido.classificacaoStatus = 1;
-                  }
                   await pedidoDAO.update(pedido);
-                  // print("Atualizado com sucesso! Retorno: $retorno");
-                  // setState(() {
-                  //pedido.classificacaoStatus = 2;
-                  //});
-                  // Navigator.pop(context, pedido);
                 },
               );
             },
@@ -644,8 +515,7 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
                         //     lote.loteStatus = 1; // Atualiza o status do lote
                         //lote.loteResponsavel = lote.loteResponsavel;
                       });
-                      int retorno = await pedidoDAO.update(pedido);
-                      print("Atualizado com sucesso! Retorno: $retorno");
+                      await pedidoDAO.update(pedido);
                     });
               },
             );
@@ -713,13 +583,12 @@ class _AreaSujaPageState extends State<AreaSujaPage> {
         return false;
       }
     }
-
     // Se todos os lotes estão concluídos, atualize pedido.lavagem
-    if (pedido.pesoTotalLotes == pedido.pesoTotal) {
-      pedido.lavagemStatus = 2.0;
-    } else {
-      pedido.lavagemStatus = 1.0;
-    }
+    //   if (pedido.pesoTotalLotes == pedido.pesoTotal) {
+    //   pedido.lavagemStatus = 2.0;
+    // } else {
+    //   pedido.lavagemStatus = 1.0;
+    //  }
 
     return true;
   }

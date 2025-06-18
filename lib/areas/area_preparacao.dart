@@ -113,7 +113,8 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
     //double progressoLavagem = calcularProgresso(pedido, "Lavagem");
     double progressoCentrifugacao = calcularProgresso(pedido, "Centrifugação");
     double progressoSecagem = calcularProgresso(pedido, "Secagem");
-    //print("Progresso lavagem: $progressoLavagem");
+    print('Pedido: ${pedido.toString()}');
+    print('Lotes do pedido: ${pedido.lotes?.toString() ?? "Sem lotes"}');
     return Container(
       width: MediaQuery.of(context).size.width *
           0.25, // Cada elemento ocupa 25% da largura
@@ -458,7 +459,6 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
 
   double calcularProgresso(Pedido pedido, String processo) {
     double pesoTotalPedido = pedido.pesoTotal;
-    print("Peso total do pedido: $pesoTotalPedido");
 
     if (pesoTotalPedido == 0) {
       return 0.0; // Evita divisão por zero
@@ -471,10 +471,10 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
 
       double progresso = pesoLotesCentrifugacaoConcluidos / pesoTotalPedido;
 
-      if (progresso == 1.0) {
-        pedido.centrifugacaoStatus =
-            2; // Atualiza o status do pedido para concluído
-      }
+      //  if (progresso == 1.0) {
+      //     pedido.centrifugacaoStatus =
+      //         2; // Atualiza o status do pedido para concluído
+      //   }
 
       return progresso;
     } else if (processo == "Secagem") {
@@ -484,9 +484,9 @@ class _AreaPreparacaoPageState extends State<AreaPreparacaoPage> {
 
       double progresso = pesoLotesSecagemConcluidos / pesoTotalPedido;
 
-      if (progresso == 1.0) {
-        pedido.secagemStatus = 2; // Atualiza o status do pedido para concluído
-      }
+      //  if (progresso == 1.0) {
+      //  pedido.secagemStatus = 2; // Atualiza o status do pedido para concluído
+      //  }
 
       return progresso;
     } else {

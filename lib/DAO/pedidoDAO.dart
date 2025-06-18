@@ -5,16 +5,14 @@ import 'package:intl/intl.dart';
 import 'package:tcc/DAO/genericDAO.dart';
 import 'package:tcc/DAO/loteDAO.dart';
 import 'package:tcc/models/lote.dart';
+import 'package:tcc/models/pedido.dart';
 import 'package:tcc/servicos/connection.dart';
-
-import '../models/pedido.dart';
 
 class PedidoDAO implements GenericDAO<Pedido> {
   @override
   Future<int> insert(Pedido pedido) async {
     final conn = await MySqlConnectionService().getConnection();
     int totalAffectedRows = 0;
-    print('Entrou no insert');
     try {
       final result = await conn.query(
         '''
@@ -23,9 +21,9 @@ class PedidoDAO implements GenericDAO<Pedido> {
           recebimentoStatus, classificacaoStatus, lavagemStatus, 
           centrifugacaoStatus, secagemStatus, passadoriaStatus, 
           finalizacaoStatus, retornoStatus, dataColeta, dataLimite, 
-          dataEntrega, pesoTotal, totalLotes, pesoTotalLotes, pedidoResponsavel, enderecoEntrega, respContratadaNaColeta, respContratanteNaColeta, pedidoObs
+          dataEntrega, pesoTotal, totalLotes, pesoTotalLotes, pedidoResponsavel, enderecoEntrega, respContratadaNaColeta, respContratanteNaColeta, pedidoObs, pedidoStatus
         ) VALUES (
-          ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+          ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
         )
       ''',
         [
@@ -52,6 +50,9 @@ class PedidoDAO implements GenericDAO<Pedido> {
           pedido.respContratadaNaColeta,
           pedido.respContratanteNaColeta,
           pedido.pedidoObs,
+          (pedido.pedidoStatus is int)
+              ? pedido.pedidoStatus
+              : int.tryParse(pedido.pedidoStatus?.toString() ?? '0') ?? 0,
         ],
       );
       totalAffectedRows += result.affectedRows!;
@@ -65,7 +66,6 @@ class PedidoDAO implements GenericDAO<Pedido> {
     } finally {
       await conn.close();
     }
-
     return totalAffectedRows;
   }
 
@@ -74,8 +74,6 @@ class PedidoDAO implements GenericDAO<Pedido> {
     final conn = await MySqlConnectionService().getConnection();
     final loteDAO = LoteDAO();
     int totalAffectedRows = 0;
-    print('Entrou no update');
-
     try {
       // Atualizar dados do pedido
       final pedidoResult = await conn.query('''
@@ -142,7 +140,11 @@ class PedidoDAO implements GenericDAO<Pedido> {
         retornoHoraEntrega = ?,
         retornoDataEntrega = ?,
         respContratadaNaEntrega = ?,
-        respContratanteNaEntrega = ?
+        respContratanteNaEntrega = ?,
+        pedidoStatus = ?,
+        passadoriaResponsavel = ?,
+        finalizacaoResponsavel = ?,
+        retornoResponsavel = ?
       WHERE codPedido = ?
     ''', [
         pedido.codCliente,
@@ -208,6 +210,12 @@ class PedidoDAO implements GenericDAO<Pedido> {
         pedido.retornoDataEntrega,
         pedido.respContratadaNaEntrega,
         pedido.respContratanteNaEntrega,
+        (pedido.pedidoStatus is int)
+            ? pedido.pedidoStatus
+            : int.tryParse(pedido.pedidoStatus?.toString() ?? '0') ?? 0,
+        pedido.passadoriaResponsavel,
+        pedido.finalizacaoResponsavel,
+        pedido.retornoResponsavel,
         pedido.numPedido,
       ]);
       totalAffectedRows += pedidoResult.affectedRows!;
@@ -253,7 +261,6 @@ class PedidoDAO implements GenericDAO<Pedido> {
     } finally {
       await conn.close();
     }
-
     return totalAffectedRows;
   }
 
@@ -385,6 +392,10 @@ class PedidoDAO implements GenericDAO<Pedido> {
         respContratadaNaColeta: row['respContratadaNaColeta'],
         respContratanteNaColeta: row['respContratanteNaColeta'],
         pedidoObs: row['pedidoObs'],
+        pedidoStatus: (row['pedidoStatus'] is int)
+            ? row['pedidoStatus']
+            : int.tryParse(row['pedidoStatus']?.toString() ?? '0') ?? 0,
+        finalizacaoResponsavel: row['finalizacaoResponsavel'] ?? '',
         lotes: lotes,
       );
     } finally {
@@ -444,6 +455,7 @@ class PedidoDAO implements GenericDAO<Pedido> {
           lavagemDataInicio: loteRow['lavagemDataInicio'] ?? '',
           lavagemHoraInicio: loteRow['lavagemHoraInicio'] ?? '',
           lavagemDataFinal: loteRow['lavagemDataFinal'] ?? '',
+          lavagemResponsavel: loteRow['loteLavagemResponsavel'] ?? '',
           lavagemHoraFinal: loteRow['lavagemHoraFinal'] ?? '',
           lavagemObs:
               getObs(loteRow['lavagemObs']), // Converte o campo 'lavagemObs'
@@ -456,6 +468,8 @@ class PedidoDAO implements GenericDAO<Pedido> {
           centrifugacaoDataFinal: loteRow['centrifugacaoDataFinal'] ?? '',
           centrifugacaoHoraFinal: loteRow['centrifugacaoHoraFinal'] ?? '',
           centrifugacaoObs: loteRow['centrifugacaoObs'] ?? '',
+          centrifugacaoResponsavel:
+              loteRow['loteCentrifugacaoResponsavel'] ?? '',
           loteSecagemStatus: loteRow['loteSecagemStatus'] ?? 0,
           secagemEquipamento: loteRow['secagemEquipamento'] ?? '',
           secagemTempoProcesso: loteRow['secagemTempoProcesso'] ?? '',
@@ -465,7 +479,9 @@ class PedidoDAO implements GenericDAO<Pedido> {
           secagemDataFinal: loteRow['secagemDataFinal'] ?? '',
           secagemHoraFinal: loteRow['secagemHoraFinal'] ?? '',
           secagemObs: loteRow['secagemObs'] ?? '',
+          secagemResponsavel: loteRow['loteSecagemResponsavel'] ?? '',
           peso: loteRow['peso'] ?? 0,
+          loteResponsavel: loteRow['loteResponsavel'] ?? '',
           processo: loteRow['processo'] ?? '',
         );
       }).toList();
@@ -531,8 +547,15 @@ class PedidoDAO implements GenericDAO<Pedido> {
         respContratadaNaColeta: row['respContratadaNaColeta'],
         respContratanteNaColeta: row['respContratanteNaColeta'],
         pedidoObs: row['pedidoObs'],
-        retornoHoraEntrega: row['retornoHoraEntrega'],
-        retornoDataEntrega: row['retornoDataEntrega'],
+        pedidoStatus: (row['pedidoStatus'] is int)
+            ? row['pedidoStatus']
+            : int.tryParse(row['pedidoStatus']?.toString() ?? '0') ?? 0,
+        recebimentoResponsavel: row['recebimentoResponsavel'] ?? '',
+        classificacaoResponsavel: row['classificacaoResponsavel'] ?? '',
+        passadoriaResponsavel: row['passadoriaResponsavel'] ?? '',
+        finalizacaoResponsavel: row['finalizacaoResponsavel'] ?? '',
+        retornoResponsavel: row['retornoResponsavel'] ?? '',
+        respContratadaNaEntrega: row['respContratadaNaEntrega'] ?? '',
         lotes: lotes,
       ));
     }

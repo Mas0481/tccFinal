@@ -250,16 +250,24 @@ class _ClassificacaoState extends State<Classificacao> {
     double pesoTotalLotes =
         widget.pedido.lotes.fold<double>(0, (sum, lote) => sum + lote.peso);
     double pesoTotalPedido = double.tryParse(pesoTotalController.text) ?? 0;
+
     widget.pedido.classificacaoResponsavel =
         Provider.of<UserProvider>(context, listen: false).loggedInUser;
-
     if (widget.pedido.classificacaoDataInicio == null) {
       widget.pedido.classificacaoDataInicio =
           DateFormat('dd/MM/yyyy').format(DateTime.now());
       widget.pedido.classificacaoHoraInicio =
           DateFormat('HH:mm').format(DateTime.now());
       widget.pedido.pesoTotalLotes = pesoTotalLotes;
+      widget.pedido.pedidoStatus = 1;
       widget.pedido.classificacaoStatus = 1;
+      if (pesoTotalLotes == pesoTotalPedido) {
+        widget.pedido.classificacaoStatus = 2;
+        widget.pedido.classificacaoDataFinal =
+            DateFormat('dd/MM/yyyy').format(DateTime.now());
+        widget.pedido.classificacaoHoraFinal =
+            DateFormat('HH:mm').format(DateTime.now());
+      }
     } else if (pesoTotalLotes == pesoTotalPedido) {
       widget.pedido.pesoTotalLotes = pesoTotalLotes;
       widget.pedido.classificacaoStatus = 2;
@@ -463,85 +471,101 @@ class _ClassificacaoState extends State<Classificacao> {
                                     TextStyle(color: Colors.red, fontSize: 14),
                               ),
                             Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                SizedBox(
-                                  width: 30,
-                                  child: Center(
+                                // Número do processo (10%)
+                                Flexible(
+                                  flex: 1,
+                                  child: Container(
+                                    alignment: Alignment.center,
+                                    margin: EdgeInsets.only(right: 4),
                                     child: Text(
                                       '${index + 1}',
-                                      style: const TextStyle(fontSize: 16),
+                                      style: const TextStyle(fontSize: 15),
                                     ),
                                   ),
                                 ),
-                                const SizedBox(width: 10),
-                                SizedBox(
-                                  width: MediaQuery.of(context).size.width *
-                                      0.5 *
-                                      0.55,
-                                  child: DropdownButtonFormField<String>(
-                                    value: lote.lavagemProcesso.isNotEmpty
-                                        ? lote.lavagemProcesso
-                                        : 'Selecione Processo',
-                                    items: processosDisponiveis
-                                        .map((lavagemProcesso) =>
-                                            DropdownMenuItem(
-                                              value: lavagemProcesso,
-                                              child: Text(lavagemProcesso),
-                                            ))
-                                        .toList(),
-                                    decoration: InputDecoration(
-                                      labelText: 'Processo',
-                                      border: OutlineInputBorder(
-                                        borderSide: BorderSide(
-                                            color: Colors.grey.withAlpha(80)),
-                                        borderRadius: const BorderRadius.all(
-                                            Radius.circular(8)),
+                                // Processo (60%)
+                                Flexible(
+                                  flex: 6,
+                                  child: Container(
+                                    margin: EdgeInsets.symmetric(horizontal: 4),
+                                    child: DropdownButtonFormField<String>(
+                                      value: lote.lavagemProcesso.isNotEmpty
+                                          ? lote.lavagemProcesso
+                                          : 'Selecione Processo',
+                                      items: processosDisponiveis
+                                          .map((lavagemProcesso) =>
+                                              DropdownMenuItem(
+                                                value: lavagemProcesso,
+                                                child: Text(lavagemProcesso),
+                                              ))
+                                          .toList(),
+                                      decoration: InputDecoration(
+                                        labelText: 'Processo',
+                                        border: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                              color: Colors.grey.withAlpha(80)),
+                                          borderRadius: const BorderRadius.all(
+                                              Radius.circular(8)),
+                                        ),
+                                        contentPadding: EdgeInsets.symmetric(
+                                            vertical: 8, horizontal: 8),
                                       ),
+                                      onChanged: isEditable
+                                          ? (value) {
+                                              setState(() {
+                                                lote.lavagemProcesso = value ??
+                                                    'Selecione Processo';
+                                              });
+                                            }
+                                          : null,
                                     ),
-                                    onChanged: isEditable
-                                        ? (value) {
+                                  ),
+                                ),
+                                // Peso (30%)
+                                Flexible(
+                                  flex: 3,
+                                  child: Container(
+                                    margin: EdgeInsets.symmetric(horizontal: 4),
+                                    child: TextField(
+                                      controller: pesoControllers[index],
+                                      keyboardType: TextInputType.number,
+                                      textAlign: TextAlign.center,
+                                      decoration: InputDecoration(
+                                        labelText: 'Peso',
+                                        border: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                              color: Colors.grey.withAlpha(80)),
+                                          borderRadius: const BorderRadius.all(
+                                              Radius.circular(8)),
+                                        ),
+                                        contentPadding: EdgeInsets.symmetric(
+                                            vertical: 8, horizontal: 8),
+                                      ),
+                                      onChanged: isEditable
+                                          ? (value) => _updatePeso(index, value)
+                                          : null,
+                                      enabled: isEditable,
+                                    ),
+                                  ),
+                                ),
+                                // Remover (20%)
+                                Flexible(
+                                  flex: 2,
+                                  child: IconButton(
+                                    icon: const Icon(Icons.remove_circle,
+                                        color: Colors.blueAccent),
+                                    onPressed: isEditable
+                                        ? () {
                                             setState(() {
-                                              lote.lavagemProcesso =
-                                                  value ?? 'Selecione Processo';
+                                              widget.pedido.lotes
+                                                  .removeAt(index);
+                                              pesoControllers.removeAt(index);
                                             });
                                           }
                                         : null,
                                   ),
-                                ),
-                                const SizedBox(width: 10),
-                                SizedBox(
-                                  width: MediaQuery.of(context).size.width *
-                                      0.5 *
-                                      0.2,
-                                  child: TextField(
-                                    controller: pesoControllers[index],
-                                    keyboardType: TextInputType.number,
-                                    decoration: InputDecoration(
-                                      labelText: 'Peso',
-                                      border: OutlineInputBorder(
-                                        borderSide: BorderSide(
-                                            color: Colors.grey.withAlpha(80)),
-                                        borderRadius: const BorderRadius.all(
-                                            Radius.circular(8)),
-                                      ),
-                                    ),
-                                    onChanged: isEditable
-                                        ? (value) => _updatePeso(index, value)
-                                        : null,
-                                    enabled: isEditable,
-                                  ),
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.remove_circle,
-                                      color: Colors.blueAccent),
-                                  onPressed: isEditable
-                                      ? () {
-                                          setState(() {
-                                            widget.pedido.lotes.removeAt(index);
-                                            pesoControllers.removeAt(index);
-                                          });
-                                        }
-                                      : null,
                                 ),
                               ],
                             ),

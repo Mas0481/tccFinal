@@ -344,17 +344,25 @@ class _CentrifugacaoState extends State<Centrifugacao> {
                   Expanded(
                     child: TextField(
                       controller: tempoProcessoController,
-                      keyboardType: TextInputType.number, // Accept only numbers
+                      keyboardType: TextInputType.number,
                       style: const TextStyle(color: Colors.black),
                       decoration: InputDecoration(
                         labelText: 'Tempo do Processo',
+                        hintText: 'Minutos',
                         border: OutlineInputBorder(
                           borderSide:
                               BorderSide(color: Colors.grey.withAlpha(80)),
                           borderRadius:
                               const BorderRadius.all(Radius.circular(8)),
                         ),
+                        suffixText: 'min',
                       ),
+                      // Adiciona a máscara visual ao focar
+                      onTap: () {
+                        if (tempoProcessoController.text.isEmpty) {
+                          tempoProcessoController.text = '';
+                        }
+                      },
                     ),
                   ),
                   SizedBox(width: 10),
@@ -382,16 +390,31 @@ class _CentrifugacaoState extends State<Centrifugacao> {
                   ),
                   SizedBox(width: 10),
                   Expanded(
-                    child: TextField(
-                      controller: horaInicioController,
-                      style: const TextStyle(color: Colors.black),
-                      decoration: InputDecoration(
-                        labelText: 'Hora de Início',
-                        border: OutlineInputBorder(
-                          borderSide:
-                              BorderSide(color: Colors.grey.withAlpha(80)),
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(8)),
+                    child: GestureDetector(
+                      onTap: () async {
+                        final picked = await showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay.now(),
+                        );
+                        if (picked != null) {
+                          setState(() {
+                            horaInicioController.text = picked.format(context);
+                          });
+                        }
+                      },
+                      child: AbsorbPointer(
+                        child: TextField(
+                          controller: horaInicioController,
+                          style: const TextStyle(color: Colors.black),
+                          decoration: InputDecoration(
+                            labelText: 'Hora de Início',
+                            border: OutlineInputBorder(
+                              borderSide:
+                                  BorderSide(color: Colors.grey.withAlpha(80)),
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(8)),
+                            ),
+                          ),
                         ),
                       ),
                     ),

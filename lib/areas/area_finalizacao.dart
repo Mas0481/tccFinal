@@ -109,6 +109,10 @@ class _AreaFinalizacaoPageState extends State<AreaFinalizacaoPage> {
   }
 
   Widget buildPedidoCard(Pedido pedido) {
+    // Print no console dos dados do pedido e dos lotes
+    debugPrint('Pedido: ${pedido.toString()}');
+    debugPrint('Lotes do pedido: ${pedido.lotes?.toString() ?? "Sem lotes"}');
+
     return Container(
       width: MediaQuery.of(context).size.width * 0.25,
       margin: const EdgeInsets.all(10),
@@ -239,7 +243,6 @@ class _AreaFinalizacaoPageState extends State<AreaFinalizacaoPage> {
             },
           );
         }
-        print('Barra de progresso $label pressionada');
       },
       borderRadius: BorderRadius.circular(8),
       child: Stack(
@@ -285,19 +288,44 @@ class _AreaFinalizacaoPageState extends State<AreaFinalizacaoPage> {
     return StatefulBuilder(
       builder: (context, setState) {
         if ((processo == 'Passadoria' && pedido.passadoriaStatus == 1) ||
-            (processo == 'Finalização' && pedido.finalizacaoStatus == 1) ||
-            (processo == 'Retorno' && pedido.retornoStatus == 1)) {
+            (processo == 'Finalização' && pedido.finalizacaoStatus == 1)) {
           loteColor = Colors.red;
           buttonText = 'Processando';
+        } else if (processo == 'Retorno' && pedido.retornoStatus == 1) {
+          loteColor = Colors.red;
+          buttonText = 'Em transito';
         } else if ((processo == 'Passadoria' && pedido.passadoriaStatus == 2) ||
-            (processo == 'Finalização' && pedido.finalizacaoStatus == 2) ||
-            (processo == 'Retorno' && pedido.retornoStatus == 2)) {
+            (processo == 'Finalização' && pedido.finalizacaoStatus == 2)) {
+          loteColor = Colors.blue;
+          buttonText = 'Processado';
+        } else if (processo == 'Retorno' && pedido.retornoStatus == 2) {
           loteColor = Colors.blue;
           buttonText = 'Processado';
         }
 
         return GestureDetector(
           onTap: () {
+            // NOVO: Se o processo atual está finalizado, mostra mensagem e retorna
+            if ((processo == 'Passadoria' && pedido.passadoriaStatus == 2) ||
+                (processo == 'Finalização' && pedido.finalizacaoStatus == 2) ||
+                (processo == 'Retorno' && pedido.retornoStatus == 2)) {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: const Text('Atenção'),
+                    content: Text('Processo $processo já processado!'),
+                    actions: [
+                      TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text('OK'))
+                    ],
+                  );
+                },
+              );
+              return;
+            }
+
             if (processo == 'Passadoria' &&
                 pedido.passadoriaStatus == 0 &&
                 pedido.recebimentoStatus != 0 &&
@@ -424,14 +452,18 @@ class _AreaFinalizacaoPageState extends State<AreaFinalizacaoPage> {
     return StatefulBuilder(
       builder: (context, setState) {
         if ((processo == 'Passadoria' && pedido.passadoriaStatus == 2) ||
-            (processo == 'Finalização' && pedido.finalizacaoStatus == 2) ||
-            (processo == 'Retorno' && pedido.retornoStatus == 2)) {
+            (processo == 'Finalização' && pedido.finalizacaoStatus == 2)) {
           loteColor = Colors.blue;
           buttonText = 'Concluído';
+        } else if (processo == 'Retorno' && pedido.retornoStatus == 1) {
+          buttonText = 'Entregar';
+        } else if (processo == 'Retorno' && pedido.retornoStatus == 2) {
+          buttonText = 'Entregue';
+          loteColor = Colors.blue;
         }
 
         return GestureDetector(
-          onTap: () {
+          onTap: () async {
             // Verificação de processos anteriores para finalização
             if (processo == 'Finalização' && pedido.passadoriaStatus == 0) {
               showAlertDialog(context, 'Passadoria ainda não foi iniciado.');
@@ -441,43 +473,79 @@ class _AreaFinalizacaoPageState extends State<AreaFinalizacaoPage> {
               return;
             }
 
-            if ((processo == 'Passadoria' && pedido.passadoriaStatus == 1) ||
-                (processo == 'Finalização' && pedido.finalizacaoStatus == 1) ||
-                (processo == 'Retorno' && pedido.retornoStatus == 1)) {
-              // Exibir popup de confirmação
-              showConfirmationDialog(context, () {
+            if ((processo == 'Passadoria' && pedido.passadoriaStatus == 1)) {
+              // Confirmação de data/hora para Passadoria
+              final confirmed = await showDateTimeConfirmationDialog(
+                  context, 'Finalizar Passadoria');
+              if (confirmed != null) {
                 setState(() {
                   loteColor = Colors.blue;
-                  if (processo == 'Passadoria') {
-                    pedido.passadoriaStatus = 2;
-                    pedido.passadoriaHoraFinal =
-                        DateFormat('HH:mm').format(DateTime.now());
-                    pedido.passadoriaDataFinal =
-                        DateFormat('yyyy-MM-dd').format(DateTime.now());
-                  } else if (processo == 'Finalização') {
-                    pedido.finalizacaoStatus = 2;
-                    pedido.finalizacaoHoraFinal =
-                        DateFormat('HH:mm').format(DateTime.now());
-                    pedido.finalizacaoDataFinal =
-                        DateFormat('yyyy-MM-dd').format(DateTime.now());
-                  } else if (processo == 'Retorno') {
-                    pedido.retornoStatus = 2;
-                    pedido.pedidoStatus = 2;
-
-                    // Insira o username ativo do provider abaixo:
-                    pedido.respContratadaNaEntrega =
-                        Provider.of<UserProvider>(context, listen: false)
-                            .username;
-                    pedido.retornoHoraEntrega =
-                        DateFormat('HH:mm').format(DateTime.now());
-                    pedido.retornoDataEntrega =
-                        DateFormat('yyyy-MM-dd').format(DateTime.now());
-                  }
-                  pedidoDAO.update(pedido); // Reflect changes in PedidoCard
-                  // Atualiza o estado do botão
+                  pedido.passadoriaStatus = 2;
+                  pedido.passadoriaHoraFinal =
+                      DateFormat('HH:mm').format(confirmed);
+                  pedido.passadoriaDataFinal =
+                      DateFormat('dd/MM/yyyy').format(confirmed);
+                  buttonText = 'Concluído';
+                });
+                pedidoDAO.update(pedido);
+              }
+            } else if ((processo == 'Finalização' &&
+                pedido.finalizacaoStatus == 1)) {
+              // Confirmação de data/hora para Finalização
+              final confirmed = await showDateTimeConfirmationDialog(
+                  context, 'Finalizar Finalização');
+              if (confirmed != null) {
+                setState(() {
+                  loteColor = Colors.blue;
+                  pedido.finalizacaoStatus = 2;
+                  pedido.finalizacaoHoraFinal =
+                      DateFormat('HH:mm').format(confirmed);
+                  pedido.finalizacaoDataFinal =
+                      DateFormat('dd/MM/yyyy').format(confirmed);
+                  buttonText = 'Concluído';
+                });
+                pedidoDAO.update(pedido);
+              }
+            } else if ((processo == 'Retorno' && pedido.retornoStatus == 1)) {
+              // Confirmação de data/hora/responsável para Retorno
+              final result = await showRetornoConfirmationDialog(context);
+              if (result != null) {
+                setState(() {
+                  loteColor = Colors.blue;
+                  pedido.retornoStatus = 2;
+                  pedido.pedidoStatus = 2;
+                  pedido.respContratadaNaEntrega =
+                      Provider.of<UserProvider>(context, listen: false)
+                          .username;
+                  pedido.respContratanteNaEntrega =
+                      result['responsavel'] ?? pedido.respContratanteNaEntrega;
+                  pedido.retornoHoraEntrega =
+                      DateFormat('HH:mm').format(result['dateTime']);
+                  pedido.retornoDataEntrega =
+                      DateFormat('dd/MM/yyyy').format(result['dateTime']);
                   buttonText = 'Entregue';
                 });
-              });
+                pedidoDAO.update(pedido);
+              }
+            } else if ((processo == 'Passadoria' &&
+                    pedido.passadoriaStatus == 2) ||
+                (processo == 'Finalização' && pedido.finalizacaoStatus == 2) ||
+                (processo == 'Retorno' && pedido.retornoStatus == 2)) {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: const Text('Atenção'),
+                    content:
+                        Text('O Processo de ${processo} já foi finalizado!'),
+                    actions: [
+                      TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text('OK'))
+                    ],
+                  );
+                },
+              );
             } else {
               showDialog(
                 context: context,
@@ -507,6 +575,184 @@ class _AreaFinalizacaoPageState extends State<AreaFinalizacaoPage> {
                 child: Text(buttonText,
                     style: const TextStyle(color: Colors.black))),
           ),
+        );
+      },
+    );
+  }
+
+  // Diálogo para confirmação de data/hora
+  Future<DateTime?> showDateTimeConfirmationDialog(
+      BuildContext context, String title) async {
+    DateTime now = DateTime.now();
+    DateTime selectedDate = now;
+    TimeOfDay selectedTime = TimeOfDay.fromDateTime(now);
+
+    return await showDialog<DateTime>(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text(title),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ListTile(
+                    title: Text(
+                        'Data: ${DateFormat('dd/MM/yyyy').format(selectedDate)}'),
+                    trailing: Icon(Icons.calendar_today),
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: selectedDate,
+                        firstDate: DateTime(now.year - 1),
+                        lastDate: DateTime(now.year + 1),
+                      );
+                      if (picked != null) {
+                        setState(() {
+                          selectedDate = DateTime(
+                            picked.year,
+                            picked.month,
+                            picked.day,
+                            selectedTime.hour,
+                            selectedTime.minute,
+                          );
+                        });
+                      }
+                    },
+                  ),
+                  ListTile(
+                    title: Text('Hora: ${selectedTime.format(context)}'),
+                    trailing: Icon(Icons.access_time),
+                    onTap: () async {
+                      final picked = await showTimePicker(
+                        context: context,
+                        initialTime: selectedTime,
+                      );
+                      if (picked != null) {
+                        setState(() {
+                          selectedTime = picked;
+                          selectedDate = DateTime(
+                            selectedDate.year,
+                            selectedDate.month,
+                            selectedDate.day,
+                            picked.hour,
+                            picked.minute,
+                          );
+                        });
+                      }
+                    },
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Cancelar'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(selectedDate);
+                  },
+                  child: const Text('Confirmar'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // Diálogo para confirmação de data/hora/responsável no Retorno
+  Future<Map<String, dynamic>?> showRetornoConfirmationDialog(
+      BuildContext context) async {
+    DateTime now = DateTime.now();
+    DateTime selectedDate = now;
+    TimeOfDay selectedTime = TimeOfDay.fromDateTime(now);
+    TextEditingController responsavelController = TextEditingController();
+
+    return await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Registrar Entrega'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: responsavelController,
+                    decoration: const InputDecoration(
+                      labelText: 'Responsável pelo Recebimento',
+                    ),
+                  ),
+                  ListTile(
+                    title: Text(
+                        'Data: ${DateFormat('dd/mm/yyyy').format(selectedDate)}'),
+                    trailing: Icon(Icons.calendar_today),
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: selectedDate,
+                        firstDate: DateTime(now.year - 1),
+                        lastDate: DateTime(now.year + 1),
+                      );
+                      if (picked != null) {
+                        setState(() {
+                          selectedDate = DateTime(
+                            picked.year,
+                            picked.month,
+                            picked.day,
+                            selectedTime.hour,
+                            selectedTime.minute,
+                          );
+                        });
+                      }
+                    },
+                  ),
+                  ListTile(
+                    title: Text('Hora: ${selectedTime.format(context)}'),
+                    trailing: Icon(Icons.access_time),
+                    onTap: () async {
+                      final picked = await showTimePicker(
+                        context: context,
+                        initialTime: selectedTime,
+                      );
+                      if (picked != null) {
+                        setState(() {
+                          selectedTime = picked;
+                          selectedDate = DateTime(
+                            selectedDate.year,
+                            selectedDate.month,
+                            selectedDate.day,
+                            picked.hour,
+                            picked.minute,
+                          );
+                        });
+                      }
+                    },
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Cancelar'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop({
+                      'responsavel': responsavelController.text,
+                      'dateTime': selectedDate,
+                    });
+                  },
+                  child: const Text('Confirmar'),
+                ),
+              ],
+            );
+          },
         );
       },
     );

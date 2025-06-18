@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:tcc/models/pedido.dart';
+import 'package:tcc/providers/user_provider.dart';
 import 'package:tcc/repository/clientes_repository.dart';
 import 'package:tcc/servicos/connection.dart';
 
@@ -130,6 +132,8 @@ class _FinalizacaoState extends State<Finalizacao> {
       widget.pedido.finalizacaoDataInicio = dataInicioController.text;
       widget.pedido.finalizacaoHoraInicio = horaInicioController.text;
       widget.pedido.finalizacaoObs = observacoesController.text;
+      widget.pedido.finalizacaoResponsavel =
+          Provider.of<UserProvider>(context, listen: false).username;
     });
     widget.onSave();
     Navigator.pop(context);

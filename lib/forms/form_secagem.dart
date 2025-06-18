@@ -73,6 +73,23 @@ class _SecagemState extends State<Secagem> {
     }
   }
 
+  Future<void> _selectTime(
+      BuildContext context, TextEditingController controller) async {
+    final initialTime = TimeOfDay.now();
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: initialTime,
+    );
+    if (picked != null) {
+      final formatted = picked.format(context);
+      // Converte para HH:mm no padrão 24h
+      final now = DateTime.now();
+      final dt =
+          DateTime(now.year, now.month, now.day, picked.hour, picked.minute);
+      controller.text = DateFormat('HH:mm').format(dt);
+    }
+  }
+
   Future<void> _loadClienteName() async {
     final cliente = await clienteRepository.findById(widget.pedido.codCliente);
     if (cliente != null) {
@@ -391,8 +408,11 @@ class _SecagemState extends State<Secagem> {
                     child: TextField(
                       controller: tempoProcessoController,
                       style: const TextStyle(color: Colors.black),
+                      keyboardType: TextInputType.number, // Apenas números
                       decoration: InputDecoration(
                         labelText: 'Tempo do Processo',
+                        hintText: 'Minutos',
+                        suffixText: 'min',
                         border: OutlineInputBorder(
                           borderSide:
                               BorderSide(color: Colors.grey.withAlpha(80)),
@@ -407,8 +427,11 @@ class _SecagemState extends State<Secagem> {
                     child: TextField(
                       controller: temperaturaController,
                       style: const TextStyle(color: Colors.black),
+                      keyboardType: TextInputType.number, // Apenas números
                       decoration: InputDecoration(
                         labelText: 'Temperatura',
+                        hintText: 'Celsius',
+                        suffixText: '°C',
                         border: OutlineInputBorder(
                           borderSide:
                               BorderSide(color: Colors.grey.withAlpha(80)),
@@ -420,16 +443,23 @@ class _SecagemState extends State<Secagem> {
                   ),
                   const SizedBox(width: 10),
                   Expanded(
-                    child: TextField(
-                      controller: horaInicioController,
-                      style: const TextStyle(color: Colors.black),
-                      decoration: InputDecoration(
-                        labelText: 'Hora de Início',
-                        border: OutlineInputBorder(
-                          borderSide:
-                              BorderSide(color: Colors.grey.withAlpha(80)),
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(8)),
+                    child: GestureDetector(
+                      onTap: () {
+                        _selectTime(context, horaInicioController);
+                      },
+                      child: AbsorbPointer(
+                        child: TextField(
+                          controller: horaInicioController,
+                          style: const TextStyle(color: Colors.black),
+                          decoration: InputDecoration(
+                            labelText: 'Hora de Início',
+                            border: OutlineInputBorder(
+                              borderSide:
+                                  BorderSide(color: Colors.grey.withAlpha(80)),
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(8)),
+                            ),
+                          ),
                         ),
                       ),
                     ),

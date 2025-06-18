@@ -12,22 +12,23 @@ class ProcessosRepository {
     try {
       // Executando a query
       final results = await conn.query('''
-      SELECT e.codProcesso, e.nomeProcesso
+      SELECT e.codProcesso, e.nomeProcesso, e.tempoProcesso
       FROM processos AS e
     ''');
 
       // teste imprimindo os resultados antes de mapear
       print('Resultados da consulta:');
       for (var row in results) {
-        print('cod: ${row['codProcesso']}, nome: ${row['nomeProcesso']}');
+        print(
+            'cod: ${row['codProcesso']}, nome: ${row['nomeProcesso']}, tempo: ${row['tempoProcesso']}');
       }
 
       // Transformando os resultados em uma lista de mapas
       return results.map((row) {
         return {
-          'codProcesso': (row['codProcesso'] as int?)?.toString() ??
-              '', // Convertendo int para String e tratando null
-          'nomeProcesso': row['nomeProcesso'] as String? ?? '', // Tratando null
+          'codProcesso': (row['codProcesso'] as int?)?.toString() ?? '',
+          'nomeProcesso': row['nomeProcesso'] as String? ?? '',
+          'tempoProcesso': row['tempoProcesso']?.toString() ?? '',
         };
       }).toList();
     } catch (e) {
@@ -46,7 +47,7 @@ class ProcessosRepository {
     try {
       // Executando a query
       final results = await conn.query('''
-      SELECT e.codProcesso, e.nomeProcesso
+      SELECT e.codProcesso, e.nomeProcesso, e.tempoProcesso
       FROM processos AS e
       WHERE e.codProcesso = ?
     ''', [id]);
@@ -56,6 +57,7 @@ class ProcessosRepository {
         return {
           'codProcesso': (row['codProcesso'] as int).toString(),
           'nomeProcesso': row['nomeProcesso'] as String,
+          'tempoProcesso': row['tempoProcesso']?.toString() ?? '',
         };
       } else {
         return null;
@@ -86,8 +88,7 @@ class ProcessosRepository {
         return {
           'codProcesso': (row['codProcesso'] as int).toString(),
           'nomeProcesso': row['nomeProcesso'] as String,
-          'tempoProcesso':
-              row['tempoProcesso'] as String, // Incluindo tempoProcesso
+          'tempoProcesso': row['tempoProcesso']?.toString() ?? '',
         };
       } else {
         return null;

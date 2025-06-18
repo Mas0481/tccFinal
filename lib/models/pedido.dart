@@ -3,7 +3,7 @@ import 'package:tcc/models/lote.dart';
 class Pedido {
   int? numPedido;
   final int codCliente;
-  int pedidoStatus = 0;
+  int? pedidoStatus;
   final double qtdProduto;
   double valorProdutos;
   int pagamento;
@@ -233,11 +233,11 @@ Pedido {
   retornoHoraEntrega: ${retornoHoraEntrega ?? ""},
   retornoResponsavel: ${retornoResponsavel ?? ""},
   pedidoObs: ${pedidoObs ?? ""},
-  lotes: $lotes,
   respContratadaNaColeta: ${respContratadaNaColeta ?? ""},
   respContratanteNaColeta: ${respContratanteNaColeta ?? ""},
   respContratadaNaEntrega: ${respContratadaNaEntrega ?? ""},
   respContratanteNaEntrega: ${respContratanteNaEntrega ?? ""},
+  lotes: $lotes,
 }''';
   }
 }

@@ -118,10 +118,11 @@ class _LavagemState extends State<Lavagem> {
   // Função para selecionar datas
   Future<void> _selectDate(
       BuildContext context, TextEditingController controller) async {
+    DateTime hoje = DateTime.now();
     DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2000),
+      initialDate: hoje,
+      firstDate: DateTime(hoje.year, hoje.month, hoje.day),
       lastDate: DateTime(2100),
     );
     if (picked != null) {
@@ -131,7 +132,7 @@ class _LavagemState extends State<Lavagem> {
     }
   }
 
-  void _validateAndSave() {
+  void _validateAndSave() async {
     if (equipamentoSelecionado == null || equipamentoSelecionado!.isEmpty) {
       _showMessage('O campo "Equipamento" é obrigatório.');
       return;
@@ -153,18 +154,47 @@ class _LavagemState extends State<Lavagem> {
       return;
     }
 
+    // Busca o tempo do processo selecionado
+    final processo =
+        await processosRepository.findProcessoByName(processoController.text);
+    int tempoProcesso = 0;
+    if (processo != null && processo['tempoProcesso'] != null) {
+      tempoProcesso = int.tryParse(processo['tempoProcesso']!) ?? 0;
+    }
+
+    // Calcula data e hora final
+    DateTime dataInicio =
+        DateFormat('dd/MM/yyyy').parse(dataInicioController.text);
+    TimeOfDay horaInicio = TimeOfDay(
+      hour: int.parse(horaInicioController.text.split(":")[0]),
+      minute: int.parse(horaInicioController.text.split(":")[1]),
+    );
+    DateTime dateTimeInicio = DateTime(
+      dataInicio.year,
+      dataInicio.month,
+      dataInicio.day,
+      horaInicio.hour,
+      horaInicio.minute,
+    );
+    DateTime dateTimeFinal =
+        dateTimeInicio.add(Duration(minutes: tempoProcesso));
+    String dataFinalStr = DateFormat('dd/MM/yyyy').format(dateTimeFinal);
+    String horaFinalStr = DateFormat('HH:mm').format(dateTimeFinal);
+
     setState(() {
+      final username =
+          Provider.of<UserProvider>(context, listen: false).username;
       widget.lote.lavagemEquipamento = equipamentoSelecionado ?? '';
       widget.lote.lavagemProcesso = processoController.text;
       widget.lote.lavagemDataInicio = dataInicioController.text;
       widget.lote.lavagemHoraInicio = horaInicioController.text;
 
-      widget.lote.lavagemDataFinal = dataInicioController.text;
-      widget.lote.lavagemHoraFinal = horaInicioController.text;
+      widget.lote.lavagemDataFinal = dataFinalStr;
+      widget.lote.lavagemHoraFinal = horaFinalStr;
 
       widget.lote.lavagemObs = observacoesController.text;
-      widget.lote.lavagemResponsavel =
-          Provider.of<UserProvider>(context, listen: false).loggedInUser;
+      widget.lote.lavagemResponsavel = username;
+
       widget.lote.loteLavagemStatus = 2; // Atualiza o status do lote
       widget.lote.loteStatus = 1; // Atualiza o status do lote
       widget.lote.loteResponsavel = widget.lote.loteResponsavel;
@@ -181,7 +211,7 @@ class _LavagemState extends State<Lavagem> {
             1; // Atualiza o status do pedido para pendente
       }
     });
-    print('lote saido do formulario: ' + widget.lote.toString());
+
     widget.onSave();
     Navigator.pop(context, widget.lote);
   }
@@ -226,8 +256,6 @@ class _LavagemState extends State<Lavagem> {
         setState(() {
           widget.lote.lavagemHoraFinal = DateFormat('HH:mm').format(horaFinal);
         });
-
-        print('Hora Final Calculada: ${widget.lote.lavagemHoraFinal}');
       } else {
         _showMessage('Tempo do processo não encontrado.');
       }
@@ -424,8 +452,7 @@ class _LavagemState extends State<Lavagem> {
                               equipamentoSelecionado!.isNotEmpty
                           ? equipamentoSelecionado
                           : null,
-                      hint: const Text(
-                          'Selecione'), // Adiciona a máscara de texto "Selecione"
+                      hint: const Text('Selecione'),
                       items: equipamentos.map((equipamento) {
                         return DropdownMenuItem<String>(
                           value: equipamento['nome'],
@@ -492,16 +519,60 @@ class _LavagemState extends State<Lavagem> {
                   const SizedBox(width: 10),
                   Expanded(
                     flex: 20,
-                    child: TextField(
-                      controller: horaInicioController,
-                      style: const TextStyle(color: Colors.black),
-                      decoration: InputDecoration(
-                        labelText: 'Hora de Início',
-                        border: OutlineInputBorder(
-                          borderSide:
-                              BorderSide(color: Colors.grey.withAlpha(80)),
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(8)),
+                    child: GestureDetector(
+                      onTap: () async {
+                        TimeOfDay now = TimeOfDay.now();
+                        DateTime hoje = DateTime.now();
+                        DateTime dataSelecionada = DateFormat('dd/MM/yyyy')
+                            .parseStrict(dataInicioController.text);
+                        TimeOfDay initialTime = now;
+                        // Se não for hoje, pode começar do 00:00
+                        if (DateTime(hoje.year, hoje.month, hoje.day) !=
+                            DateTime(dataSelecionada.year,
+                                dataSelecionada.month, dataSelecionada.day)) {
+                          initialTime = TimeOfDay(hour: 0, minute: 0);
+                        }
+                        final picked = await showTimePicker(
+                          context: context,
+                          initialTime: initialTime,
+                        );
+                        if (picked != null) {
+                          // Validação: se for hoje, não pode ser menor que agora
+                          if (DateTime(hoje.year, hoje.month, hoje.day) ==
+                              DateTime(dataSelecionada.year,
+                                  dataSelecionada.month, dataSelecionada.day)) {
+                            final nowMinutes = now.hour * 60 + now.minute;
+                            final pickedMinutes =
+                                picked.hour * 60 + picked.minute;
+                            if (pickedMinutes < nowMinutes) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                      'A hora de início não pode ser menor que a hora atual!'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                              return;
+                            }
+                          }
+                          setState(() {
+                            horaInicioController.text = picked.format(context);
+                          });
+                        }
+                      },
+                      child: AbsorbPointer(
+                        child: TextField(
+                          controller: horaInicioController,
+                          style: const TextStyle(color: Colors.black),
+                          decoration: InputDecoration(
+                            labelText: 'Hora de Início',
+                            border: OutlineInputBorder(
+                              borderSide:
+                                  BorderSide(color: Colors.grey.withAlpha(80)),
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(8)),
+                            ),
+                          ),
                         ),
                       ),
                     ),
